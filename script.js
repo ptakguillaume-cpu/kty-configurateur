@@ -2,14 +2,18 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
-// Variable qui reçoit les données
+// Variable globale pour les codes articles (chargée depuis le JSON)
 let CODES_ARTICLES = {}; 
+
+/* ============================================================================
+ * 1. GESTIONNAIRE D'APPLICATION
+ * ============================================================================ */
 
 const AppManager = {
     currentStep: 1,
     
     init: async function() {
-        // Chargement de la configuration externe
+        // Chargement des références au démarrage
         await this.chargerReferencesExternes();
         
         this.chargerListeProjets();
@@ -27,8 +31,19 @@ const AppManager = {
         });
     },
 
-    // --- CHARGEMENT AVEC CONVERSION LISTE -> OBJET ---
+    // --- CHARGEMENT DES DONNÉES (LOCALE OU FICHIER) ---
     chargerReferencesExternes: async function() {
+        // 1. Priorité : Modifs manuelles locales (Admin)
+        const localData = localStorage.getItem('kty_references_db');
+        if (localData) {
+            try {
+                CODES_ARTICLES = JSON.parse(localData);
+                console.log("✅ Références chargées (Locales).");
+                return;
+            } catch (e) { localStorage.removeItem('kty_references_db'); }
+        }
+
+        // 2. Sinon : Fichier data.json sur le serveur
         try {
             const reponse = await fetch('./data.json');
             if (!reponse.ok) throw new Error("Fichier data.json introuvable");
@@ -36,13 +51,12 @@ const AppManager = {
             const jsonBrut = await reponse.json();
             let codesConvertis = {};
 
-            // Si format CMS (Liste de produits)
+            // Conversion Format CMS (Liste) -> Format App (Objet)
             if (jsonBrut.produits && Array.isArray(jsonBrut.produits)) {
                 jsonBrut.produits.forEach(item => {
                     if (item.type === 'unique') {
                         codesConvertis[item.nom] = item.ref_unique;
                     } else {
-                        // Format couleur
                         codesConvertis[item.nom] = {
                             "9016": item.ref_9016 || "-",
                             "7016": item.ref_7016 || "-",
@@ -52,21 +66,67 @@ const AppManager = {
                         };
                     }
                 });
+                CODES_ARTICLES = codesConvertis;
             } else {
-                // Format brut (ancien)
-                codesConvertis = jsonBrut;
+                CODES_ARTICLES = jsonBrut; // Ancien format direct
             }
-
-            CODES_ARTICLES = codesConvertis;
-            console.log("✅ Références chargées et converties.");
-
+            console.log("✅ Références chargées (Serveur).");
         } catch (erreur) {
-            console.error("Erreur chargement :", erreur);
-            window.afficherNotification("⚠️ Erreur : Références indisponibles");
-            CODES_ARTICLES = {}; 
+            console.error("Erreur chargement références :", erreur);
+            CODES_ARTICLES = {}; // Vide par sécurité
         }
     },
 
+    // --- MENU ADMIN SÉCURISÉ (AVEC MOT DE PASSE) ---
+    ouvrirAdmin: function() {
+        // --- CONFIGURATION DU MOT DE PASSE ---
+        const password = "1234"; 
+        
+        const saisie = prompt("🔒 Accès réservé Administrateur.\nVeuillez entrer le mot de passe :");
+
+        if (saisie === password) {
+            const modal = document.getElementById('adminModal');
+            const editor = document.getElementById('jsonEditor');
+            editor.value = JSON.stringify(CODES_ARTICLES, null, 4);
+            modal.classList.remove('hidden');
+            modal.style.display = 'flex';
+        } else if (saisie !== null) {
+            window.afficherNotification("⛔ Mot de passe incorrect !");
+        }
+    },
+
+    fermerAdmin: function() {
+        const modal = document.getElementById('adminModal');
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
+    },
+
+    sauvegarderReferences: function() {
+        const editor = document.getElementById('jsonEditor');
+        try {
+            const newRefs = JSON.parse(editor.value);
+            CODES_ARTICLES = newRefs;
+            localStorage.setItem('kty_references_db', JSON.stringify(newRefs));
+            window.afficherNotification("✅ Références mises à jour !");
+            this.fermerAdmin();
+            if (this.currentStep === 3) window.calculerInventaire();
+        } catch (e) {
+            alert("Erreur de syntaxe JSON !\n" + e.message);
+        }
+    },
+
+    resetReferences: async function() {
+        if(confirm("Effacer les modifications manuelles et recharger le fichier d'origine ?")) {
+            localStorage.removeItem('kty_references_db');
+            await this.chargerReferencesExternes();
+            document.getElementById('jsonEditor').value = JSON.stringify(CODES_ARTICLES, null, 4);
+            window.afficherNotification("♻️ Références remises à zéro.");
+            if (this.currentStep === 3) window.calculerInventaire();
+            this.fermerAdmin();
+        }
+    },
+
+    // --- NAVIGATION ---
     naviguer: function(step) {
         document.querySelectorAll('.wizard-step').forEach(el => el.classList.remove('active-step'));
         document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
@@ -196,7 +256,9 @@ const AppManager = {
 
 window.app = AppManager;
 
-// --- CONFIGURATION GLOBALE ---
+/* ============================================================================
+ * 2. CONFIGURATION GLOBALE
+ * ============================================================================ */
 let currentScene = { renderer: null, animationFrameId: null, scene: null, camera: null, controls: null };
 let configMurs = { A: [], B: [], C: [] }; 
 let compositionMixte = []; 
@@ -208,7 +270,10 @@ const CONSTANTS = {
     L_MIN_MODULE: 50
 };
 
-// --- MOTEUR 3D ---
+/* ============================================================================
+ * 3. MOTEUR 3D
+ * ============================================================================ */
+
 async function setupScene(container) {
     if (currentScene.renderer) {
         cancelAnimationFrame(currentScene.animationFrameId);
@@ -652,7 +717,7 @@ window.mettreAJourListeMixte = function() {
     document.getElementById('mixteResumeLargeur').innerHTML = `Mur ${mur} : Reste à combler : ${reste.toFixed(0)} mm`;
 }
 
-// --- REMPLISSAGE AUTO CORRIGE (Equilibrage Vitré SEULEMENT) ---
+// --- REMPLISSAGE AUTO ---
 window.remplirAutomatiquement = function() {
     const mur = getMurActif();
     const type = document.getElementById('mixteTypeModule').value;
@@ -679,7 +744,6 @@ window.remplirAutomatiquement = function() {
     const L_MOD_AXE = 1216; // 1178 + 38
     
     if (type === 'pleine') {
-        // Logique Pleine : Standard + Reste (Pas d'équilibrage)
         let nb = Math.floor(reste / L_MOD_AXE);
         let resteFinal = reste - (nb * L_MOD_AXE) - 38;
         if (resteFinal < 50 && nb > 0) {
@@ -688,17 +752,14 @@ window.remplirAutomatiquement = function() {
         }
         let ha = parseFloat(document.getElementById('mixteHauteurAllege').value)||0;
         for(let k=0; k<nb; k++) configMurs[mur].push({type: type, largeur: 1178, hAllege: ha});
-        // Correctif pour éviter le "-38" : si le reste est > 10mm, on l'ajoute. Sinon, c'est 0.
         if (resteFinal >= 10) configMurs[mur].push({type: type, largeur: resteFinal, hAllege: ha});
     
     } else {
-        // Logique Vitrée/Allège : ÉQUILIBRAGE ESTHÉTIQUE
+        // Equilibrage Vitré
         let nb = Math.ceil(reste / L_MOD_AXE);
         if(nb < 1) nb = 1;
         
-        // Formule corrigée pour que le reste tombe pile à 0 avec la boucle `utilise`
         let wUnit = (reste / nb) - 38;
-        
         if (wUnit < 50) { 
             nb--; 
             if(nb < 1) nb = 1;
@@ -715,7 +776,7 @@ window.remplirAutomatiquement = function() {
 }
 
 /* ============================================================================
- * 5. CALCULATEUR D'INVENTAIRE (CORRIGÉ)
+ * 5. CALCULATEUR D'INVENTAIRE
  * ============================================================================ */
 window.calculerInventaire = async function() {
     let inv = {};
@@ -753,17 +814,13 @@ window.calculerInventaire = async function() {
     let nomCJ_Vertical = `Couvre joints (H. ${hNom})`;
     let nomTraverseBarre = "Montant (2500mm) traverses"; 
     
-    // Initialisation Départs (Corrigé pour Ilot plus bas)
     let nbDeparts = qteDepartsMurs; 
     let nbAngles = 0;
     
     if(forme==='L') { nbAngles=1; }
     if(forme==='U') { nbAngles=2; }
     
-    // CORRECTION ILÔT : Si aucun mur existant, pas de départ mural du tout.
-    if (qteDepartsMurs === 0) {
-        nbDeparts = 0;
-    }
+    if (qteDepartsMurs === 0) { nbDeparts = 0; }
 
     let murs = ['A']; if(forme==='L') murs.push('B'); if(forme==='U') { murs.push('B'); murs.push('C'); }
 
@@ -799,7 +856,6 @@ window.calculerInventaire = async function() {
                     for(let k=0; k<nb; k++) configMurs[id].push({type:typeGlob, largeur:1178});
                     if (largeurDernierPanneau > 10) { configMurs[id].push({type:typeGlob, largeur:largeurDernierPanneau}); }
                 } else {
-                    // Equilibrage pour Vitrée
                     let nb = Math.ceil(dispo / L_MOD_AXE);
                     if(nb < 1) nb = 1;
                     let wUnit = (dispo / nb) - 38;
@@ -809,11 +865,10 @@ window.calculerInventaire = async function() {
         });
     }
 
-    // --- CALCUL PIECES & MONTANTS SPECIAUX (Sequence L Specifique) ---
+    // --- CALCUL PIECES ---
     let nbMontantsStandard = 0;
     let nbMontantsSpeciaux = 0;
 
-    // Détermination du nom de la parclose "Principale"
     let v1 = document.getElementById('typeVitrage1').value;
     let v2 = document.getElementById('typeVitrage2').value;
     let isStandardRal = (['9016','7016','9005','anodise'].includes(couleurRal));
@@ -832,17 +887,13 @@ window.calculerInventaire = async function() {
         let nbModules = modulesDuMur.length;
         
         if (nbModules > 0) {
-            // On parcourt les jonctions INTERMÉDIAIRES (entre modules)
             for (let i = 0; i < nbModules - 1; i++) {
                 let isSpecial = false;
-                
-                // Règle 1 : Proximité Angle (Renfort)
                 if (forme !== 'droite') {
-                    if (id === 'A' && i === nbModules - 2) isSpecial = true; // Dernier de A
-                    if (id === 'B' && i === 0) isSpecial = true; // Premier de B
-                    if (id === 'C' && i === 0) isSpecial = true; // Premier de C
+                    if (id === 'A' && i === nbModules - 2) isSpecial = true; 
+                    if (id === 'B' && i === 0) isSpecial = true; 
+                    if (id === 'C' && i === 0) isSpecial = true; 
                 }
-
                 if (isSpecial) nbMontantsSpeciaux++;
                 else nbMontantsStandard++;
             }
@@ -855,7 +906,6 @@ window.calculerInventaire = async function() {
                 htmlList += `<li>${nom} (${m.largeur.toFixed(0)}mm)</li>`;
                 add('Calles de lisse', m.type==='pleine'?2:(m.type==='vitree'?6:4));
                 if(m.type === 'vitree' || m.type === 'vitreeSurAllege') {
-                    // On utilise le nom unifié
                     let qteParclose = (m.type === 'vitree') ? 3 : 2;
                     add(nomParcloseDefaut, qteParclose);
                     
@@ -879,48 +929,32 @@ window.calculerInventaire = async function() {
     });
 
     let nbCapots = 0;
-
-    // --- GESTION DES EXTREMITES (DÉBUT et FIN) ---
-    // Une extrémité libre = 1 Montant (Standard ou Spécial) + 1 Capot.
-    
-    // Variable pour l'option position Départ (si active)
     let positionDepartUnique = 'A';
     let radioPos = document.querySelector('input[name="posDepartL"]:checked');
     if(radioPos) positionDepartUnique = radioPos.value;
 
-    // 1. DÉBUT DE LA CLOISON (Mur A - Gauche)
     let debutEstLibre = false;
-    // Si Ilôt : Libre. Si 1 Mur en L (Départ sur B) : A est libre.
-    if (qteDepartsMurs === 0) {
-        debutEstLibre = true;
-    } else if (forme === 'L' && qteDepartsMurs === 1 && positionDepartUnique === 'B') {
-        debutEstLibre = true;
-    }
+    if (qteDepartsMurs === 0) { debutEstLibre = true; } 
+    else if (forme === 'L' && qteDepartsMurs === 1 && positionDepartUnique === 'B') { debutEstLibre = true; }
 
     if (debutEstLibre) {
         nbCapots++;
-        // SI LE MUR EST TRES COURT (1 seul module), le montant libre doit être un RENFORT
         if (configMurs['A'].length === 1) nbMontantsSpeciaux++; 
         else nbMontantsStandard++;
     }
 
-    // 2. FIN DE LA CLOISON (Mur A, B ou C - Droite/Fin)
     let finEstLibre = false;
     let murFinId = (forme === 'U') ? 'C' : (forme === 'L' ? 'B' : 'A');
 
-    if (qteDepartsMurs === 0) { // Ilôt
-        finEstLibre = true;
-    } else if (qteDepartsMurs === 1) {
-        // Si 1 seul mur, la fin est libre SAUF si c'est un L avec Départ sur B (cas rare inversé plus haut)
+    if (qteDepartsMurs === 0) { finEstLibre = true; } 
+    else if (qteDepartsMurs === 1) {
         if (forme === 'droite') finEstLibre = true;
         if (forme === 'L' && positionDepartUnique === 'A') finEstLibre = true;
-        if (forme === 'U') finEstLibre = true; // U contre 1 mur = fin C libre
+        if (forme === 'U') finEstLibre = true; 
     }
-    // Si 2 murs (entre murs), fin pas libre.
 
     if (finEstLibre) {
         nbCapots++;
-        // SI LE MUR DE FIN EST TRES COURT (1 seul module), le montant libre doit être un RENFORT
         if (configMurs[murFinId].length === 1) nbMontantsSpeciaux++; 
         else nbMontantsStandard++;
     }
@@ -1077,16 +1111,9 @@ window.calculerInventaire = async function() {
 
     let keys = Object.keys(inv).sort();
     
-    // 1. OSSATURE
-    let ossatureKeys = keys.filter(k => k.includes('Lisse') || k.includes('Départ') || k.includes('Montants') || k.includes('Montant ') || k.includes('Angle') || k.includes('Profilés') || k.includes('Chute'));
-    
-    // 2. PARCLOSES (NOUVEAU GROUPE)
+    let ossatureKeys = keys.filter(k => k.includes('Lisse') || k.includes('Départ') || k.includes('Montants') || k.includes('Montant') || k.includes('Angle') || k.includes('Profilés') || k.includes('Chute'));
     let parcloseKeys = keys.filter(k => k.includes('Parclose') || k.includes('Joint') || k.includes('Vitrage'));
-
-    // 3. HUISSERIE
     let huisserieKeys = keys.filter(k => k.includes('Huisserie') || k.includes('Porte') || k.includes('Vantail') || k.includes('Semi-fixe') || k.includes('Paumelles') || k.includes('Béquilles') || k.includes('Kit') || k.includes('Plinthe'));
-
-    // 4. ACCESSOIRES (LE RESTE)
     let accessoiresKeys = keys.filter(k => !ossatureKeys.includes(k) && !parcloseKeys.includes(k) && !huisserieKeys.includes(k));
 
     let tbl = `<h4>1. Ossature</h4><table><thead><tr><th>Pièce</th><th>Quantité</th></tr></thead><tbody>`;
@@ -1109,19 +1136,17 @@ window.calculerInventaire = async function() {
         tbl += `</tbody></table>`;
     }
     document.getElementById('tableauTotal').innerHTML = tbl;
-    // On cible la zone
-    const zoneDL = document.getElementById('zoneTelechargEMENT');
-    // 1. On enlève la classe "hidden" qui bloque l'affichage
-    zoneDL.classList.remove('hidden'); 
-    // 2. On force l'affichage
-    zoneDL.style.display = 'block';
+    
+    // --- CORRECTION AFFICHAGE BOUTON PDF ---
+    const zoneDownload = document.getElementById('zoneTelechargEMENT');
+    if (zoneDownload) {
+        zoneDownload.classList.remove('hidden'); 
+        zoneDownload.style.display = 'block';
+    }
+    
     document.getElementById('listePieces').innerHTML = htmlList;
     try { await dessinerSceneGlobale(murs, forme, H, configMurs); } catch(e) { console.error("Erreur 3D:", e); }
 }
-
-/* ============================================================================
- * 6. NOUVELLE IMPRESSION PDF "PRO" (AVEC PHOTO 3D LARGE)
- * ============================================================================ */
 
 /* ============================================================================
  * 6. NOUVELLE IMPRESSION PDF "PRO" (AVEC PHOTO 3D LARGE)
@@ -1255,12 +1280,6 @@ window.imprimerDevis = async function() {
     
     setTimeout(() => window.print(), 500);
 }
-    
-    const z = document.getElementById('zoneImpression');
-    z.innerHTML = html;
-    
-    setTimeout(() => window.print(), 500);
-}
 
 document.addEventListener('DOMContentLoaded', () => {
     AppManager.init();
@@ -1294,7 +1313,4 @@ window.demanderConfirmation = function(message, couleurBouton, callbackOui) {
     document.body.appendChild(overlay);
     document.getElementById('modal-btn-yes').onclick = function() { document.body.removeChild(overlay); callbackOui(); };
     document.getElementById('modal-btn-no').onclick = function() { document.body.removeChild(overlay); };
-
 }
-
-
