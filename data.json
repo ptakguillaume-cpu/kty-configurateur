@@ -153,13 +153,41 @@
       "ref_anodise": "CJ-V5750-ANO",
       "ref_autre": "CJ-V5750-RAL"
     },
-    { "nom": "Calles de lisse", "type": "unique", "ref_unique": "REF-CALLE-STD" },
-    { "nom": "Boîte de Clips couvre joints (100u)", "type": "unique", "ref_unique": "REF-CLIPS-100" },
-    { "nom": "Clips de raccordement (éclisses)", "type": "unique", "ref_unique": "REF-ECLISSE-STD" },
-    { "nom": "Équerres (total)", "type": "unique", "ref_unique": "REF-EQUERRE-UNIV" },
-    { "nom": "Rouleau Joint 6mm (50m) pour 33.2", "type": "unique", "ref_unique": "REF-JOINT-6MM" },
-    { "nom": "Rouleau Joint 8mm (50m) pour 44.2", "type": "unique", "ref_unique": "REF-JOINT-8MM" },
-    { "nom": "Joint de départ", "type": "unique", "ref_unique": "REF-JOINT-DEPART-STD" },
+    {
+      "nom": "Calles de lisse",
+      "type": "unique",
+      "ref_unique": "REF-CALLE-STD"
+    },
+    {
+      "nom": "Boîte de Clips couvre joints (100u)",
+      "type": "unique",
+      "ref_unique": "REF-CLIPS-100"
+    },
+    {
+      "nom": "Clips de raccordement (éclisses)",
+      "type": "unique",
+      "ref_unique": "REF-ECLISSE-STD"
+    },
+    {
+      "nom": "Équerres (total)",
+      "type": "unique",
+      "ref_unique": "REF-EQUERRE-UNIV"
+    },
+    {
+      "nom": "Rouleau Joint 6mm (50m) pour 33.2",
+      "type": "unique",
+      "ref_unique": "REF-JOINT-6MM"
+    },
+    {
+      "nom": "Rouleau Joint 8mm (50m) pour 44.2",
+      "type": "unique",
+      "ref_unique": "REF-JOINT-8MM"
+    },
+    {
+      "nom": "Joint de départ",
+      "type": "unique",
+      "ref_unique": "REF-JOINT-DEPART-STD"
+    },
     {
       "nom": "Parclose SV (sans joint)",
       "type": "couleur",
@@ -214,9 +242,30 @@
       "ref_anodise": "HUIS-928-P-ANO",
       "ref_autre": "HUIS-928-P-RAL"
     },
-    { "nom": "Kit Paumelles (jeu de 3)", "type": "unique", "ref_unique": "REF-KIT-PAUM-3" },
-    { "nom": "Béquilles", "type": "unique", "ref_unique": "REF-BEQUILLE-STD" },
-    { "nom": "Chutes de montant réutilisées (Traverses)", "type": "unique", "ref_unique": "INFO-CHUTE" },
-    { "nom": "Chutes de CJ réutilisées", "type": "unique", "ref_unique": "INFO-CHUTE-CJ" }
+    {
+      "nom": "Kit Paumelles (jeu de 3)",
+      "type": "couleur",
+      "ref_unique": "",
+      "ref_9016": "REF-KIT-3PAUM-9016",
+      "ref_7016": "REF-KIT-3PAUM-7016",
+      "ref_9005": "REF-KIT-3PAUM-9005",
+      "ref_anodise": "REF-KIT-3PAUM-ANOD",
+      "ref_autre": "REF-KIT-3PAUM-RAL"
+    },
+    {
+      "nom": "Béquilles",
+      "type": "unique",
+      "ref_unique": "REF-BEQUILLE-STD"
+    },
+    {
+      "nom": "Chutes de montant réutilisées (Traverses)",
+      "type": "unique",
+      "ref_unique": "INFO-CHUTE"
+    },
+    {
+      "nom": "Chutes de CJ réutilisées",
+      "type": "unique",
+      "ref_unique": "INFO-CHUTE-CJ"
+    }
   ]
 }
