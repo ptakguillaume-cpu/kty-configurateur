@@ -1122,6 +1122,7 @@ window.calculerInventaire = async function() {
 /* ============================================================================
  * 6. NOUVELLE IMPRESSION PDF "PRO" (AVEC PHOTO 3D LARGE)
  * ============================================================================ */
+
 /* ============================================================================
  * 6. NOUVELLE IMPRESSION PDF "PRO" (AVEC PHOTO 3D LARGE)
  * ============================================================================ */
@@ -1233,6 +1234,7 @@ window.imprimerDevis = async function() {
         <div style="font-size: 0.9em; margin-bottom: 30px; border:1px solid #eee; padding:10px;">
             ${document.getElementById('listePieces').innerHTML}
         </div>
+
         <h3>Aperçu Technique</h3>
         <div class="print-3d-view">
             <img src="${imgData}" alt="Vue 3D du projet" style="width:100%; max-height:600px; object-fit:contain;">
@@ -1241,12 +1243,18 @@ window.imprimerDevis = async function() {
         <h3>Inventaire Matériel Estimatif (Avec Références)</h3>
         ${tableauHTMLAvecCodes}
 
-        <div class="print-footer">
+        <div class="print-footer" style="margin-top: 100px;">
             Document généré par le Configurateur KTY Solutions.<br>
             Merci de transmettre ce PDF à <strong>kty.chassieu@kty.fr</strong> pour validation technique.<br>
             KTY Solutions - Votre partenaire cloisonnement.
         </div>
     `;
+    
+    const z = document.getElementById('zoneImpression');
+    z.innerHTML = html;
+    
+    setTimeout(() => window.print(), 500);
+}
     
     const z = document.getElementById('zoneImpression');
     z.innerHTML = html;
@@ -1288,4 +1296,5 @@ window.demanderConfirmation = function(message, couleurBouton, callbackOui) {
     document.getElementById('modal-btn-no').onclick = function() { document.body.removeChild(overlay); };
 
 }
+
 
