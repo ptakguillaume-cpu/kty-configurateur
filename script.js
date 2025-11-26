@@ -778,378 +778,8 @@ window.remplirAutomatiquement = function() {
 /* ============================================================================
  * 5. CALCULATEUR D'INVENTAIRE
  * ============================================================================ */
-window.calculerInventaire = async function() {
-    let inv = {};
-    const add = (n, q) => { if(q>0) inv[n] = (inv[n]||0) + q; };
-    function ajouterAuStock(nom, quantite) {
-        if (quantite > 0) { inv[nom] = (inv[nom] || 0) + quantite; }
-    }
-    
-    let htmlList = "";
-    let chutesUtilisables = []; let besoinsTraverses = []; 
-    let chutesCJUtilisables = []; let besoinsCJ = [];
-    let totalPortes = 0;
-    let totalMetrageJointsByType = {}; 
-    let qteEquerresTraverse = 0;
-    
-    const forme = document.getElementById('formeCloison').value;
-    const qteDepartsMurs = parseInt(document.getElementById('configDepart').value, 10);
-    
-    const typeGlob = document.getElementById('typeCloison').value;
-    const H = parseFloat(document.getElementById('hauteur').value);
-    const H_IMPOSTE = parseFloat(document.getElementById('hauteurImposte').value) || 2040;
-    const hasImposteModules = document.getElementById('imposteModules').checked;
-    const couleurRal = document.getElementById('couleurRal').value;
-    
-    // --- SELECTION BARRE ---
-    const BARRES_DISPO = [2500, 2700, 3050, 3250, 5750];
-    let longueurBarreRetenue = 5750; 
-    for (let l of BARRES_DISPO) { if (l >= H) { longueurBarreRetenue = l; break; } }
-    
-    let hNom = `${longueurBarreRetenue}mm`;
-    let nomMontant = `Montants (H. ${hNom})`;
-    let nomMontantSpecial = `Montant Spécial (H. ${hNom})`;
-    let nomDepart = `Départ (H. ${hNom})`;
-    let nomCJ_Horizontal = "Couvre joints H.2500mm (horizontaux)"; 
-    let nomCJ_Vertical = `Couvre joints (H. ${hNom})`;
-    let nomTraverseBarre = "Montant (2500mm) traverses"; 
-    
-    let nbDeparts = qteDepartsMurs; 
-    let nbAngles = 0;
-    
-    if(forme==='L') { nbAngles=1; }
-    if(forme==='U') { nbAngles=2; }
-    
-    if (qteDepartsMurs === 0) { nbDeparts = 0; }
-
-    let murs = ['A']; if(forme==='L') murs.push('B'); if(forme==='U') { murs.push('B'); murs.push('C'); }
-
-    // --- GENERATION AUTO ---
-    if (typeGlob !== 'mixte') {
-        configMurs = { A:[], B:[], C:[] };
-        murs.forEach(id => {
-            let L = 0;
-            if(id==='A') L=parseFloat(document.getElementById('longueur').value);
-            if(id==='B') L=parseFloat(document.getElementById('longueurB').value);
-            if(id==='C') L=parseFloat(document.getElementById('longueurC').value);
-            
-            let deduction = 0;
-            if(id==='A') { deduction += 38; deduction += (forme !== 'droite') ? 90.5 : 38; }
-            if(id==='B') { deduction += 90.5; deduction += (forme === 'U') ? 90.5 : 38; }
-            if(id==='C') { deduction += 90.5 + 38; }
-
-            let dispo = L - deduction;
-            
-            if(id==='A') {
-                let qP = parseFloat(document.getElementById('qtePortes').value)||0;
-                let lP = getLargeurPorte();
-                for(let k=0; k<qP; k++) { configMurs[id].push({type:'porte'}); dispo -= (lP+CONSTANTS.EPAISSEUR_PROFIL); }
-            }
-            
-            if(dispo > 5) {
-                const L_MOD_AXE = 1216; 
-                if (typeGlob === 'pleine') {
-                    let nb = Math.floor(dispo / L_MOD_AXE);
-                    let resteLargeur = dispo - (nb * L_MOD_AXE);
-                    let largeurDernierPanneau = resteLargeur - 38;
-                    if (largeurDernierPanneau < 100 && nb > 0) { nb--; largeurDernierPanneau += L_MOD_AXE; }
-                    for(let k=0; k<nb; k++) configMurs[id].push({type:typeGlob, largeur:1178});
-                    if (largeurDernierPanneau > 10) { configMurs[id].push({type:typeGlob, largeur:largeurDernierPanneau}); }
-                } else {
-                    let nb = Math.ceil(dispo / L_MOD_AXE);
-                    if(nb < 1) nb = 1;
-                    let wUnit = (dispo / nb) - 38;
-                    for(let k=0; k<nb; k++) configMurs[id].push({type:typeGlob, largeur:wUnit});
-                }
-            }
-        });
-    }
-
-    // --- CALCUL PIECES ---
-    let nbMontantsStandard = 0;
-    let nbMontantsSpeciaux = 0;
-
-    let v1 = document.getElementById('typeVitrage1').value;
-    let v2 = document.getElementById('typeVitrage2').value;
-    let isStandardRal = (['9016','7016','9005','anodise'].includes(couleurRal));
-    let isStandardGlass1 = (['33.2','44.2'].includes(v1));
-    let isStandardGlass2 = (['aucun','33.2','44.2'].includes(v2));
-    let useParcloseAvecJoint = (isStandardRal && isStandardGlass1 && isStandardGlass2);
-
-    let baseNomParclose = (v2 === 'aucun') ? 'Parclose SV' : 'Parclose DV';
-    let suffixeParclose = useParcloseAvecJoint ? ' (avec joint intégré)' : ' (sans joint)';
-    let nomParcloseDefaut = baseNomParclose + suffixeParclose;
-
-    murs.forEach(id => {
-        htmlList += `<li style="background:#f4f4f4; margin-top:5px;"><strong>Cloison ${id} :</strong></li>`;
-        
-        let modulesDuMur = configMurs[id];
-        let nbModules = modulesDuMur.length;
-        
-        if (nbModules > 0) {
-            for (let i = 0; i < nbModules - 1; i++) {
-                let isSpecial = false;
-                if (forme !== 'droite') {
-                    if (id === 'A' && i === nbModules - 2) isSpecial = true; 
-                    if (id === 'B' && i === 0) isSpecial = true; 
-                    if (id === 'C' && i === 0) isSpecial = true; 
-                }
-                if (isSpecial) nbMontantsSpeciaux++;
-                else nbMontantsStandard++;
-            }
-        }
-
-        modulesDuMur.forEach(m => {
-            if(m.type==='porte') { totalPortes++; htmlList += `<li>Huisserie (${getLargeurPorte()}mm)</li>`; } 
-            else {
-                let nom = m.type === 'pleine' ? 'Module plein' : m.type === 'vitree' ? 'Module vitré' : 'Module allège';
-                htmlList += `<li>${nom} (${m.largeur.toFixed(0)}mm)</li>`;
-                add('Calles de lisse', m.type==='pleine'?2:(m.type==='vitree'?6:4));
-                if(m.type === 'vitree' || m.type === 'vitreeSurAllege') {
-                    let qteParclose = (m.type === 'vitree') ? 3 : 2;
-                    add(nomParcloseDefaut, qteParclose);
-                    
-                    if (!useParcloseAvecJoint) {
-                        let hV = H - (CONSTANTS.EPAISSEUR_PROFIL*2);
-                        if(m.type==='vitreeSurAllege') { let ha = m.hAllege || 0; hV = H - ha - CONSTANTS.EPAISSEUR_PROFIL; }
-                        let metrage = (hV * 2) + (m.largeur * 2);
-                        totalMetrageJointsByType[v1] = (totalMetrageJointsByType[v1] || 0) + metrage;
-                        if(v2 !== 'aucun') { totalMetrageJointsByType[v2] = (totalMetrageJointsByType[v2] || 0) + metrage; }
-                    }
-                }
-                let nbTrav = 0;
-                if(m.type==='vitreeSurAllege') nbTrav++;
-                if(hasImposteModules && H > H_IMPOSTE+38) nbTrav++;
-                if(nbTrav > 0) {
-                    qteEquerresTraverse += nbTrav * 2; 
-                    for(let k=0; k<nbTrav; k++) { besoinsTraverses.push(m.largeur); besoinsCJ.push(m.largeur); besoinsCJ.push(m.largeur); }
-                }
-            }
-        });
-    });
-
-    let nbCapots = 0;
-    let positionDepartUnique = 'A';
-    let radioPos = document.querySelector('input[name="posDepartL"]:checked');
-    if(radioPos) positionDepartUnique = radioPos.value;
-
-    let debutEstLibre = false;
-    if (qteDepartsMurs === 0) { debutEstLibre = true; } 
-    else if (forme === 'L' && qteDepartsMurs === 1 && positionDepartUnique === 'B') { debutEstLibre = true; }
-
-    if (debutEstLibre) {
-        nbCapots++;
-        if (configMurs['A'].length === 1) nbMontantsSpeciaux++; 
-        else nbMontantsStandard++;
-    }
-
-    let finEstLibre = false;
-    let murFinId = (forme === 'U') ? 'C' : (forme === 'L' ? 'B' : 'A');
-
-    if (qteDepartsMurs === 0) { finEstLibre = true; } 
-    else if (qteDepartsMurs === 1) {
-        if (forme === 'droite') finEstLibre = true;
-        if (forme === 'L' && positionDepartUnique === 'A') finEstLibre = true;
-        if (forme === 'U') finEstLibre = true; 
-    }
-
-    if (finEstLibre) {
-        nbCapots++;
-        if (configMurs[murFinId].length === 1) nbMontantsSpeciaux++; 
-        else nbMontantsStandard++;
-    }
-
-    // AJOUT STOCK
-    let qteBarresStandards = 0;
-    if (longueurBarreRetenue === 5750 && H <= 2875) { qteBarresStandards = Math.ceil(nbMontantsStandard / 2); } 
-    else { qteBarresStandards = nbMontantsStandard; }
-    ajouterAuStock(nomMontant, qteBarresStandards);
-    
-    let qteBarresSpeciales = 0;
-    if (longueurBarreRetenue === 5750 && H <= 2875) { qteBarresSpeciales = Math.ceil(nbMontantsSpeciaux / 2); } 
-    else { qteBarresSpeciales = nbMontantsSpeciaux; }
-    ajouterAuStock(nomMontantSpecial, qteBarresSpeciales);
-
-    add(nomDepart, nbDeparts);
-    if(nbAngles>0) add(`Angle Carré (H. ${hNom})`, nbAngles);
-    if(nbCapots>0) add('Capots de finition (pour Montant)', nbCapots);
-    
-    let totVert = nbMontantsStandard + nbMontantsSpeciaux + nbDeparts + nbAngles; 
-    add(nomCJ_Vertical, totVert*2);
-    add('Boîte de Clips couvre joints (100u)', Math.ceil(totVert*2*8/100));
-    
-    let totalEclisses = 0;
-    murs.forEach(id => {
-        let L = 0;
-        if(id==='A') L=parseFloat(document.getElementById('longueur').value);
-        if(id==='B') L=parseFloat(document.getElementById('longueurB').value);
-        if(id==='C') L=parseFloat(document.getElementById('longueurC').value);
-        let nbBarres = Math.ceil(L / 3000);
-        let nbRaccords = (nbBarres > 0) ? nbBarres - 1 : 0;
-        totalEclisses += (nbRaccords * 2);
-    });
-    add('Clips de raccordement (éclisses)', totalEclisses);
-    
-    let Ltot = murs.reduce((total, id) => { 
-        let L = 0;
-        if(id==='A')L=parseFloat(document.getElementById('longueur').value);
-        if(id==='B')L=parseFloat(document.getElementById('longueurB').value);
-        if(id==='C')L=parseFloat(document.getElementById('longueurC').value);
-        return total + L;
-    }, 0);
-    add('Lisses (barre 3000mm)', Math.ceil(Ltot*2/3000));
-
-    if (totalPortes > 0) {
-        let lp = getLargeurPorte();
-        let isD = document.getElementById('doublePorte').checked;
-        let nomH = isD ? `Huisserie Double (${lp}mm)` : `Huisserie (${lp}mm)`;
-        let tp = document.getElementById('typePorte').value;
-        if(tp==='cadreAlu') nomH += " (Cadre Alu)"; else nomH += " (Pleine)";
-        add(nomH, totalPortes);
-        
-        let hp = document.getElementById('hauteurPorte').value;
-        let vitragePorteVal = document.getElementById('typeVitragePorte').value;
-        let nbPaumellesParVantail = 3; 
-        if (hp === 'touteHauteur') { nbPaumellesParVantail = 4; } 
-        else if (hp === '2040' && tp === 'cadreAlu' && vitragePorteVal === 'isolant') { nbPaumellesParVantail = 4; }
-        
-        let nomKit = "";
-        let qteKits = 0;
-        if (isD) {
-            nomKit = (nbPaumellesParVantail === 4) ? 'Kit Paumelles (jeu de 8)' : 'Kit Paumelles (jeu de 6)';
-            qteKits = totalPortes; 
-        } else {
-            nomKit = (nbPaumellesParVantail === 4) ? 'Kit Paumelles (jeu de 4)' : 'Kit Paumelles (jeu de 3)';
-            qteKits = totalPortes; 
-        }
-        add(nomKit, qteKits);
-
-        if(tp==='cadreAlu') { 
-            add('Béquilles', totalPortes);
-            if(vitragePorteVal === 'isolant') { let qteExtras = (isD ? 2 : 1) * totalPortes; add('Plinthe automatique', qteExtras); add('Vitrage isolant', qteExtras); }
-            if(isD) { 
-                 let txt = document.getElementById('huisserieDoublePorteSelect').options[document.getElementById('huisserieDoublePorteSelect').selectedIndex].text;
-                 let match = txt.match(/\((\d+)\+(\d+)\)/);
-                 if(match) { add(`Vantail Cadre Alu ${match[1]}mm`, totalPortes); add(`Semi-fixe Cadre Alu ${match[2]}mm`, totalPortes); } 
-                 else { add(`Porte Double Cadre Alu ${lp}mm`, totalPortes); }
-            } else { add(`Porte Cadre Alu ${lp}mm`, totalPortes); }
-        }
-        if(document.getElementById('hauteurPorte').value==='2040') {
-             for(let k=0; k < totalPortes; k++) { besoinsCJ.push(lp); besoinsCJ.push(lp); }
-             if(hasImposteModules && H > H_IMPOSTE+38 && H_IMPOSTE > 2040) {
-                 for(let k=0; k < totalPortes; k++) { besoinsTraverses.push(lp); besoinsCJ.push(lp); besoinsCJ.push(lp); }
-                 qteEquerresTraverse += totalPortes * 2; 
-             }
-             if(H > 2078) {
-                 let typeImp = document.getElementById('typeImposte').value;
-                 if(typeImp === 'vitree') { 
-                     let qteParcloseImposte = isD ? 2 : 1; 
-                     add(nomParcloseDefaut, qteParcloseImposte);
-                 }
-             }
-        }
-    }
-
-    for (const [vitrage, metrageTotal] of Object.entries(totalMetrageJointsByType)) {
-        if (metrageTotal > 0) {
-            let epaisseurJoint = '6mm'; if (vitrage === '44.2') epaisseurJoint = '8mm'; if (vitrage === '55.2') epaisseurJoint = '10mm'; if (vitrage === '66.2') epaisseurJoint = '12mm';
-            let nbRouleaux = Math.ceil(metrageTotal / 50000);
-            add(`Rouleau Joint ${epaisseurJoint} (50m) pour ${vitrage}`, nbRouleaux);
-        }
-    }
-    let qteEq = ((2 + (nbMontantsStandard + nbMontantsSpeciaux)) * 2) + qteEquerresTraverse; 
-    if(nbAngles>0) { qteEq += nbAngles * 4; }
-    add('Équerres (total)', qteEq);
-
-    let barresNeuvesUtilisees = 0; let nbChutesRecyclees = 0; let chutesDe2500_Montants = [];
-    besoinsTraverses.sort((a, b) => b - a); chutesUtilisables.sort((a, b) => b - a);
-    besoinsTraverses.forEach(largeurRequise => {
-        let comble = false;
-        for(let i=0; i < chutesUtilisables.length; i++) {
-            if (chutesUtilisables[i] >= largeurRequise) {
-                let reste = chutesUtilisables[i] - largeurRequise;
-                chutesUtilisables.splice(i, 1);
-                if (reste > 50) { chutesUtilisables.push(reste); chutesUtilisables.sort((a, b) => b - a); }
-                comble = true; nbChutesRecyclees++; break;
-            }
-        }
-        if (!comble) {
-            chutesDe2500_Montants.sort((a, b) => b - a);
-            for(let i=0; i < chutesDe2500_Montants.length; i++) {
-                    if (chutesDe2500_Montants[i] >= largeurRequise) { chutesDe2500_Montants[i] -= largeurRequise; comble = true; break; }
-            }
-        }
-        if (!comble) { barresNeuvesUtilisees++; let resteNeuve = 2500 - largeurRequise; if (resteNeuve > 50) chutesDe2500_Montants.push(resteNeuve); }
-    });
-    if (barresNeuvesUtilisees > 0) { add(nomTraverseBarre, barresNeuvesUtilisees); }
-    if (nbChutesRecyclees > 0) { add("Chutes de montant réutilisées (Traverses)", nbChutesRecyclees); }
-    
-    let finalBarresCJNeuves = 0; let finalNbChutesCJRecyclees = 0; let chutesDe2500 = []; 
-    besoinsCJ.sort((a, b) => b - a); chutesCJUtilisables.sort((a, b) => b - a);
-    besoinsCJ.forEach(largeurRequise => {
-        let comble = false;
-        for(let i=0; i < chutesCJUtilisables.length; i++) {
-            if (chutesCJUtilisables[i] >= largeurRequise) {
-                let reste = chutesCJUtilisables[i] - largeurRequise;
-                chutesCJUtilisables.splice(i, 1); 
-                if (reste > 50) { chutesCJUtilisables.push(reste); chutesCJUtilisables.sort((a, b) => b - a); }
-                comble = true; finalNbChutesCJRecyclees++; break;
-            }
-        }
-        if (!comble) {
-            chutesDe2500.sort((a, b) => b - a);
-            for(let i=0; i < chutesDe2500.length; i++) {
-                if (chutesDe2500[i] >= largeurRequise) { chutesDe2500[i] -= largeurRequise; comble = true; break; }
-            }
-        }
-        if (!comble) { finalBarresCJNeuves++; let resteNeuve = 2500 - largeurRequise; if(resteNeuve > 50) chutesDe2500.push(resteNeuve); }
-    });
-    if (finalBarresCJNeuves > 0) { add(nomCJ_Horizontal, finalBarresCJNeuves); }
-    if (finalNbChutesCJRecyclees > 0) { add("Chutes de CJ réutilisées", finalNbChutesCJRecyclees); }
-
-    window.derniereInventaire = inv;
-
-    let keys = Object.keys(inv).sort();
-    
-    let ossatureKeys = keys.filter(k => k.includes('Lisse') || k.includes('Départ') || k.includes('Montants') || k.includes('Montant') || k.includes('Angle') || k.includes('Profilés') || k.includes('Chute'));
-    let parcloseKeys = keys.filter(k => k.includes('Parclose') || k.includes('Joint') || k.includes('Vitrage'));
-    let huisserieKeys = keys.filter(k => k.includes('Huisserie') || k.includes('Porte') || k.includes('Vantail') || k.includes('Semi-fixe') || k.includes('Paumelles') || k.includes('Béquilles') || k.includes('Kit') || k.includes('Plinthe'));
-    let accessoiresKeys = keys.filter(k => !ossatureKeys.includes(k) && !parcloseKeys.includes(k) && !huisserieKeys.includes(k));
-
-    let tbl = `<h4>1. Ossature</h4><table><thead><tr><th>Pièce</th><th>Quantité</th></tr></thead><tbody>`;
-    ossatureKeys.forEach(k => { if(inv[k] > 0) tbl += `<tr><td>${k}</td><td>${inv[k]} u.</td></tr>`; });
-    tbl += `</tbody></table>`;
-    
-    if (parcloseKeys.length > 0) {
-        tbl += `<h4>2. Vitrage & Parcloses</h4><table><thead><tr><th>Pièce</th><th>Quantité</th></tr></thead><tbody>`;
-        parcloseKeys.forEach(k => { if(inv[k] > 0) tbl += `<tr><td>${k}</td><td>${inv[k]} u.</td></tr>`; });
-        tbl += `</tbody></table>`;
-    }
-
-    tbl += `<h4>3. Accessoires</h4><table><thead><tr><th>Pièce</th><th>Quantité</th></tr></thead><tbody>`;
-    accessoiresKeys.forEach(k => { if(inv[k] > 0) tbl += `<tr><td>${k}</td><td>${inv[k]} u.</td></tr>`; });
-    tbl += `</tbody></table>`;
-    
-    if (huisserieKeys.length > 0) {
-        tbl += `<h4>4. Huisserie</h4><table><thead><tr><th>Pièce</th><th>Quantité</th></tr></thead><tbody>`;
-        huisserieKeys.forEach(k => { if(inv[k] > 0) tbl += `<tr><td>${k}</td><td>${inv[k]} u.</td></tr>`; });
-        tbl += `</tbody></table>`;
-    }
-    document.getElementById('tableauTotal').innerHTML = tbl;
-    
-    // --- CORRECTION AFFICHAGE BOUTON PDF ---
-    const zoneDownload = document.getElementById('zoneTelechargEMENT');
-    if (zoneDownload) {
-        zoneDownload.classList.remove('hidden'); 
-        zoneDownload.style.display = 'block';
-    }
-    
-    document.getElementById('listePieces').innerHTML = htmlList;
-    try { await dessinerSceneGlobale(murs, forme, H, configMurs); } catch(e) { console.error("Erreur 3D:", e); }
-}
-
 /* ============================================================================
- * 6. NOUVELLE IMPRESSION PDF "PRO" (AVEC PHOTO 3D LARGE)
+ * 6. NOUVELLE IMPRESSION PDF "PRO" (AVEC TRI PERSONNALISÉ)
  * ============================================================================ */
 window.imprimerDevis = async function() {
     const nom = document.getElementById('nomChantier').value || "Chantier sans nom";
@@ -1166,8 +796,8 @@ window.imprimerDevis = async function() {
     if(forme === 'L' || forme === 'U') dimsSup += `<li><strong>Mur B :</strong> ${document.getElementById('longueurB').value} mm</li>`;
     if(forme === 'U') dimsSup += `<li><strong>Mur C :</strong> ${document.getElementById('longueurC').value} mm</li>`;
 
+    // Capture 3D
     let imgData = '';
-
     if (currentScene.camera && currentScene.scene && currentScene.renderer) {
         const canvas = document.querySelector('#apercuElevationContainer canvas');
         const originalSize = new THREE.Vector2();
@@ -1194,22 +824,63 @@ window.imprimerDevis = async function() {
                 currentScene.controls.update();
             }
         }
-
         currentScene.renderer.render(currentScene.scene, currentScene.camera);
         imgData = canvas.toDataURL('image/jpeg', 0.9); 
-
         currentScene.renderer.setSize(originalSize.x, originalSize.y);
         currentScene.camera.aspect = originalAspect;
         currentScene.camera.updateProjectionMatrix();
         currentScene.renderer.render(currentScene.scene, currentScene.camera);
     }
 
+    // --- CONSTRUCTION DU TABLEAU AVEC TRI SPÉCIFIQUE ---
     let tableauHTMLAvecCodes = '<table style="width:100%; border-collapse: collapse; font-size:10pt;"><thead><tr><th style="background:#007bff; color:white; padding:8px; text-align:left;">Référence</th><th style="background:#007bff; color:white; padding:8px; text-align:left;">Désignation</th><th style="background:#007bff; color:white; padding:8px; text-align:left;">Quantité</th></tr></thead><tbody>';
     
     if (window.derniereInventaire) {
         const inv = window.derniereInventaire;
-        const keys = Object.keys(inv).sort();
-        
+        let keys = Object.keys(inv);
+
+        // --- LOGIQUE DE TRI PERSONNALISÉE ---
+        // On définit l'ordre de priorité des mots-clés
+        const ordrePriorite = [
+            "Lisse",           // 1
+            "Départ",          // 2
+            "Montant",         // 3 (Inclut "Montant Spécial")
+            "Angle",           // 4
+            "Couvre joints",   // 5
+            "Capot",           // 6
+            "Équerre",         // 7
+            "éclisse",         // 8 (Clips de raccordement)
+            "Clips",           // 9 (Boîte de clips)
+            "Calle",           // 10
+            "Joint",           // 11
+            "Parclose",        // 12
+            "Huisserie",       // 13
+            "Porte",           // 14
+            "Vantail",         // 15
+            "Paumelle",        // 16
+            "Béquille",        // 17
+            "Plinthe"          // 18
+        ];
+
+        // Fonction qui donne un score à chaque article
+        function getScore(nomArticle) {
+            for (let i = 0; i < ordrePriorite.length; i++) {
+                if (nomArticle.toLowerCase().includes(ordrePriorite[i].toLowerCase())) {
+                    return i;
+                }
+            }
+            return 999; // Si pas trouvé, on met à la fin
+        }
+
+        // On trie les clés selon le score
+        keys.sort((a, b) => {
+            const scoreA = getScore(a);
+            const scoreB = getScore(b);
+            if (scoreA === scoreB) return a.localeCompare(b); // Si même famille, ordre alphabétique
+            return scoreA - scoreB;
+        });
+        // --------------------------------------
+
         keys.forEach(k => {
             if (inv[k] > 0) {
                 let codeProduit = "-";
@@ -1265,7 +936,7 @@ window.imprimerDevis = async function() {
             <img src="${imgData}" alt="Vue 3D du projet" style="width:100%; max-height:600px; object-fit:contain;">
         </div>
 
-        <h3>Inventaire Matériel Estimatif (Avec Références)</h3>
+        <h3>Inventaire Matériel Estimatif</h3>
         ${tableauHTMLAvecCodes}
 
         <div class="print-footer" style="margin-top: 100px;">
@@ -1314,3 +985,4 @@ window.demanderConfirmation = function(message, couleurBouton, callbackOui) {
     document.getElementById('modal-btn-yes').onclick = function() { document.body.removeChild(overlay); callbackOui(); };
     document.getElementById('modal-btn-no').onclick = function() { document.body.removeChild(overlay); };
 }
+
