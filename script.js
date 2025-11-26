@@ -1122,6 +1122,9 @@ window.calculerInventaire = async function() {
 /* ============================================================================
  * 6. NOUVELLE IMPRESSION PDF "PRO" (AVEC PHOTO 3D LARGE)
  * ============================================================================ */
+/* ============================================================================
+ * 6. NOUVELLE IMPRESSION PDF "PRO" (AVEC PHOTO 3D LARGE)
+ * ============================================================================ */
 window.imprimerDevis = async function() {
     const nom = document.getElementById('nomChantier').value || "Chantier sans nom";
     const ralSelect = document.getElementById('couleurRal');
@@ -1226,14 +1229,13 @@ window.imprimerDevis = async function() {
             </ul>
         </div>
 
-        <h3>Aperçu Technique</h3>
-        <div class="print-3d-view">
-            <img src="${imgData}" alt="Vue 3D du projet" style="width:100%; max-height:600px; object-fit:contain;">
-        </div>
-
         <h3>Détail des Modules</h3>
         <div style="font-size: 0.9em; margin-bottom: 30px; border:1px solid #eee; padding:10px;">
             ${document.getElementById('listePieces').innerHTML}
+        </div>
+        <h3>Aperçu Technique</h3>
+        <div class="print-3d-view">
+            <img src="${imgData}" alt="Vue 3D du projet" style="width:100%; max-height:600px; object-fit:contain;">
         </div>
 
         <h3>Inventaire Matériel Estimatif (Avec Références)</h3>
@@ -1286,3 +1288,4 @@ window.demanderConfirmation = function(message, couleurBouton, callbackOui) {
     document.getElementById('modal-btn-no').onclick = function() { document.body.removeChild(overlay); };
 
 }
+
