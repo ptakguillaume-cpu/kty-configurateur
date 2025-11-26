@@ -225,7 +225,7 @@
       "ref_unique": "REF-JOINT-8MM"
     },
     {
-      "nom": "Huisserie (828mm) (Pleine)",
+      "nom": "Huisserie (828mm) (Cadre Alu)",
       "type": "couleur",
       "ref_9016": "HUIS-828-P-9016",
       "ref_7016": "HUIS-828-P-7016",
@@ -234,7 +234,7 @@
       "ref_autre": "HUIS-828-P-RAL"
     },
     {
-      "nom": "Huisserie (928mm) (Pleine)",
+      "nom": "Huisserie (928mm) (Cadre Alu)",
       "type": "couleur",
       "ref_9016": "HUIS-928-P-9016",
       "ref_7016": "HUIS-928-P-7016",
