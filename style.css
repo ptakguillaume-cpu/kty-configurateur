@@ -96,6 +96,12 @@ table tr:hover { background-color: #e9ecef; }
 .mt-5 { margin-top: 5px; }
 .mt-10 { margin-top: 10px; }
 .mt-20 { margin-top: 20px; }
+.mb-5 { margin-bottom: 5px; }
+.p-10 { padding: 10px; }
+.bg-light { background-color: #f8f9fa; border: 1px solid #dee2e6; }
+.grid-2-col { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+.align-center { align-items: center; }
+
 .module-list-container { margin-top: 10px; padding: 10px; background: white; border: 1px solid #ccc; }
 .container-center { max-width: 600px; margin: 20px auto; }
 .section-titre-light { margin-top: 15px; font-weight: bold; color: var(--c-primary); border-bottom: 1px solid #eee; padding-bottom: 5px; }

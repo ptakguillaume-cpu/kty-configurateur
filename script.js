@@ -45,7 +45,6 @@ const AppManager = {
 
     // --- CHARGEMENT DES DONNÉES (LOCALE OU FICHIER) ---
     chargerReferencesExternes: async function() {
-        // 1. Priorité : Modifs manuelles locales (Admin)
         const localData = localStorage.getItem('kty_references_db');
         if (localData) {
             try {
@@ -55,7 +54,6 @@ const AppManager = {
             } catch (e) { localStorage.removeItem('kty_references_db'); }
         }
 
-        // 2. Sinon : Fichier data.json sur le serveur
         try {
             const reponse = await fetch('./data.json');
             if (!reponse.ok) throw new Error("Fichier data.json introuvable");
@@ -63,7 +61,6 @@ const AppManager = {
             const jsonBrut = await reponse.json();
             let codesConvertis = {};
 
-            // Conversion Format CMS (Liste) -> Format App (Objet)
             if (jsonBrut.produits && Array.isArray(jsonBrut.produits)) {
                 jsonBrut.produits.forEach(item => {
                     if (item.type === 'unique') {
@@ -80,16 +77,16 @@ const AppManager = {
                 });
                 CODES_ARTICLES = codesConvertis;
             } else {
-                CODES_ARTICLES = jsonBrut; // Ancien format direct
+                CODES_ARTICLES = jsonBrut; 
             }
             console.log("✅ Références chargées (Serveur).");
         } catch (erreur) {
             console.error("Erreur chargement références :", erreur);
-            CODES_ARTICLES = {}; // Vide par sécurité
+            CODES_ARTICLES = {}; 
         }
     },
 
-    // --- MENU ADMIN SÉCURISÉ (AVEC MOT DE PASSE) ---
+    // --- MENU ADMIN SÉCURISÉ ---
     ouvrirAdmin: function() {
         const password = "1234"; 
         const saisie = prompt("🔒 Accès réservé Administrateur.\nVeuillez entrer le mot de passe :");
@@ -396,7 +393,7 @@ async function dessinerSceneGlobale(murs, forme, H, configs) {
     const {scene, controls} = await setupScene(container);
     
     const hasImposteModules = document.getElementById('imposteModules').checked;
-    const hImposteVal = parseFloat(document.getElementById('hauteurImposte').value) || 2040;
+    const hImposteVal = parseFloat(document.getElementById('hauteurImposte').value) || 2100;
     const ral = document.getElementById('couleurRal').value;
     
     let cHex = 0xffffff; let metalness = 0.1; let roughness = 0.5;
@@ -435,15 +432,25 @@ async function dessinerSceneGlobale(murs, forme, H, configs) {
         conf.forEach(m => {
             if(m.type === 'porte') {
                 const lp = getLargeurPorte(); const lb = lp+38; 
-                const sens = document.getElementById('sensPoussant').value;
+                // Nouvelle logique: on lit le sens stocké dans l'objet ou défaut droite
+                const sens = m.sens || 'droite'; 
                 const typP = document.getElementById('typePorte').value;
                 const hP = document.getElementById('hauteurPorte').value;
                 const isD = document.getElementById('doublePorte').checked;
                 const centreOuverture = x + lp/2; const lRailEffective = lp + 38;
                 const mp = createMesh(new THREE.BoxGeometry(38,H,38), mats.matProfil, g); mp.position.set(x + lb - 19, H/2, 0);
-                if(hP==='2040') { const mt = createMesh(new THREE.BoxGeometry(lRailEffective,38,38), mats.matProfil, g); mt.position.set(centreOuverture, 2040+19, 0); }
+                
+                // Traverse horizontale au dessus de la porte
+                if(hP==='2100') { 
+                    const mt = createMesh(new THREE.BoxGeometry(lRailEffective,38,38), mats.matProfil, g); 
+                    mt.position.set(centreOuverture, 2100+19, 0); 
+                }
                 const mrh = createMesh(new THREE.BoxGeometry(lRailEffective,38,38), mats.matProfil, g); mrh.position.set(centreOuverture, H-19, 0);
-                const startV = x; const hOuv = (hP==='touteHauteur') ? H-38 : 2040; const yOuv = (hP==='touteHauteur') ? H/2 : 1020;
+                
+                const startV = x; 
+                const hOuv = (hP==='touteHauteur') ? H-38 : 2100; 
+                const yOuv = (hP==='touteHauteur') ? H/2 : 1050; // Moitié de 2100
+
                 if(isD) {
                     let l1 = lp/2, l2 = lp/2;
                     const txt = document.getElementById('huisserieDoublePorteSelect').options[document.getElementById('huisserieDoublePorteSelect').selectedIndex].text;
@@ -452,20 +459,24 @@ async function dessinerSceneGlobale(murs, forme, H, configs) {
                     dessinerPanneauPorte3D(g, startV+l1/2, yOuv, l1, hOuv, typP, mats, sens);
                     dessinerPanneauPorte3D(g, startV+l1+l2/2, yOuv, l2, hOuv, typP, mats, 'aucune');
                     if(typP==='cadreAlu') { const bat = createMesh(new THREE.BoxGeometry(4,hOuv,40), mats.matProfil, g); bat.position.set(startV+l1, yOuv, 0); }
-                } else { dessinerPanneauPorte3D(g, startV+lp/2, yOuv, lp, hOuv, typP, mats, sens); }
-                if(hP==='2040' && H>2078) {
+                } else { 
+                    dessinerPanneauPorte3D(g, startV+lp/2, yOuv, lp, hOuv, typP, mats, sens); 
+                }
+
+                // Imposte
+                if(hP==='2100' && H>2100 + 38) {
                      const typI = document.getElementById('typeImposte').value;
-                     let splitImpostePorte = (hasImposteModules && hImposteVal > 2060 && H > hImposteVal + 38);
+                     let splitImpostePorte = (hasImposteModules && hImposteVal > 2120 && H > hImposteVal + 38);
                      if(splitImpostePorte) {
                          const trSupp = createMesh(new THREE.BoxGeometry(lRailEffective, 38, 38), mats.matProfil, g); trSupp.position.set(centreOuverture, hImposteVal + 19, 0);
-                         let h1 = hImposteVal - 2078; let y1 = 2078 + h1/2;
+                         let h1 = hImposteVal - (2100+38); let y1 = (2100+38) + h1/2;
                          let h2 = H - (hImposteVal + 38) - 38; let y2 = (hImposteVal + 38) + h2/2;
                          const matI = (typI==='vitree')?mats.matVitre:mats.matPlein; const epI = (typI==='vitree')?6:12;
                          if(h1>0) { const mi1 = createMesh(new THREE.BoxGeometry(lp,h1,epI), matI, g); mi1.position.set(centreOuverture, y1, 0); }
                          if(h2>0) { const mi2 = createMesh(new THREE.BoxGeometry(lp,h2,12), mats.matPlein, g); mi2.position.set(centreOuverture, y2, 0); }
                      } else {
-                         const hi = H-2078; const matI = (typI==='vitree')?mats.matVitre:mats.matPlein; const epI = (typI==='vitree')?6:12;
-                         const mi = createMesh(new THREE.BoxGeometry(lp,hi,epI), matI, g); mi.position.set(centreOuverture, 2078+hi/2, 0);
+                         const hi = H-(2100+38); const matI = (typI==='vitree')?mats.matVitre:mats.matPlein; const epI = (typI==='vitree')?6:12;
+                         const mi = createMesh(new THREE.BoxGeometry(lp,hi,epI), matI, g); mi.position.set(centreOuverture, (2100+38)+hi/2, 0);
                      }
                 }
                 x += lb;
@@ -516,6 +527,38 @@ async function dessinerSceneGlobale(murs, forme, H, configs) {
 /* ============================================================================
  * 4. LOGIQUE MÉTIER & UI
  * ============================================================================ */
+
+window.genererInterfaceSensPortes = function() {
+    const qte = parseInt(document.getElementById('qtePortes').value) || 0;
+    const container = document.getElementById('containerSensPortes');
+    if(!container) return;
+
+    let anciennesValeurs = [];
+    container.querySelectorAll('select').forEach(sel => anciennesValeurs.push(sel.value));
+
+    container.innerHTML = '<label class="mb-5" style="display:block; font-weight:bold;">Sens d\'ouverture des portes :</label>';
+    
+    if (qte > 0) {
+        for(let i = 0; i < qte; i++) {
+            const val = anciennesValeurs[i] || 'droite'; 
+            const div = document.createElement('div');
+            div.className = "grid-2-col mt-5 align-center";
+            div.style.borderBottom = "1px solid #eee";
+            div.style.paddingBottom = "5px";
+            
+            div.innerHTML = `
+                <span style="font-size:0.9em;">Porte n°${i+1} :</span>
+                <select id="sensPorte_${i}" onchange="calculerInventaire()" style="margin-bottom:0;">
+                    <option value="droite" ${val==='droite'?'selected':''}>Poussant Droit</option>
+                    <option value="gauche" ${val==='gauche'?'selected':''}>Poussant Gauche</option>
+                </select>
+            `;
+            container.appendChild(div);
+        }
+    } else {
+        container.innerHTML += '<em style="color:#999; font-size:0.9em;">Aucune porte sélectionnée.</em>';
+    }
+}
 
 window.getMurActif = function() {
     const radios = document.getElementsByName('murActif');
@@ -580,6 +623,10 @@ window.adapterFormulaire = function() {
     
     const qteP = parseFloat(document.getElementById('qtePortes').value)||0;
     toggleDisplay('detailsPorte', (qteP > 0));
+    
+    // --- APPEL FONCTION KTY: GENERATION SENS PORTES ---
+    window.genererInterfaceSensPortes();
+
     const isDble = document.getElementById('doublePorte').checked;
     const typePorte = document.getElementById('typePorte').value;
     if (!isDble) {
@@ -602,7 +649,10 @@ window.adapterFormulaire = function() {
     const ldp = document.getElementById('huisserieDoublePorteSelect').value;
     toggleDisplay('largeurDoublePorteSurMesure', (isDble && ldp === 'surMesure'));
     const hp = document.getElementById('hauteurPorte').value;
-    toggleDisplay('optionsImposte', (hp === '2040'));
+    
+    // Changé 2040 en 2100
+    toggleDisplay('optionsImposte', (hp === '2100'));
+    
     const imp = document.getElementById('imposteModules').checked;
     toggleDisplay('optionsImposteModules', imp);
     
@@ -741,7 +791,7 @@ window.calculerInventaire = async function() {
     const qteDepartsMurs = parseInt(document.getElementById('configDepart').value, 10);
     const typeGlob = document.getElementById('typeCloison').value;
     const H = parseFloat(document.getElementById('hauteur').value);
-    const H_IMPOSTE = parseFloat(document.getElementById('hauteurImposte').value) || 2040;
+    const H_IMPOSTE = parseFloat(document.getElementById('hauteurImposte').value) || 2100;
     const hasImposteModules = document.getElementById('imposteModules').checked;
     const couleurRal = document.getElementById('couleurRal').value;
     
@@ -779,11 +829,20 @@ window.calculerInventaire = async function() {
             if(id==='C') { deduction += 90.5 + 38; }
 
             let dispo = L - deduction;
+            
+            // --- MODIF KTY : Lecture des sens de portes ---
             if(id==='A') {
                 let qP = parseFloat(document.getElementById('qtePortes').value)||0;
                 let lP = getLargeurPorte();
-                for(let k=0; k<qP; k++) { configMurs[id].push({type:'porte'}); dispo -= (lP+CONSTANTS.EPAISSEUR_PROFIL); }
+                for(let k=0; k<qP; k++) { 
+                    // Récupération dynamique du sens pour chaque porte
+                    let elSens = document.getElementById('sensPorte_' + k);
+                    let sensChoisi = elSens ? elSens.value : 'droite';
+                    configMurs[id].push({type:'porte', sens: sensChoisi}); 
+                    dispo -= (lP+CONSTANTS.EPAISSEUR_PROFIL); 
+                }
             }
+            // ----------------------------------------------
             
             if(dispo > 5) {
                 const L_MOD_AXE = 1216; 
@@ -835,7 +894,12 @@ window.calculerInventaire = async function() {
         }
 
         modulesDuMur.forEach(m => {
-            if(m.type==='porte') { totalPortes++; htmlList += `<li>Huisserie (${getLargeurPorte()}mm)</li>`; } 
+            if(m.type==='porte') { 
+                // Affiche aussi le sens dans le récap
+                let sensTxt = (m.sens === 'gauche') ? 'PG' : 'PD';
+                totalPortes++; 
+                htmlList += `<li>Huisserie (${getLargeurPorte()}mm) - ${sensTxt}</li>`; 
+            } 
             else {
                 let nom = m.type === 'pleine' ? 'Module plein' : m.type === 'vitree' ? 'Module vitré' : 'Module allège';
                 htmlList += `<li>${nom} (${m.largeur.toFixed(0)}mm)</li>`;
@@ -938,7 +1002,7 @@ window.calculerInventaire = async function() {
         let vitragePorteVal = document.getElementById('typeVitragePorte').value;
         let nbPaumellesParVantail = 3; 
         if (hp === 'touteHauteur') { nbPaumellesParVantail = 4; } 
-        else if (hp === '2040' && tp === 'cadreAlu' && vitragePorteVal === 'isolant') { nbPaumellesParVantail = 4; }
+        else if (hp === '2100' && tp === 'cadreAlu' && vitragePorteVal === 'isolant') { nbPaumellesParVantail = 4; }
         let nomKit = "";
         let qteKits = 0;
         if (isD) {
@@ -959,20 +1023,27 @@ window.calculerInventaire = async function() {
                  else { add(`Porte Double Cadre Alu ${lp}mm`, totalPortes); }
             } else { add(`Porte Cadre Alu ${lp}mm`, totalPortes); }
         }
-        if(document.getElementById('hauteurPorte').value==='2040') {
+        
+        // --- GESTION PARCLOSES IMPOSTE (KTY MODIF) ---
+        if(document.getElementById('hauteurPorte').value==='2100') {
              for(let k=0; k < totalPortes; k++) { besoinsCJ.push(lp); besoinsCJ.push(lp); }
-             if(hasImposteModules && H > H_IMPOSTE+38 && H_IMPOSTE > 2040) {
+             if(hasImposteModules && H > H_IMPOSTE+38 && H_IMPOSTE > 2100) {
                  for(let k=0; k < totalPortes; k++) { besoinsTraverses.push(lp); besoinsCJ.push(lp); besoinsCJ.push(lp); }
                  qteEquerresTraverse += totalPortes * 2; 
              }
-             if(H > 2078) {
+             if(H > 2100 + 38) { // Si imposte existe
                  let typeImp = document.getElementById('typeImposte').value;
                  if(typeImp === 'vitree') { 
-                     let qteParcloseImposte = isD ? 2 : 1; 
+                     // Si H <= 2600 : 1 parclose. Si > 2600 : 2 parcloses.
+                     let nbParclosesBase = (H > 2600) ? 2 : 1;
+                   // On multiplie par le nombre de portes (totalPortes)
+let qteParcloseImposte = (isD ? (nbParclosesBase * 2) : nbParclosesBase) * totalPortes; 
+ 
                      add(nomParcloseDefaut, qteParcloseImposte);
                  }
              }
         }
+        // ---------------------------------------------
     }
 
     for (const [vitrage, metrageTotal] of Object.entries(totalMetrageJointsByType)) {
@@ -1273,4 +1344,3 @@ window.demanderConfirmation = function(message, couleurBouton, callbackOui) {
     document.getElementById('modal-btn-yes').onclick = function() { document.body.removeChild(overlay); callbackOui(); };
     document.getElementById('modal-btn-no').onclick = function() { document.body.removeChild(overlay); };
 }
-
