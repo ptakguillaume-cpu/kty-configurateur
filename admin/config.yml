@@ -1,0 +1,32 @@
+backend:
+  name: git-gateway
+  branch: main # Assurez-vous que votre branche principale sur GitHub s'appelle 'main' (ou 'master')
+
+media_folder: "images"
+public_folder: "/images"
+
+# Configuration de l'interface
+collections:
+  - name: "config"
+    label: "Configuration"
+    files:
+      - name: "data"
+        label: "Base de Prix & Références"
+        file: "data.json" # Le fichier qu'on modifie
+        fields:
+          - label: "Liste des Articles"
+            name: "produits"
+            widget: "list"
+            fields:
+              - {label: "Nom de l'article (NE PAS MODIFIER)", name: "nom", widget: "string", hint: "Ce nom sert de clé pour le calcul, ne le changez pas."}
+              - {label: "Type de référence", name: "type", widget: "select", options: ["couleur", "unique"], default: "couleur"}
+              
+              # Champs pour les produits à couleur
+              - {label: "Ref. Blanc (9016)", name: "ref_9016", widget: "string", required: false}
+              - {label: "Ref. Gris (7016)", name: "ref_7016", widget: "string", required: false}
+              - {label: "Ref. Noir (9005)", name: "ref_9005", widget: "string", required: false}
+              - {label: "Ref. Anodisé", name: "ref_anodise", widget: "string", required: false}
+              - {label: "Ref. Autre RAL", name: "ref_autre", widget: "string", required: false}
+              
+              # Champ pour les produits simples
+              - {label: "Référence Unique", name: "ref_unique", widget: "string", required: false}

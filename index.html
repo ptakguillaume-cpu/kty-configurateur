@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KTY Configurator Pro</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+    <link rel="stylesheet" href="style.css">
+    
+    <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+        }
+    }
+    </script>
+</head>
+<body>
+
+    <header class="app-header">
+        <div class="logo-area">
+            <img src="icon-512.png" alt="Logo KTY" class="header-logo">
+        </div>
+        <div class="stepper">
+            <div class="step active" id="ind-step-1">1</div>
+            <div class="step" id="ind-step-2">2</div>
+            <div class="step" id="ind-step-3">3</div>
+        </div>
+    </header>
+
+    <main class="app-content">
+        
+        <section id="step-1" class="wizard-step active-step">
+            <div class="dashboard-container">
+                <div class="welcome-card" onclick="app.nouveauProjet()">
+                    <div class="icon">+</div>
+                    <h3>Nouveau Projet</h3>
+                    <p>Démarrer une nouvelle configuration vierge</p>
+                </div>
+                
+                <div class="projects-list-container">
+                    <h3>Projets Récents (Sauvegarde Locale)</h3>
+                    <div id="listeSauvegardes" class="saved-list">
+                        <p style="color:#888; font-style:italic;">Aucun projet sauvegardé.</p>
+                    </div>
+                </div>
+            </div>
+
+            <a href="/admin/" class="btn-admin-floating" title="Accès Interface Admin" style="text-decoration:none;">⚙️</a>
+        </section>
+
+        <section id="step-2" class="wizard-step">
+            <div class="container-center">
+                <div class="card config-card">
+                    <h3>Définition du Chantier</h3>
+                    
+                    <div class="form-grid">
+                        <div class="full-width">
+                            <label for="nomChantier">Nom du chantier / Client :</label>
+                            <input type="text" id="nomChantier" placeholder="Ex: Bureaux Étage 1 - Mr Dupont">
+                        </div>
+
+                        <div>
+                            <label for="formeCloison">Forme de la cloison :</label>
+                            <select id="formeCloison" onchange="changerForme()">
+                                <option value="droite">Droite (Standard)</option>
+                                <option value="L">En Angle (L)</option>
+                                <option value="U">En U</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="typeCloison">Type de remplissage :</label>
+                            <select id="typeCloison">
+                                <option value="pleine">Cloison Pleine</option>
+                                <option value="vitree">Vitrée (Toute Hauteur)</option>
+                                <option value="vitreeSurAllege">Vitrée sur allège</option> 
+                                <option value="mixte">Mixte (Sur mesure)</option> 
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="couleurRal">Finition Profilé (RAL) :</label>
+                            <select id="couleurRal">
+                                <option value="9016">Blanc (9016)</option>
+                                <option value="7016">Gris Anthracite (7016 FT)</option>
+                                <option value="9005">Noir (9005 MAT)</option>
+                                <option value="anodise">Anodisé</option>
+                                <option value="autre">Autre RAL (A définir)</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="hauteur">Hauteur sous plafond (mm) :</label>
+                            <input type="number" id="hauteur" value="2500">
+                        </div>
+
+                        <div class="full-width section-titre-light">Dimensions des murs</div>
+
+                        <div>
+                            <label for="longueur">Longueur Mur A (Principal) mm :</label>
+                            <input type="number" id="longueur" value="3000">
+                        </div>
+                        
+                        <div id="dimsMurB" class="hidden">
+                            <label for="longueurB">Longueur Mur B (Retour) mm :</label>
+                            <input type="number" id="longueurB" value="2000">
+                        </div>
+
+                        <div id="dimsMurC" class="hidden">
+                            <label for="longueurC">Longueur Mur C (Retour U) mm :</label>
+                            <input type="number" id="longueurC" value="2000">
+                        </div>
+
+                        <div class="full-width">
+                            <label for="configDepart">Configuration des départs (Murs existants) :</label>
+                            <select id="configDepart" onchange="adapterFormulaire()">
+                                <option value="2">Entre deux murs existants</option>
+                                <option value="1">Contre un seul mur</option>
+                                <option value="0">Aucun mur (Ilôt)</option>
+                            </select>
+                        </div>
+
+                        <div id="divPosDepartL" class="hidden full-width input-group-highlight mt-10">
+                            <label style="color:#d35400;">📍 Position du Mur Existant :</label>
+                            <div class="checkbox-wrapper">
+                                <input type="radio" name="posDepartL" id="posL_A" value="A" checked onchange="calculerInventaire()">
+                                <label for="posL_A">Départ sur Mur A (Principal)</label>
+                                
+                                <input type="radio" name="posDepartL" id="posL_B" value="B" onchange="calculerInventaire()">
+                                <label for="posL_B">Départ sur Mur B (Retour)</label>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="nav-buttons">
+                        <button class="btn-secondary" onclick="app.naviguer(1)">← Retour</button>
+                        <button class="btn-main" onclick="app.validerEtape2()">Suivant : Calculateur →</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="step-3" class="wizard-step">
+            <div class="container">
+                
+                <div class="inputs card">
+                    <h3>3. Détails & Finitions</h3>
+                    
+                    <div id="optionsPortes" class="options-sub">
+                        <h4>Portes</h4>
+                        <label for="qtePortes">Nombre de portes :</label>
+                        <input type="number" id="qtePortes" value="1" onchange="adapterFormulaire()">
+                        
+                        <div id="detailsPorte" class="mt-10">
+                            <label>Type & Dimensions</label>
+                            <select id="typePorte" onchange="adapterFormulaire()">
+                                <option value="pleine">Porte Pleine (Bois)</option>
+                                <option value="cadreAlu">Porte Cadre Alu</option>
+                            </select>
+
+                            <div id="divVitragePorte" class="hidden mt-5">
+                                <select id="typeVitragePorte">
+                                    <option value="simple">Simple Vitrage</option>
+                                    <option value="isolant">Double vitrage (isolant)</option>
+                                </select>
+                            </div>
+
+                            <div class="checkbox-wrapper mt-10">
+                                <input type="checkbox" id="doublePorte" onchange="adapterFormulaire()">
+                                <label for="doublePorte">Double Porte</label>
+                            </div>
+
+                            <div id="optionsSimplePortePleine" class="mt-5 hidden">
+                                <label>Largeur (Passage) :</label>
+                                <select id="selectSimplePleine" onchange="adapterFormulaire()">
+                                    <option value="730">730 mm</option> 
+                                    <option value="830">830 mm</option>
+                                    <option value="930">930 mm</option>
+                                    <option value="surMesure">Sur mesure</option>
+                                </select>
+                            </div>
+
+                            <div id="optionsSimplePorteAlu" class="mt-5 hidden">
+                                <label>Largeur (Hors tout) :</label>
+                                <select id="selectSimpleAlu" onchange="adapterFormulaire()">
+                                    <option value="728">728 mm</option> 
+                                    <option value="828">828 mm</option>
+                                    <option value="928">928 mm</option>
+                                    <option value="surMesure">Sur mesure</option>
+                                </select>
+                            </div>
+
+                            <input type="number" id="largeurPorteSurMesure" placeholder="Largeur mm" class="hidden mt-5">
+
+                            <div id="optionsDoublePorte" class="hidden mt-5">
+                                <select id="huisserieDoublePorteSelect" onchange="adapterFormulaire()">
+                                    <option value="1256_pleine">1256mm (830+430) - Pleine</option>
+                                    <option value="1456_pleine">1456mm (930+530) - Pleine</option>
+                                    <option value="1656_pleine">1656mm (830+830) - Pleine</option>
+                                    <option value="1856_pleine">1856mm (930+930) - Pleine</option>
+                                    
+                                    <option value="1270_alu">1270mm (828+428) - Cadre Alu</option> 
+                                    <option value="1470_alu">1470mm (928+528) - Cadre Alu</option>
+                                    <option value="1670_alu">1670mm (828+828) - Cadre Alu</option>
+                                    <option value="1856_alu">1856mm (928+928) - Cadre Alu</option>
+
+                                    <option value="surMesure">Sur mesure</option>
+                                </select>
+                                <input type="number" id="largeurDoublePorteSurMesure" placeholder="Largeur mm" class="hidden mt-5">
+                            </div>
+                            
+                            <div class="grid-2-col mt-10">
+                                <div>
+                                    <label>Hauteur</label>
+                                    <select id="hauteurPorte" onchange="adapterFormulaire()">
+                                        <option value="2040">Std (2040)</option>
+                                        <option value="touteHauteur">Toute H.</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label>Sens</label>
+                                    <select id="sensPoussant">
+                                        <option value="droite">Droit</option>
+                                        <option value="gauche">Gauche</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div id="optionsImposte" class="hidden mt-5">
+                                 <label>Imposte au dessus :</label>
+                                 <select id="typeImposte"><option value="pleine">Pleine</option><option value="vitree">Vitrée</option></select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="optionsVitrage" class="options-sub">
+                        <h4>Vitrage</h4>
+                        <label for="qteModulesVitres">Nb. modules (si non mixte) :</label>
+                        <input type="number" id="qteModulesVitres" value="1">
+                        <div class="grid-2-col mt-5">
+                            <div>
+                                <label>Vitrage 1</label>
+                                <select id="typeVitrage1">
+                                    <option value="33.2">33.2</option>
+                                    <option value="44.2">44.2</option>
+                                    <option value="55.2">55.2</option>
+                                    <option value="66.2">66.2</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label>Vitrage 2 (DB)</label>
+                                <select id="typeVitrage2">
+                                    <option value="aucun">Non</option>
+                                    <option value="33.2">33.2</option>
+                                    <option value="44.2">44.2</option>
+                                    <option value="55.2">55.2</option>
+                                    <option value="66.2">66.2</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="optionsAllege" class="options-sub hidden">
+                        <label for="hauteurAllege">Hauteur Allège (mm) :</label>
+                        <input type="number" id="hauteurAllege" value="1100">
+                    </div>
+                    
+                    <div class="options-sub">
+                        <div class="checkbox-wrapper">
+                            <input type="checkbox" id="imposteModules" onchange="adapterFormulaire()">
+                            <label for="imposteModules">Traverse filante (Imposte)</label>
+                        </div>
+                        <div id="optionsImposteModules" class="hidden mt-5">
+                            <label>Hauteur Traverse :</label>
+                            <input type="number" id="hauteurImposte" value="2040">
+                        </div>
+                    </div>
+
+                    <div id="optionsMixte" class="options-sub hidden border-accent">
+                        <h4>Composition Mixte (Sur mesure)</h4>
+                        
+                        <div id="selecteurMurActif" class="mur-selector hidden">
+                            <label><input type="radio" name="murActif" value="A" checked> <span>Mur A</span></label>
+                            <label id="radioMurB"><input type="radio" name="murActif" value="B"> <span>Mur B</span></label>
+                            <label id="radioMurC"><input type="radio" name="murActif" value="C"> <span>Mur C</span></label>
+                        </div>
+
+                        <div class="grid-2-col">
+                            <div>
+                                <label>Module :</label>
+                                <select id="mixteTypeModule" onchange="adapterFormulaireMixte()">
+                                    <option value="pleine">Plein</option>
+                                    <option value="vitree">Vitré TH</option>
+                                    <option value="vitreeSurAllege">Vitré/Allège</option>
+                                    <option value="porte">Porte</option>
+                                </select>
+                            </div>
+                            <div id="mixteLargeurContainer">
+                                <label>Largeur (mm) :</label>
+                                <input type="number" id="mixteLargeurModule" value="1178">
+                            </div>
+                        </div>
+                        <div id="mixteAllegeContainer" class="hidden mt-5">
+                             <label>H. Allège (mm) :</label>
+                             <input type="number" id="mixteHauteurAllege" value="1100">
+                        </div>
+
+                        <div class="btn-group mt-10">
+                            <button type="button" onclick="ajouterModuleMixte()" id="btnAjouterMixte" class="btn-danger">+ Ajouter</button>
+                            <button type="button" onclick="remplirAutomatiquement()" id="btnRemplirMixte" class="btn-success">Remplir</button>
+                        </div>
+                        
+                        <div class="module-list-container">
+                            <ul id="compositionModules"></ul>
+                            <p id="mixteResumeLargeur"></p>
+                        </div>
+                    </div>
+
+                    <div class="btn-group-vertical mt-20">
+                        <button onclick="app.sauvegarderProjet()" class="btn-secondary" style="background:#6c757d;">💾 Sauvegarder</button>
+                        <button onclick="calculerInventaire()" id="btnCalculer" class="btn-main">CALCULER & VOIR 3D</button>
+                        <button onclick="app.naviguer(2)" class="btn-text">Modifier Paramètres</button>
+                    </div>
+                </div>
+
+                <div class="results card">
+                    <h3>Aperçu 3D</h3>
+                    <div id="apercuElevationContainer"></div>
+                    
+                    <h3>Récapitulatif Technique</h3>
+                    <ul id="listePieces" class="tech-list"></ul>
+
+                    <div id="tableauTotal"></div>
+
+                    <div id="zoneTelechargEMENT" class="hidden download-zone">
+                        <button onclick="imprimerDevis()" class="btn-print">
+                            📄 Télécharger PDF
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+      if (window.netlifyIdentity) {
+        window.netlifyIdentity.on("init", user => {
+          if (!user) {
+            window.netlifyIdentity.on("login", () => {
+              document.location.href = "/admin/";
+            });
+          }
+        });
+      }
+    </script>
+    
+    <div id="zoneImpression" style="display:none;"></div>
+    
+    <script type="module" src="script.js" defer></script>
+</body>
+</html>

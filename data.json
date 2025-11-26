@@ -1,0 +1,222 @@
+{
+  "produits": [
+    {
+      "nom": "Lisses (barre 3000mm)",
+      "type": "couleur",
+      "ref_9016": "LISSE-3000-9016",
+      "ref_7016": "LISSE-3000-7016FT",
+      "ref_9005": "LISSE-3000-9005MAT",
+      "ref_anodise": "LISSE-3000-ANOD",
+      "ref_autre": "LISSE-3000-RAL"
+    },
+    {
+      "nom": "Montants (H. 2500mm)",
+      "type": "couleur",
+      "ref_9016": "MNT-2500-9016",
+      "ref_7016": "MNT-2500-7016",
+      "ref_9005": "MNT-2500-9005",
+      "ref_anodise": "MNT-2500-ANO",
+      "ref_autre": "MNT-2500-RAL"
+    },
+    {
+      "nom": "Montants (H. 2700mm)",
+      "type": "couleur",
+      "ref_9016": "MNT-2700-9016",
+      "ref_7016": "MNT-2700-7016",
+      "ref_9005": "MNT-2700-9005",
+      "ref_anodise": "MNT-2700-ANO",
+      "ref_autre": "MNT-2700-RAL"
+    },
+    {
+      "nom": "Montants (H. 3050mm)",
+      "type": "couleur",
+      "ref_9016": "MNT-3050-9016",
+      "ref_7016": "MNT-3050-7016",
+      "ref_9005": "MNT-3050-9005",
+      "ref_anodise": "MNT-3050-ANO",
+      "ref_autre": "MNT-3050-RAL"
+    },
+    {
+      "nom": "Montants (H. 3250mm)",
+      "type": "couleur",
+      "ref_9016": "MNT-3250-9016",
+      "ref_7016": "MNT-3250-7016",
+      "ref_9005": "MNT-3250-9005",
+      "ref_anodise": "MNT-3250-ANO",
+      "ref_autre": "MNT-3250-RAL"
+    },
+    {
+      "nom": "Montants (H. 5750mm)",
+      "type": "couleur",
+      "ref_9016": "MNT-5750-9016",
+      "ref_7016": "MNT-5750-7016",
+      "ref_9005": "MNT-5750-9005",
+      "ref_anodise": "MNT-5750-ANO",
+      "ref_autre": "MNT-5750-RAL"
+    },
+    {
+      "nom": "Montant (2500mm) traverses",
+      "type": "couleur",
+      "ref_9016": "TRAV-2500-9016",
+      "ref_7016": "TRAV-2500-7016",
+      "ref_9005": "TRAV-2500-9005",
+      "ref_anodise": "TRAV-2500-ANO",
+      "ref_autre": "TRAV-2500-RAL"
+    },
+    {
+      "nom": "Montant Spécial (H. 2500mm)",
+      "type": "couleur",
+      "ref_9016": "SPE-2500-9016",
+      "ref_7016": "SPE-2500-7016",
+      "ref_9005": "SPE-2500-9005",
+      "ref_anodise": "SPE-2500-ANO",
+      "ref_autre": "SPE-2500-RAL"
+    },
+    {
+      "nom": "Montant Spécial (H. 5750mm)",
+      "type": "couleur",
+      "ref_9016": "SPE-5750-9016",
+      "ref_7016": "SPE-5750-7016",
+      "ref_9005": "SPE-5750-9005",
+      "ref_anodise": "SPE-5750-ANO",
+      "ref_autre": "SPE-5750-RAL"
+    },
+    {
+      "nom": "Départ (H. 2500mm)",
+      "type": "couleur",
+      "ref_9016": "DEP-2500-9016",
+      "ref_7016": "DEP-2500-7016",
+      "ref_9005": "DEP-2500-9005",
+      "ref_anodise": "DEP-2500-ANO",
+      "ref_autre": "DEP-2500-RAL"
+    },
+    {
+      "nom": "Départ (H. 5750mm)",
+      "type": "couleur",
+      "ref_9016": "DEP-5750-9016",
+      "ref_7016": "DEP-5750-7016",
+      "ref_9005": "DEP-5750-9005",
+      "ref_anodise": "DEP-5750-ANO",
+      "ref_autre": "DEP-5750-RAL"
+    },
+    {
+      "nom": "Angle Carré (H. 2500mm)",
+      "type": "couleur",
+      "ref_9016": "ANG-2500-9016",
+      "ref_7016": "ANG-2500-7016",
+      "ref_9005": "ANG-2500-9005",
+      "ref_anodise": "ANG-2500-ANO",
+      "ref_autre": "ANG-2500-RAL"
+    },
+    {
+      "nom": "Angle Carré (H. 5750mm)",
+      "type": "couleur",
+      "ref_9016": "ANG-5750-9016",
+      "ref_7016": "ANG-5750-7016",
+      "ref_9005": "ANG-5750-9005",
+      "ref_anodise": "ANG-5750-ANO",
+      "ref_autre": "ANG-5750-RAL"
+    },
+    {
+      "nom": "Capots de finition (pour Montant)",
+      "type": "couleur",
+      "ref_9016": "CAPOT-9016",
+      "ref_7016": "CAPOT-7016",
+      "ref_9005": "CAPOT-9005",
+      "ref_anodise": "CAPOT-ANO",
+      "ref_autre": "CAPOT-RAL"
+    },
+    {
+      "nom": "Couvre joints H.2500mm (horizontaux)",
+      "type": "couleur",
+      "ref_9016": "CJ-H2500-9016",
+      "ref_7016": "CJ-H2500-7016",
+      "ref_9005": "CJ-H2500-9005",
+      "ref_anodise": "CJ-H2500-ANO",
+      "ref_autre": "CJ-H2500-RAL"
+    },
+    {
+      "nom": "Couvre joints (H. 2500mm)",
+      "type": "couleur",
+      "ref_9016": "CJ-V2500-9016",
+      "ref_7016": "CJ-V2500-7016",
+      "ref_9005": "CJ-V2500-9005",
+      "ref_anodise": "CJ-V2500-ANO",
+      "ref_autre": "CJ-V2500-RAL"
+    },
+    {
+      "nom": "Couvre joints (H. 5750mm)",
+      "type": "couleur",
+      "ref_9016": "CJ-V5750-9016",
+      "ref_7016": "CJ-V5750-7016",
+      "ref_9005": "CJ-V5750-9005",
+      "ref_anodise": "CJ-V5750-ANO",
+      "ref_autre": "CJ-V5750-RAL"
+    },
+    { "nom": "Calles de lisse", "type": "unique", "ref_unique": "REF-CALLE-STD" },
+    { "nom": "Boîte de Clips couvre joints (100u)", "type": "unique", "ref_unique": "REF-CLIPS-100" },
+    { "nom": "Clips de raccordement (éclisses)", "type": "unique", "ref_unique": "REF-ECLISSE-STD" },
+    { "nom": "Équerres (total)", "type": "unique", "ref_unique": "REF-EQUERRE-UNIV" },
+    { "nom": "Rouleau Joint 6mm (50m) pour 33.2", "type": "unique", "ref_unique": "REF-JOINT-6MM" },
+    { "nom": "Rouleau Joint 8mm (50m) pour 44.2", "type": "unique", "ref_unique": "REF-JOINT-8MM" },
+    { "nom": "Joint de départ", "type": "unique", "ref_unique": "REF-JOINT-DEPART-STD" },
+    {
+      "nom": "Parclose SV (sans joint)",
+      "type": "couleur",
+      "ref_9016": "PAR-SV-9016",
+      "ref_7016": "PAR-SV-7016",
+      "ref_9005": "PAR-SV-9005",
+      "ref_anodise": "PAR-SV-ANO",
+      "ref_autre": "PAR-SV-RAL"
+    },
+    {
+      "nom": "Parclose DV (sans joint)",
+      "type": "couleur",
+      "ref_9016": "PAR-DV-9016",
+      "ref_7016": "PAR-DV-7016",
+      "ref_9005": "PAR-DV-9005",
+      "ref_anodise": "PAR-DV-ANO",
+      "ref_autre": "PAR-DV-RAL"
+    },
+    {
+      "nom": "Parclose SV (avec joint intégré)",
+      "type": "couleur",
+      "ref_9016": "PAR-SV-J-9016",
+      "ref_7016": "PAR-SV-J-7016",
+      "ref_9005": "PAR-SV-J-9005",
+      "ref_anodise": "PAR-SV-J-ANO",
+      "ref_autre": "PAR-SV-J-RAL"
+    },
+    {
+      "nom": "Parclose DV (avec joint intégré)",
+      "type": "couleur",
+      "ref_9016": "PAR-DV-J-9016",
+      "ref_7016": "PAR-DV-J-7016",
+      "ref_9005": "PAR-DV-J-9005",
+      "ref_anodise": "PAR-DV-J-ANO",
+      "ref_autre": "PAR-DV-J-RAL"
+    },
+    {
+      "nom": "Huisserie (828mm) (Pleine)",
+      "type": "couleur",
+      "ref_9016": "HUIS-828-P-9016",
+      "ref_7016": "HUIS-828-P-7016",
+      "ref_9005": "HUIS-828-P-9005",
+      "ref_anodise": "HUIS-828-P-ANO",
+      "ref_autre": "HUIS-828-P-RAL"
+    },
+    {
+      "nom": "Huisserie (928mm) (Pleine)",
+      "type": "couleur",
+      "ref_9016": "HUIS-928-P-9016",
+      "ref_7016": "HUIS-928-P-7016",
+      "ref_9005": "HUIS-928-P-9005",
+      "ref_anodise": "HUIS-928-P-ANO",
+      "ref_autre": "HUIS-928-P-RAL"
+    },
+    { "nom": "Kit Paumelles (jeu de 3)", "type": "unique", "ref_unique": "REF-KIT-PAUM-3" },
+    { "nom": "Béquilles", "type": "unique", "ref_unique": "REF-BEQUILLE-STD" },
+    { "nom": "Chutes de montant réutilisées (Traverses)", "type": "unique", "ref_unique": "INFO-CHUTE" },
+    { "nom": "Chutes de CJ réutilisées", "type": "unique", "ref_unique": "INFO-CHUTE-CJ" }
+  ]
+}
