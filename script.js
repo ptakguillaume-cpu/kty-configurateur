@@ -1109,7 +1109,12 @@ window.calculerInventaire = async function() {
         tbl += `</tbody></table>`;
     }
     document.getElementById('tableauTotal').innerHTML = tbl;
-    document.getElementById('zoneTelechargEMENT').style.display = 'block';
+    // On cible la zone
+    const zoneDL = document.getElementById('zoneTelechargEMENT');
+    // 1. On enlève la classe "hidden" qui bloque l'affichage
+    zoneDL.classList.remove('hidden'); 
+    // 2. On force l'affichage
+    zoneDL.style.display = 'block';
     document.getElementById('listePieces').innerHTML = htmlList;
     try { await dessinerSceneGlobale(murs, forme, H, configMurs); } catch(e) { console.error("Erreur 3D:", e); }
 }
@@ -1279,4 +1284,5 @@ window.demanderConfirmation = function(message, couleurBouton, callbackOui) {
     document.body.appendChild(overlay);
     document.getElementById('modal-btn-yes').onclick = function() { document.body.removeChild(overlay); callbackOui(); };
     document.getElementById('modal-btn-no').onclick = function() { document.body.removeChild(overlay); };
+
 }
