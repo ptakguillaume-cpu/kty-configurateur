@@ -180,8 +180,8 @@
                             <div id="optionsSimplePortePleine" class="mt-5 hidden">
                                 <label>Largeur (Passage) :</label>
                                 <select id="selectSimplePleine" onchange="adapterFormulaire()">
-                                    <option value="730">730 mm</option> 
-                                    <option value="830">830 mm</option>
+                                    <option value="730">730 mm</option>
+                                    <option value="830" selected>830 mm</option>
                                     <option value="930">930 mm</option>
                                     <option value="surMesure">Sur mesure</option>
                                 </select>
@@ -190,8 +190,8 @@
                             <div id="optionsSimplePorteAlu" class="mt-5 hidden">
                                 <label>Largeur (Hors tout) :</label>
                                 <select id="selectSimpleAlu" onchange="adapterFormulaire()">
-                                    <option value="728">728 mm</option> 
-                                    <option value="828">828 mm</option>
+                                    <option value="728">728 mm</option>
+                                    <option value="828" selected>828 mm</option>
                                     <option value="928">928 mm</option>
                                     <option value="surMesure">Sur mesure</option>
                                 </select>
@@ -220,18 +220,14 @@
                                 <div>
                                     <label>Hauteur</label>
                                     <select id="hauteurPorte" onchange="adapterFormulaire()">
-                                        <option value="2040">Std (2040)</option>
+                                        <option value="2100">Std (2100)</option>
                                         <option value="touteHauteur">Toute H.</option>
                                     </select>
                                 </div>
-                                <div>
-                                    <label>Sens</label>
-                                    <select id="sensPoussant">
-                                        <option value="droite">Droit</option>
-                                        <option value="gauche">Gauche</option>
-                                    </select>
-                                </div>
+                                
                             </div>
+                            
+                            <div id="containerSensPortes" class="full-width mt-10 p-10 bg-light border-radius"></div>
 
                             <div id="optionsImposte" class="hidden mt-5">
                                  <label>Imposte au dessus :</label>
@@ -279,7 +275,7 @@
                         </div>
                         <div id="optionsImposteModules" class="hidden mt-5">
                             <label>Hauteur Traverse :</label>
-                            <input type="number" id="hauteurImposte" value="2040">
+                            <input type="number" id="hauteurImposte" value="2100">
                         </div>
                     </div>
 
