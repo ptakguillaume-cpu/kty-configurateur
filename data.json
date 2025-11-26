@@ -10,6 +10,15 @@
       "ref_autre": "LISSE-3000-RAL"
     },
     {
+      "nom": "Départ (H. 2500mm)",
+      "type": "couleur",
+      "ref_9016": "DEP-2500-9016",
+      "ref_7016": "DEP-2500-7016",
+      "ref_9005": "DEP-2500-9005",
+      "ref_anodise": "DEP-2500-ANO",
+      "ref_autre": "DEP-2500-RAL"
+    },
+    {
       "nom": "Montants (H. 2500mm)",
       "type": "couleur",
       "ref_9016": "MNT-2500-9016",
@@ -17,6 +26,24 @@
       "ref_9005": "MNT-2500-9005",
       "ref_anodise": "MNT-2500-ANO",
       "ref_autre": "MNT-2500-RAL"
+    },
+    {
+      "nom": "Montant Spécial (H. 2500mm)",
+      "type": "couleur",
+      "ref_9016": "SPE-2500-9016",
+      "ref_7016": "SPE-2500-7016",
+      "ref_9005": "SPE-2500-9005",
+      "ref_anodise": "SPE-2500-ANO",
+      "ref_autre": "SPE-2500-RAL"
+    },
+    {
+      "nom": "Montant (2500mm) traverses",
+      "type": "couleur",
+      "ref_9016": "TRAV-2500-9016",
+      "ref_7016": "TRAV-2500-7016",
+      "ref_9005": "TRAV-2500-9005",
+      "ref_anodise": "TRAV-2500-ANO",
+      "ref_autre": "TRAV-2500-RAL"
     },
     {
       "nom": "Montants (H. 2700mm)",
@@ -55,24 +82,6 @@
       "ref_autre": "MNT-5750-RAL"
     },
     {
-      "nom": "Montant (2500mm) traverses",
-      "type": "couleur",
-      "ref_9016": "TRAV-2500-9016",
-      "ref_7016": "TRAV-2500-7016",
-      "ref_9005": "TRAV-2500-9005",
-      "ref_anodise": "TRAV-2500-ANO",
-      "ref_autre": "TRAV-2500-RAL"
-    },
-    {
-      "nom": "Montant Spécial (H. 2500mm)",
-      "type": "couleur",
-      "ref_9016": "SPE-2500-9016",
-      "ref_7016": "SPE-2500-7016",
-      "ref_9005": "SPE-2500-9005",
-      "ref_anodise": "SPE-2500-ANO",
-      "ref_autre": "SPE-2500-RAL"
-    },
-    {
       "nom": "Montant Spécial (H. 5750mm)",
       "type": "couleur",
       "ref_9016": "SPE-5750-9016",
@@ -80,15 +89,6 @@
       "ref_9005": "SPE-5750-9005",
       "ref_anodise": "SPE-5750-ANO",
       "ref_autre": "SPE-5750-RAL"
-    },
-    {
-      "nom": "Départ (H. 2500mm)",
-      "type": "couleur",
-      "ref_9016": "DEP-2500-9016",
-      "ref_7016": "DEP-2500-7016",
-      "ref_9005": "DEP-2500-9005",
-      "ref_anodise": "DEP-2500-ANO",
-      "ref_autre": "DEP-2500-RAL"
     },
     {
       "nom": "Départ (H. 5750mm)",
@@ -174,16 +174,6 @@
       "ref_unique": "REF-EQUERRE-UNIV"
     },
     {
-      "nom": "Rouleau Joint 6mm (50m) pour 33.2",
-      "type": "unique",
-      "ref_unique": "REF-JOINT-6MM"
-    },
-    {
-      "nom": "Rouleau Joint 8mm (50m) pour 44.2",
-      "type": "unique",
-      "ref_unique": "REF-JOINT-8MM"
-    },
-    {
       "nom": "Joint de départ",
       "type": "unique",
       "ref_unique": "REF-JOINT-DEPART-STD"
@@ -223,6 +213,16 @@
       "ref_9005": "PAR-DV-J-9005",
       "ref_anodise": "PAR-DV-J-ANO",
       "ref_autre": "PAR-DV-J-RAL"
+    },
+    {
+      "nom": "Rouleau Joint 6mm (50m) pour 33.2",
+      "type": "unique",
+      "ref_unique": "REF-JOINT-6MM"
+    },
+    {
+      "nom": "Rouleau Joint 8mm (50m) pour 44.2",
+      "type": "unique",
+      "ref_unique": "REF-JOINT-8MM"
     },
     {
       "nom": "Huisserie (828mm) (Pleine)",
@@ -266,6 +266,15 @@
       "nom": "Chutes de CJ réutilisées",
       "type": "unique",
       "ref_unique": "INFO-CHUTE-CJ"
+    },
+    {
+      "type": "couleur",
+      "nom": "Kit Paumelles (jeu de 4)",
+      "ref_9016": "REF-KIT-4PAUM-9016",
+      "ref_7016": "REF-KIT-4PAUM-7016",
+      "ref_9005": "REF-KIT-4PAUM-9005",
+      "ref_anodise": "REF-KIT-4PAUM-ANOD",
+      "ref_autre": "REF-KIT-4PAUM-RAL"
     }
   ]
 }
