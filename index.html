@@ -269,61 +269,56 @@
                         </div>
                     </div>
 
-                    <div id="optionsAllege" class="options-sub hidden">
-                        <label for="hauteurAllege">Hauteur Allège (mm) :</label>
-                        <input type="number" id="hauteurAllege" value="1100">
-                    </div>
-                    
-                    <div class="options-sub">
-                        <div class="checkbox-wrapper">
-                            <input type="checkbox" id="imposteModules" onchange="adapterFormulaire()">
-                            <label for="imposteModules">Traverse filante (Imposte)</label>
-                        </div>
-                        <div id="optionsImposteModules" class="hidden mt-5">
-                            <label>Hauteur Traverse :</label>
-                            <input type="number" id="hauteurImposte" value="2100">
-                        </div>
-                    </div>
+                   <div id="optionsMixte" class="options-sub hidden border-accent">
+    <h4>Composition Mixte (Sur mesure)</h4>
+    
+    <div id="selecteurMurActif" class="mur-selector hidden">
+        <label><input type="radio" name="murActif" value="A" checked> <span>Mur A</span></label>
+        <label id="radioMurB"><input type="radio" name="murActif" value="B"> <span>Mur B</span></label>
+        <label id="radioMurC"><input type="radio" name="murActif" value="C"> <span>Mur C</span></label>
+    </div>
 
-                    <div id="optionsMixte" class="options-sub hidden border-accent">
-                        <h4>Composition Mixte (Sur mesure)</h4>
-                        
-                        <div id="selecteurMurActif" class="mur-selector hidden">
-                            <label><input type="radio" name="murActif" value="A" checked> <span>Mur A</span></label>
-                            <label id="radioMurB"><input type="radio" name="murActif" value="B"> <span>Mur B</span></label>
-                            <label id="radioMurC"><input type="radio" name="murActif" value="C"> <span>Mur C</span></label>
-                        </div>
+    <div class="grid-2-col">
+        <div>
+            <label>Module :</label>
+            <select id="mixteTypeModule" onchange="adapterFormulaireMixte()">
+                <option value="pleine">Plein</option>
+                <option value="vitree">Vitré TH</option>
+                <option value="vitreeSurAllege">Vitré/Allège</option>
+                <option value="porte">Porte</option>
+            </select>
+        </div>
+        <div id="mixteLargeurContainer">
+            <label>Largeur (mm) :</label>
+            <input type="number" id="mixteLargeurModule" value="1178">
+        </div>
+        <div id="mixteSensContainer" class="hidden">
+            <label>Sens :</label>
+            <select id="mixteSensPorte">
+                <option value="droite">Poussant Droit</option>
+                <option value="gauche">Poussant Gauche</option>
+            </select>
+        </div>
+    </div>
+    
+    <div id="mixteAllegeContainer" class="hidden mt-5">
+            <label>H. Allège (mm) :</label>
+            <input type="number" id="mixteHauteurAllege" value="1100">
+    </div>
 
-                        <div class="grid-2-col">
-                            <div>
-                                <label>Module :</label>
-                                <select id="mixteTypeModule" onchange="adapterFormulaireMixte()">
-                                    <option value="pleine">Plein</option>
-                                    <option value="vitree">Vitré TH</option>
-                                    <option value="vitreeSurAllege">Vitré/Allège</option>
-                                    <option value="porte">Porte</option>
-                                </select>
-                            </div>
-                            <div id="mixteLargeurContainer">
-                                <label>Largeur (mm) :</label>
-                                <input type="number" id="mixteLargeurModule" value="1178">
-                            </div>
-                        </div>
-                        <div id="mixteAllegeContainer" class="hidden mt-5">
-                             <label>H. Allège (mm) :</label>
-                             <input type="number" id="mixteHauteurAllege" value="1100">
-                        </div>
-
-                        <div class="btn-group mt-10">
-                            <button type="button" onclick="ajouterModuleMixte()" id="btnAjouterMixte" class="btn-danger">+ Ajouter</button>
-                            <button type="button" onclick="remplirAutomatiquement()" id="btnRemplirMixte" class="btn-success">Remplir</button>
-                        </div>
-                        
-                        <div class="module-list-container">
-                            <ul id="compositionModules"></ul>
-                            <p id="mixteResumeLargeur"></p>
-                        </div>
-                    </div>
+    <div class="btn-group mt-10">
+        <button type="button" onclick="ajouterModuleMixte()" id="btnAjouterMixte" class="btn-danger">+ Ajouter</button>
+        <button type="button" onclick="remplirAutomatiquement()" id="btnRemplirMixte" class="btn-success">Remplir</button>
+    </div>
+    
+    <div id="mixteSuggestions" class="hidden mt-10 p-10 bg-light border-radius" style="border-left: 4px solid #17a2b8; font-size: 0.9em;">
+        </div>
+    
+    <div class="module-list-container">
+        <ul id="compositionModules"></ul>
+        <p id="mixteResumeLargeur" style="font-weight:bold; margin-top:5px;"></p>
+    </div>
+</div>
 
                     <div class="btn-group-vertical mt-20">
                         <button onclick="app.sauvegarderProjet()" class="btn-secondary" style="background:#6c757d;">💾 Sauvegarder</button>
