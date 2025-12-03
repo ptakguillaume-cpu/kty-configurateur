@@ -9,15 +9,18 @@ import {
     retirerModuleMixte, 
     mettreAJourListeMixte, 
     remplirAutomatiquement, 
-    adapterFormulaireMixte 
+    adapterFormulaireMixte,
+    // NOUVELLES FONCTIONS IMPORTEES :
+    remplirMixteEgal,
+    ajouterModuleStandardMixte
 } from './uiManager.js';
 import { afficherNotification, demanderConfirmation } from './utils.js';
 import { calculerInventaire, imprimerDevis } from './calculateur.js';
-import { dessinerSceneGlobale } from './engine3d.js';
 
 // --- INITIALISATION ---
-// On rattache les fonctions aux événements globaux (pour que le HTML onclick="" fonctionne)
 window.app = AppManager;
+
+// Fonctions UI existantes
 window.adapterFormulaire = adapterFormulaire;
 window.changerForme = changerForme;
 window.getLargeurPorte = getLargeurPorte;
@@ -28,11 +31,18 @@ window.retirerModuleMixte = retirerModuleMixte;
 window.mettreAJourListeMixte = mettreAJourListeMixte;
 window.remplirAutomatiquement = remplirAutomatiquement;
 window.adapterFormulaireMixte = adapterFormulaireMixte;
+
+// NOUVEAU : On attache les fonctions de suggestions à window
+window.remplirMixteEgal = remplirMixteEgal;
+window.ajouterModuleStandardMixte = ajouterModuleStandardMixte;
+
+// Utils
 window.afficherNotification = afficherNotification;
 window.demanderConfirmation = demanderConfirmation;
+
+// Calculs
 window.calculerInventaire = calculerInventaire;
 window.imprimerDevis = imprimerDevis;
-// dessinerSceneGlobale n'est pas appelé directement par le HTML, mais par le JS
 
 // Démarrage de l'application
 document.addEventListener('DOMContentLoaded', () => {
