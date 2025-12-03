@@ -10,9 +10,10 @@ import {
     mettreAJourListeMixte, 
     remplirAutomatiquement, 
     adapterFormulaireMixte,
-    // NOUVELLES FONCTIONS IMPORTEES :
     remplirMixteEgal,
-    ajouterModuleStandardMixte
+    ajouterModuleStandardMixte,
+    // NOUVELLE FONCTION IMPORTÉE ICI :
+    deplacerModule
 } from './uiManager.js';
 import { afficherNotification, demanderConfirmation } from './utils.js';
 import { calculerInventaire, imprimerDevis } from './calculateur.js';
@@ -32,9 +33,12 @@ window.mettreAJourListeMixte = mettreAJourListeMixte;
 window.remplirAutomatiquement = remplirAutomatiquement;
 window.adapterFormulaireMixte = adapterFormulaireMixte;
 
-// NOUVEAU : On attache les fonctions de suggestions à window
+// Fonctions de suggestions
 window.remplirMixteEgal = remplirMixteEgal;
 window.ajouterModuleStandardMixte = ajouterModuleStandardMixte;
+
+// NOUVEAU : On attache la fonction de déplacement
+window.deplacerModule = deplacerModule;
 
 // Utils
 window.afficherNotification = afficherNotification;
