@@ -63,18 +63,16 @@ export function genererInterfaceSensPortes() {
     }
 }
 
-// --- 2. GESTION DU MODE MIXTE ---
+// --- 2. GESTION DU MODE MIXTE (AVEC SUGGESTIONS) ---
 
-// NOUVEAU : Fonction pour déplacer un module (monter/descendre dans la liste)
+// 👇 COLLEZ LA NOUVELLE FONCTION ICI 👇
 export function deplacerModule(index, direction) {
     const mur = getMurActif();
     const liste = GLOBAL_STATE.configMurs[mur];
 
-    // direction -1 = Monter (vers la gauche du mur)
-    // direction +1 = Descendre (vers la droite du mur)
-
+    // direction -1 = Monter (Gauche) | direction +1 = Descendre (Droite)
     if (direction === -1 && index > 0) {
-        // Échange avec l'élément précédent
+        // Échange avec le précédent
         [liste[index], liste[index - 1]] = [liste[index - 1], liste[index]];
     } else if (direction === 1 && index < liste.length - 1) {
         // Échange avec l'élément suivant
@@ -386,3 +384,4 @@ export function changerForme() {
     if(f === 'L' || f === 'U') { document.getElementById('typeCloison').value = 'mixte'; }
     adapterFormulaire();
 }
+
