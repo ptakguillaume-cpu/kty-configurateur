@@ -1,0 +1,6 @@
+export const CONSTANTS = {
+    EPAISSEUR_PROFIL: 38,
+    LARGEUR_POTEAU_ANGLE: 90.5,
+    L_MAX_MODULE: 1216,
+    L_MIN_MODULE: 50
+};
