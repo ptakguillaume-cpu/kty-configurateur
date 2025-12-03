@@ -12,7 +12,7 @@ import {
     adapterFormulaireMixte,
     remplirMixteEgal,
     ajouterModuleStandardMixte,
-    // NOUVELLE FONCTION IMPORTÉE ICI :
+    // 👇 IMPORT DE LA NOUVELLE FONCTION
     deplacerModule
 } from './uiManager.js';
 import { afficherNotification, demanderConfirmation } from './utils.js';
@@ -37,7 +37,7 @@ window.adapterFormulaireMixte = adapterFormulaireMixte;
 window.remplirMixteEgal = remplirMixteEgal;
 window.ajouterModuleStandardMixte = ajouterModuleStandardMixte;
 
-// NOUVEAU : On attache la fonction de déplacement
+// 👇 ATTACHEMENT À WINDOW (Pour que le onclick fonctionne)
 window.deplacerModule = deplacerModule;
 
 // Utils
