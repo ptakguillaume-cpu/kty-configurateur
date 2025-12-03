@@ -45,8 +45,6 @@ export function genererInterfaceSensPortes() {
             div.className = "grid-2-col mt-5 align-center";
             div.style.borderBottom = "1px solid #eee";
             div.style.paddingBottom = "5px";
-            
-            // Note: onchange="calculerInventaire()" fonctionne car la fonction est attachée à window dans script.js
             div.innerHTML = `
                 <span style="font-size:0.9em;">Porte n°${i+1} :</span>
                 <select id="sensPorte_${i}" onchange="calculerInventaire()" style="margin-bottom:0;">
@@ -61,7 +59,7 @@ export function genererInterfaceSensPortes() {
     }
 }
 
-// --- 2. GESTION DU MODE MIXTE ---
+// --- 2. GESTION DU MODE MIXTE (AVEC SUGGESTIONS) ---
 
 export function mettreAJourListeMixte() {
     const mur = getMurActif();
@@ -71,10 +69,16 @@ export function mettreAJourListeMixte() {
     
     GLOBAL_STATE.configMurs[mur].forEach((m, i) => {
         let txt = m.type; let w = 0;
-        if(m.type==='porte') { txt=`PORTE (${lp}mm)`; w=lp+CONSTANTS.EPAISSEUR_PROFIL; }
-        else { w=m.largeur+CONSTANTS.EPAISSEUR_PROFIL; txt=`${m.type} (${m.largeur}mm)`; }
+        if(m.type==='porte') { 
+            let s = (m.sens === 'gauche') ? 'PG' : 'PD';
+            txt=`PORTE (${lp}mm) - ${s}`; 
+            w=lp+CONSTANTS.EPAISSEUR_PROFIL; 
+        } 
+        else { 
+            w=m.largeur+CONSTANTS.EPAISSEUR_PROFIL; 
+            txt=`${m.type} (${m.largeur.toFixed(1)}mm)`; 
+        }
         utilise += w;
-        // Bouton supprimer appelle retirerModuleMixte via window
         ul.innerHTML += `<li>${i+1}. ${txt} <button onclick="retirerModuleMixte(${i})" style="width:auto; padding:2px 5px; background:red; margin-left:10px;">X</button></li>`;
     });
     
@@ -90,7 +94,75 @@ export function mettreAJourListeMixte() {
     if(mur==='C') { deduction += 90.5 + 38; }
     
     const reste = (L - deduction) - utilise;
+    
+    // --- GESTION DES SUGGESTIONS (Recupérée du code original) ---
+    const divSuggestions = document.getElementById('mixteSuggestions');
+    const selectedType = document.getElementById('mixteTypeModule').value;
+    const btnAjouter = document.getElementById('btnAjouterMixte');
+    
+    if(reste <= 1) {
+        btnAjouter.disabled = true;
+        btnAjouter.style.backgroundColor = "#ccc";
+        btnAjouter.title = "Le mur est plein";
+    } else {
+        btnAjouter.disabled = false;
+        btnAjouter.style.backgroundColor = ""; 
+        btnAjouter.title = "";
+    }
+
+    if(reste > 5 && selectedType !== 'porte') {
+        divSuggestions.classList.remove('hidden');
+        divSuggestions.style.display = 'block';
+        
+        let msg = `<strong>Espace restant : ${reste.toFixed(0)} mm</strong><br>`;
+        const L_MOD_STD = 1178; 
+        
+        if (selectedType === 'vitree' || selectedType === 'vitreeSurAllege') {
+            let nbModules = Math.ceil(reste / 1216);
+            if (nbModules < 1) nbModules = 1;
+            let largeurUnitaire = (reste / nbModules) - 38;
+            if(largeurUnitaire < 50) { 
+                nbModules--; 
+                if(nbModules > 0) largeurUnitaire = (reste / nbModules) - 38;
+            }
+            if(nbModules > 0 && largeurUnitaire > 50) {
+                msg += `<span style="color:#0056b3; font-size:0.9em;">Suggestion : Répartition esthétique (${nbModules} modules égaux).</span><br>`;
+                // Note : On appelle les fonctions globales qui seront liées dans script.js
+                msg += `<button onclick="remplirMixteEgal('${selectedType}', ${largeurUnitaire}, ${nbModules})" style="width:auto; padding:5px 10px; font-size:0.8em; margin-top:5px; background:#007bff; color:white; border:none; border-radius:4px; cursor:pointer;">Remplir avec ${nbModules}x ${largeurUnitaire.toFixed(0)}mm</button>`;
+            }
+        } 
+        else {
+            if (reste >= L_MOD_STD + 38) {
+                let nb = Math.floor(reste / (L_MOD_STD + 38));
+                msg += `<span style="color:#555; font-size:0.9em;">Tu peux poser ${nb} module(s) standard(s).</span><br>`;
+                msg += `<button onclick="ajouterModuleStandardMixte(${L_MOD_STD})" style="width:auto; padding:5px 10px; font-size:0.8em; margin-top:5px; background:#17a2b8; color:white; border:none; border-radius:4px; cursor:pointer;">+ Ajouter Standard (${L_MOD_STD}mm)</button> `;
+            }
+            let wFill = reste - 38;
+            if(wFill > 50) {
+                 msg += `<button onclick="ajouterModuleStandardMixte(${wFill})" style="width:auto; padding:5px 10px; font-size:0.8em; margin-top:5px; background:#28a745; color:white; border:none; border-radius:4px; cursor:pointer;">+ Combler le reste (${wFill.toFixed(0)}mm)</button>`;
+            }
+        }
+        divSuggestions.innerHTML = msg;
+    } else {
+        divSuggestions.classList.add('hidden');
+    }
+
     document.getElementById('mixteResumeLargeur').innerHTML = `Mur ${mur} : Reste à combler : ${reste.toFixed(0)} mm`;
+}
+
+// Nouvelles fonctions récupérées
+export function remplirMixteEgal(type, width, count) {
+    const mur = getMurActif();
+    let ha = parseFloat(document.getElementById('mixteHauteurAllege').value)||0;
+    for(let k=0; k<count; k++) {
+        GLOBAL_STATE.configMurs[mur].push({type: type, largeur: width, hAllege: ha});
+    }
+    mettreAJourListeMixte();
+}
+
+export function ajouterModuleStandardMixte(w) {
+    document.getElementById('mixteLargeurModule').value = w;
+    ajouterModuleMixte();
 }
 
 export function adapterFormulaireMixte() {
@@ -98,10 +170,13 @@ export function adapterFormulaireMixte() {
     if(type === 'porte') {
         toggleDisplay('mixteLargeurContainer', false);
         toggleDisplay('mixteAllegeContainer', false);
+        toggleDisplay('mixteSensContainer', true); 
     } else {
         toggleDisplay('mixteLargeurContainer', true);
         toggleDisplay('mixteAllegeContainer', (type === 'vitreeSurAllege'));
+        toggleDisplay('mixteSensContainer', false);
     }
+    mettreAJourListeMixte();
 }
 
 export function ajouterModuleMixte() {
@@ -127,7 +202,11 @@ export function ajouterModuleMixte() {
     let largeurAjout = 0; let nouvModule = {};
     if(type === 'porte') {
         if(parseFloat(document.getElementById('qtePortes').value) < 1) { alert("Mettez au moins 1 porte dans la config globale"); return; }
-        largeurAjout = lp + CONSTANTS.EPAISSEUR_PROFIL; nouvModule = { type: 'porte' };
+        largeurAjout = lp + CONSTANTS.EPAISSEUR_PROFIL; 
+        
+        let s = document.getElementById('mixteSensPorte').value;
+        nouvModule = { type: 'porte', sens: s };
+        
     } else {
         let w = parseFloat(document.getElementById('mixteLargeurModule').value)||0;
         if(w < CONSTANTS.L_MIN_MODULE) { alert(`Largeur min ${CONSTANTS.L_MIN_MODULE}mm`); return; }
