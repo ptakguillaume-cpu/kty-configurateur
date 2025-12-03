@@ -7,6 +7,7 @@ import { CONSTANTS } from './constants.js';
 export function getLargeurPorte() {
     let total = 0;
     const el = document.getElementById('doublePorte');
+    // SÉCURITÉ : Si l'élément n'existe pas, on retourne une valeur par défaut
     if(!el) return 828; 
     
     let dble = el.checked;
@@ -29,7 +30,10 @@ export function getMurActif() {
 }
 
 export function genererInterfaceSensPortes() {
-    const qte = parseInt(document.getElementById('qtePortes').value) || 0;
+    const elQte = document.getElementById('qtePortes');
+    if(!elQte) return; // Sécurité
+
+    const qte = parseInt(elQte.value) || 0;
     const container = document.getElementById('containerSensPortes');
     if(!container) return;
 
@@ -59,11 +63,12 @@ export function genererInterfaceSensPortes() {
     }
 }
 
-// --- 2. GESTION DU MODE MIXTE (AVEC SUGGESTIONS) ---
+// --- 2. GESTION DU MODE MIXTE ---
 
 export function mettreAJourListeMixte() {
     const mur = getMurActif();
     const ul = document.getElementById('compositionModules');
+    if(!ul) return;
     ul.innerHTML = "";
     let utilise = 0; const lp = getLargeurPorte();
     
@@ -95,22 +100,24 @@ export function mettreAJourListeMixte() {
     
     const reste = (L - deduction) - utilise;
     
-    // --- GESTION DES SUGGESTIONS (Recupérée du code original) ---
     const divSuggestions = document.getElementById('mixteSuggestions');
-    const selectedType = document.getElementById('mixteTypeModule').value;
+    const elType = document.getElementById('mixteTypeModule');
+    const selectedType = elType ? elType.value : 'pleine';
     const btnAjouter = document.getElementById('btnAjouterMixte');
     
-    if(reste <= 1) {
-        btnAjouter.disabled = true;
-        btnAjouter.style.backgroundColor = "#ccc";
-        btnAjouter.title = "Le mur est plein";
-    } else {
-        btnAjouter.disabled = false;
-        btnAjouter.style.backgroundColor = ""; 
-        btnAjouter.title = "";
+    if(btnAjouter) {
+        if(reste <= 1) {
+            btnAjouter.disabled = true;
+            btnAjouter.style.backgroundColor = "#ccc";
+            btnAjouter.title = "Le mur est plein";
+        } else {
+            btnAjouter.disabled = false;
+            btnAjouter.style.backgroundColor = ""; 
+            btnAjouter.title = "";
+        }
     }
 
-    if(reste > 5 && selectedType !== 'porte') {
+    if(divSuggestions && reste > 5 && selectedType !== 'porte') {
         divSuggestions.classList.remove('hidden');
         divSuggestions.style.display = 'block';
         
@@ -127,7 +134,6 @@ export function mettreAJourListeMixte() {
             }
             if(nbModules > 0 && largeurUnitaire > 50) {
                 msg += `<span style="color:#0056b3; font-size:0.9em;">Suggestion : Répartition esthétique (${nbModules} modules égaux).</span><br>`;
-                // Note : On appelle les fonctions globales qui seront liées dans script.js
                 msg += `<button onclick="remplirMixteEgal('${selectedType}', ${largeurUnitaire}, ${nbModules})" style="width:auto; padding:5px 10px; font-size:0.8em; margin-top:5px; background:#007bff; color:white; border:none; border-radius:4px; cursor:pointer;">Remplir avec ${nbModules}x ${largeurUnitaire.toFixed(0)}mm</button>`;
             }
         } 
@@ -143,14 +149,14 @@ export function mettreAJourListeMixte() {
             }
         }
         divSuggestions.innerHTML = msg;
-    } else {
+    } else if(divSuggestions) {
         divSuggestions.classList.add('hidden');
     }
 
-    document.getElementById('mixteResumeLargeur').innerHTML = `Mur ${mur} : Reste à combler : ${reste.toFixed(0)} mm`;
+    const elResume = document.getElementById('mixteResumeLargeur');
+    if(elResume) elResume.innerHTML = `Mur ${mur} : Reste à combler : ${reste.toFixed(0)} mm`;
 }
 
-// Nouvelles fonctions récupérées
 export function remplirMixteEgal(type, width, count) {
     const mur = getMurActif();
     let ha = parseFloat(document.getElementById('mixteHauteurAllege').value)||0;
@@ -204,7 +210,9 @@ export function ajouterModuleMixte() {
         if(parseFloat(document.getElementById('qtePortes').value) < 1) { alert("Mettez au moins 1 porte dans la config globale"); return; }
         largeurAjout = lp + CONSTANTS.EPAISSEUR_PROFIL; 
         
-        let s = document.getElementById('mixteSensPorte').value;
+        // SÉCURITÉ : Vérifier si l'élément existe avant de lire sa valeur
+        let elSens = document.getElementById('mixteSensPorte');
+        let s = elSens ? elSens.value : 'droite';
         nouvModule = { type: 'porte', sens: s };
         
     } else {
@@ -273,7 +281,10 @@ export function adapterFormulaire() {
     const configDepart = document.getElementById('configDepart').value;
     if (forme === 'L' && configDepart === '1') { toggleDisplay('divPosDepartL', true); } else { toggleDisplay('divPosDepartL', false); }
 
-    const isDbleCheck = document.getElementById('doublePorte').checked;
+    // SÉCURITÉ : Vérifier si doublePorte existe
+    const elDoublePorte = document.getElementById('doublePorte');
+    const isDbleCheck = elDoublePorte ? elDoublePorte.checked : false;
+
     if (isDbleCheck) {
         const valDouble = document.getElementById('huisserieDoublePorteSelect').value;
         const typePorteSelect = document.getElementById('typePorte');
@@ -297,7 +308,9 @@ export function adapterFormulaire() {
     
     genererInterfaceSensPortes();
 
-    const isDble = document.getElementById('doublePorte').checked;
+    // SÉCURITÉ : Réutiliser la variable vérifiée
+    const isDble = isDbleCheck;
+    
     const typePorte = document.getElementById('typePorte').value;
     if (!isDble) {
         toggleDisplay('optionsSimplePortePleine', (typePorte === 'pleine'));
@@ -322,7 +335,11 @@ export function adapterFormulaire() {
     
     toggleDisplay('optionsImposte', (hp === '2100'));
     
-    const imp = document.getElementById('imposteModules').checked;
+    // --- C'EST ICI QUE ÇA PLANTAIT ---
+    // SÉCURITÉ : On vérifie si la case existe avant de lire .checked
+    const elImposte = document.getElementById('imposteModules');
+    const imp = elImposte ? elImposte.checked : false; // Si n'existe pas, on considère faux
+    
     toggleDisplay('optionsImposteModules', imp);
     
     if(isMixte) { mettreAJourListeMixte(); adapterFormulaireMixte(); }
