@@ -4,7 +4,7 @@ import { getLargeurPorte } from './uiManager.js';
 import { dessinerSceneGlobale } from './engine3d.js';
 import * as THREE from 'three';
 
-// C'est ici que la fonction est exportée pour être vue par app.js
+// C'est ICI que la fonction est exportée correctement
 export async function calculerInventaire() {
     let inv = {};
     const add = (n, q) => { if(q>0) inv[n] = (inv[n]||0) + q; };
@@ -12,7 +12,7 @@ export async function calculerInventaire() {
     
     let htmlList = "";
     
-    // LISTES POUR ALGO DE DECOUPE
+    // --- ALGORITHME : LISTES DE COUPES ---
     let besoinsCoupesVerticales = []; 
     let besoinsCoupesHorizontales = []; 
     
@@ -39,7 +39,7 @@ export async function calculerInventaire() {
     let nomDepart = `Départ (H. ${hNom})`;
     let nomCJ_Horizontal = "Couvre joints H.2500mm (horizontaux)"; 
     let nomCJ_Vertical = `Couvre joints (H. ${hNom})`;
-    let nomTraverseBarre = "Montant (2500mm) traverses"; 
+    let nomTraverseBarre = "Montant (Barre 2500mm pour Traverses)"; 
     
     let nbDeparts = qteDepartsMurs; 
     let nbAngles = 0;
@@ -133,7 +133,7 @@ export async function calculerInventaire() {
                     nbMontantsSpeciaux++;
                 } else {
                     nbMontantsStandard++;
-                    besoinsCoupesVerticales.push(H);
+                    besoinsCoupesVerticales.push(H); // AJOUT POUR ALGO CHUTE
                 }
             }
         }
@@ -174,7 +174,7 @@ export async function calculerInventaire() {
                 if(nbTrav > 0) {
                     qteEquerresTraverse += nbTrav * 2; 
                     for(let k=0; k<nbTrav; k++) { 
-                        besoinsCoupesHorizontales.push(m.largeur); 
+                        besoinsCoupesHorizontales.push(m.largeur); // AJOUT POUR ALGO CHUTE
                     }
                 }
             }
@@ -318,7 +318,7 @@ export async function calculerInventaire() {
     if(nbAngles>0) { qteEq += nbAngles * 4; }
     add('Équerres (total)', qteEq);
 
-    // ALGORITHME DE COUPE
+    // --- ALGORITHME DE COUPE & CHUTES ---
     function optimiserCoupes(besoins, longueurBarreRef) {
         besoins.sort((a, b) => b - a);
         let stockChutes = [];
