@@ -31,7 +31,7 @@ export function getMurActif() {
 
 export function genererInterfaceSensPortes() {
     const elQte = document.getElementById('qtePortes');
-    if(!elQte) return; // Sécurité
+    if(!elQte) return; 
 
     const qte = parseInt(elQte.value) || 0;
     const container = document.getElementById('containerSensPortes');
@@ -65,6 +65,25 @@ export function genererInterfaceSensPortes() {
 
 // --- 2. GESTION DU MODE MIXTE ---
 
+// NOUVEAU : Fonction pour déplacer un module (monter/descendre dans la liste)
+export function deplacerModule(index, direction) {
+    const mur = getMurActif();
+    const liste = GLOBAL_STATE.configMurs[mur];
+
+    // direction -1 = Monter (vers la gauche du mur)
+    // direction +1 = Descendre (vers la droite du mur)
+
+    if (direction === -1 && index > 0) {
+        // Échange avec l'élément précédent
+        [liste[index], liste[index - 1]] = [liste[index - 1], liste[index]];
+    } else if (direction === 1 && index < liste.length - 1) {
+        // Échange avec l'élément suivant
+        [liste[index], liste[index + 1]] = [liste[index + 1], liste[index]];
+    }
+    
+    mettreAJourListeMixte();
+}
+
 export function mettreAJourListeMixte() {
     const mur = getMurActif();
     const ul = document.getElementById('compositionModules');
@@ -72,7 +91,9 @@ export function mettreAJourListeMixte() {
     ul.innerHTML = "";
     let utilise = 0; const lp = getLargeurPorte();
     
-    GLOBAL_STATE.configMurs[mur].forEach((m, i) => {
+    const liste = GLOBAL_STATE.configMurs[mur];
+
+    liste.forEach((m, i) => {
         let txt = m.type; let w = 0;
         if(m.type==='porte') { 
             let s = (m.sens === 'gauche') ? 'PG' : 'PD';
@@ -84,7 +105,27 @@ export function mettreAJourListeMixte() {
             txt=`${m.type} (${m.largeur.toFixed(1)}mm)`; 
         }
         utilise += w;
-        ul.innerHTML += `<li>${i+1}. ${txt} <button onclick="retirerModuleMixte(${i})" style="width:auto; padding:2px 5px; background:red; margin-left:10px;">X</button></li>`;
+
+        // CRÉATION DES BOUTONS DE DÉPLACEMENT
+        let btnUp = (i > 0) 
+            ? `<button onclick="deplacerModule(${i}, -1)" style="width:25px; padding:2px; margin-right:2px; background:#6c757d;" title="Déplacer vers la gauche">⬆️</button>` 
+            : `<span style="display:inline-block; width:29px;"></span>`; // Espace vide pour aligner
+        
+        let btnDown = (i < liste.length - 1) 
+            ? `<button onclick="deplacerModule(${i}, 1)" style="width:25px; padding:2px; margin-right:5px; background:#6c757d;" title="Déplacer vers la droite">⬇️</button>` 
+            : `<span style="display:inline-block; width:32px;"></span>`; // Espace vide
+
+        ul.innerHTML += `
+            <li style="display:flex; align-items:center; justify-content:space-between; margin-bottom:5px; background:#f9f9f9; padding:5px; border-radius:4px;">
+                <span>
+                    <strong>${i+1}.</strong> ${txt}
+                </span>
+                <div style="display:flex;">
+                    ${btnUp}
+                    ${btnDown}
+                    <button onclick="retirerModuleMixte(${i})" style="width:auto; padding:2px 8px; background:#dc3545; color:white; border:none; border-radius:4px;">✖</button>
+                </div>
+            </li>`;
     });
     
     let L = 0;
@@ -210,7 +251,6 @@ export function ajouterModuleMixte() {
         if(parseFloat(document.getElementById('qtePortes').value) < 1) { alert("Mettez au moins 1 porte dans la config globale"); return; }
         largeurAjout = lp + CONSTANTS.EPAISSEUR_PROFIL; 
         
-        // SÉCURITÉ : Vérifier si l'élément existe avant de lire sa valeur
         let elSens = document.getElementById('mixteSensPorte');
         let s = elSens ? elSens.value : 'droite';
         nouvModule = { type: 'porte', sens: s };
@@ -281,7 +321,6 @@ export function adapterFormulaire() {
     const configDepart = document.getElementById('configDepart').value;
     if (forme === 'L' && configDepart === '1') { toggleDisplay('divPosDepartL', true); } else { toggleDisplay('divPosDepartL', false); }
 
-    // SÉCURITÉ : Vérifier si doublePorte existe
     const elDoublePorte = document.getElementById('doublePorte');
     const isDbleCheck = elDoublePorte ? elDoublePorte.checked : false;
 
@@ -308,7 +347,6 @@ export function adapterFormulaire() {
     
     genererInterfaceSensPortes();
 
-    // SÉCURITÉ : Réutiliser la variable vérifiée
     const isDble = isDbleCheck;
     
     const typePorte = document.getElementById('typePorte').value;
@@ -335,10 +373,8 @@ export function adapterFormulaire() {
     
     toggleDisplay('optionsImposte', (hp === '2100'));
     
-    // --- C'EST ICI QUE ÇA PLANTAIT ---
-    // SÉCURITÉ : On vérifie si la case existe avant de lire .checked
     const elImposte = document.getElementById('imposteModules');
-    const imp = elImposte ? elImposte.checked : false; // Si n'existe pas, on considère faux
+    const imp = elImposte ? elImposte.checked : false; 
     
     toggleDisplay('optionsImposteModules', imp);
     
