@@ -2,23 +2,23 @@ import { GLOBAL_STATE } from './state.js';
 import { CONSTANTS } from './constants.js';
 import { getLargeurPorte } from './uiManager.js';
 import { dessinerSceneGlobale } from './engine3d.js';
-import * as THREE from 'three';
+import * as THREE from 'three'; // Nécessaire pour l'impression (capture 3D)
 
-// C'est ICI que la fonction est exportée correctement
 export async function calculerInventaire() {
     let inv = {};
     const add = (n, q) => { if(q>0) inv[n] = (inv[n]||0) + q; };
     function ajouterAuStock(nom, quantite) { if (quantite > 0) { inv[nom] = (inv[nom] || 0) + quantite; } }
     
     let htmlList = "";
-    
-    // --- ALGORITHME : LISTES DE COUPES ---
-    let besoinsCoupesVerticales = []; 
-    let besoinsCoupesHorizontales = []; 
-    
+    let chutesUtilisables = []; let besoinsTraverses = []; 
+    let chutesCJUtilisables = []; let besoinsCJ = [];
     let totalPortes = 0;
     let totalMetrageJointsByType = {}; 
     let qteEquerresTraverse = 0;
+
+    // --- NOUVEAU : Compteur global pour les barres de parcloses (indépendantes) ---
+    let totalBarresParcloses = 0;
+    // ------------------------------------------------------------------------------
     
     const forme = document.getElementById('formeCloison').value;
     const qteDepartsMurs = parseInt(document.getElementById('configDepart').value, 10);
@@ -27,7 +27,6 @@ export async function calculerInventaire() {
     const H_IMPOSTE = parseFloat(document.getElementById('hauteurImposte').value) || 2100;
     const hasImposteModules = document.getElementById('imposteModules').checked;
     const couleurRal = document.getElementById('couleurRal').value;
-    const isPorteTH = (document.getElementById('hauteurPorte').value === 'touteHauteur');
     
     const BARRES_DISPO = [2500, 2700, 3050, 3250, 5750];
     let longueurBarreRetenue = 5750; 
@@ -39,7 +38,7 @@ export async function calculerInventaire() {
     let nomDepart = `Départ (H. ${hNom})`;
     let nomCJ_Horizontal = "Couvre joints H.2500mm (horizontaux)"; 
     let nomCJ_Vertical = `Couvre joints (H. ${hNom})`;
-    let nomTraverseBarre = "Montant (Barre 2500mm pour Traverses)"; 
+    let nomTraverseBarre = "Montant (2500mm) traverses"; 
     
     let nbDeparts = qteDepartsMurs; 
     let nbAngles = 0;
@@ -49,7 +48,6 @@ export async function calculerInventaire() {
 
     let murs = ['A']; if(forme==='L') murs.push('B'); if(forme==='U') { murs.push('B'); murs.push('C'); }
 
-    // Remplissage auto si non mixte
     if (typeGlob !== 'mixte') {
         GLOBAL_STATE.configMurs = { A:[], B:[], C:[] };
         murs.forEach(id => {
@@ -57,11 +55,14 @@ export async function calculerInventaire() {
             if(id==='A') L=parseFloat(document.getElementById('longueur').value);
             if(id==='B') L=parseFloat(document.getElementById('longueurB').value);
             if(id==='C') L=parseFloat(document.getElementById('longueurC').value);
+            
             let deduction = 0;
             if(id==='A') { deduction += 38; deduction += (forme !== 'droite') ? 90.5 : 38; }
             if(id==='B') { deduction += 90.5; deduction += (forme === 'U') ? 90.5 : 38; }
             if(id==='C') { deduction += 90.5 + 38; }
+
             let dispo = L - deduction;
+            
             if(id==='A') {
                 let qP = parseFloat(document.getElementById('qtePortes').value)||0;
                 let lP = getLargeurPorte();
@@ -72,6 +73,7 @@ export async function calculerInventaire() {
                     dispo -= (lP+CONSTANTS.EPAISSEUR_PROFIL); 
                 }
             }
+            
             if(dispo > 5) {
                 const L_MOD_AXE = 1216; 
                 if (typeGlob === 'pleine') {
@@ -93,6 +95,7 @@ export async function calculerInventaire() {
 
     let nbMontantsStandard = 0;
     let nbMontantsSpeciaux = 0;
+
     let v1 = document.getElementById('typeVitrage1').value;
     let v2 = document.getElementById('typeVitrage2').value;
     let isStandardRal = (['9016','7016','9005','anodise'].includes(couleurRal));
@@ -101,7 +104,9 @@ export async function calculerInventaire() {
     let useParcloseAvecJoint = (isStandardRal && isStandardGlass1 && isStandardGlass2);
     let baseNomParclose = (v2 === 'aucun') ? 'Parclose SV' : 'Parclose DV';
     let suffixeParclose = useParcloseAvecJoint ? ' (avec joint intégré)' : ' (sans joint)';
-    let nomParcloseDefaut = baseNomParclose + suffixeParclose;
+    
+    // On ajoute explicitement la mention "Barre 3000mm" pour clarifier le résultat
+    let nomParcloseDefaut = baseNomParclose + suffixeParclose + " (Barre 3000mm)";
 
     murs.forEach(id => {
         htmlList += `<li style="background:#f4f4f4; margin-top:5px;"><strong>Cloison ${id} :</strong></li>`;
@@ -112,29 +117,11 @@ export async function calculerInventaire() {
             for (let i = 0; i < nbModules - 1; i++) {
                 let isSpecial = false;
                 if (forme !== 'droite') {
-                    if (id === 'A' && i === nbModules - 2) {
-                        let lastMod = modulesDuMur[nbModules-1];
-                        if(lastMod.type === 'porte' && isPorteTH && H <= 3000) isSpecial = false;
-                        else isSpecial = true;
-                    } 
-                    else if (id === 'B' && i === 0) {
-                        let firstMod = modulesDuMur[0];
-                        if(firstMod.type === 'porte' && isPorteTH && H <= 3000) isSpecial = false;
-                        else isSpecial = true; 
-                    }
-                    else if (id === 'C' && i === 0) {
-                        let firstMod = modulesDuMur[0];
-                        if(firstMod.type === 'porte' && isPorteTH && H <= 3000) isSpecial = false;
-                        else isSpecial = true; 
-                    }
+                    if (id === 'A' && i === nbModules - 2) isSpecial = true; 
+                    if (id === 'B' && i === 0) isSpecial = true; 
+                    if (id === 'C' && i === 0) isSpecial = true; 
                 }
-                
-                if (isSpecial) {
-                    nbMontantsSpeciaux++;
-                } else {
-                    nbMontantsStandard++;
-                    besoinsCoupesVerticales.push(H); // AJOUT POUR ALGO CHUTE
-                }
+                if (isSpecial) nbMontantsSpeciaux++; else nbMontantsStandard++;
             }
         }
 
@@ -143,23 +130,33 @@ export async function calculerInventaire() {
                 let sensTxt = (m.sens === 'gauche') ? 'PG' : 'PD';
                 totalPortes++; 
                 htmlList += `<li>Huisserie (${getLargeurPorte()}mm) - ${sensTxt}</li>`; 
-            } else {
+            } 
+            else {
                 let nom = m.type === 'pleine' ? 'Module plein' : m.type === 'vitree' ? 'Module vitré' : 'Module allège';
                 htmlList += `<li>${nom} (${m.largeur.toFixed(0)}mm)</li>`;
+                add('Calles de lisse', m.type==='pleine'?2:(m.type==='vitree'?6:4));
                 
-                if (m.type === 'pleine') {
-                    add('Calles de lisse', 2);
-                } else if (m.type === 'vitree') {
-                    add('Calles de lisse', 6);
-                    let isDouble = (document.getElementById('typeVitrage2').value !== 'aucun');
-                    add('Cales de vitrage', isDouble ? 4 : 2);
-                } else if (m.type === 'vitreeSurAllege') {
-                    add('Calles de lisse', 4);
-                }
-
                 if(m.type === 'vitree' || m.type === 'vitreeSurAllege') {
-                    let qteParclose = (m.type === 'vitree') ? 3 : 2;
-                    add(nomParcloseDefaut, qteParclose);
+                    
+                    // --- NOUVEAU CALCUL DES PARCLOSES (Modules Indépendants, Barres 3000mm) ---
+                    // 1. Les Verticaux (H ~ 2600mm)
+                    // Chaque montant consomme une barre entière (chute de 400mm inutilisable pour un autre montant)
+                    totalBarresParcloses += 2;
+
+                    // 2. Les Horizontaux (Traverses)
+                    const L = m.largeur;
+                    let morceauxParBarre = 2; // Par défaut, pour les grands modules (> 990mm)
+
+                    // Application des marges de sécurité (Trait de scie + Nettoyage)
+                    if (L <= 590) morceauxParBarre = 5;
+                    else if (L <= 740) morceauxParBarre = 4;
+                    else if (L <= 990) morceauxParBarre = 3;
+
+                    // On ajoute la fraction de barre nécessaire pour ces 2 traverses (haut et bas)
+                    // L'arrondi final se fera à la fin de la fonction globale.
+                    totalBarresParcloses += (2 / morceauxParBarre);
+                    // -------------------------------------------------------------------------
+
                     if (!useParcloseAvecJoint) {
                         let hV = H - (CONSTANTS.EPAISSEUR_PROFIL*2);
                         if(m.type==='vitreeSurAllege') { let ha = m.hAllege || 0; hV = H - ha - CONSTANTS.EPAISSEUR_PROFIL; }
@@ -168,31 +165,37 @@ export async function calculerInventaire() {
                         if(v2 !== 'aucun') { totalMetrageJointsByType[v2] = (totalMetrageJointsByType[v2] || 0) + metrage; }
                     }
                 }
+                
                 let nbTrav = 0;
                 if(m.type==='vitreeSurAllege') nbTrav++;
                 if(hasImposteModules && H > H_IMPOSTE+38) nbTrav++;
                 if(nbTrav > 0) {
                     qteEquerresTraverse += nbTrav * 2; 
-                    for(let k=0; k<nbTrav; k++) { 
-                        besoinsCoupesHorizontales.push(m.largeur); // AJOUT POUR ALGO CHUTE
-                    }
+                    for(let k=0; k<nbTrav; k++) { besoinsTraverses.push(m.largeur); besoinsCJ.push(m.largeur); besoinsCJ.push(m.largeur); }
                 }
             }
         });
     });
 
+    // --- APPLICATION DE L'ARRONDI POUR LES PARCLOSES ---
+    if (totalBarresParcloses > 0) {
+        add(nomParcloseDefaut, Math.ceil(totalBarresParcloses));
+    }
+    // ---------------------------------------------------
+
     let nbCapots = 0;
     let positionDepartUnique = 'A';
     let radioPos = document.querySelector('input[name="posDepartL"]:checked');
     if(radioPos) positionDepartUnique = radioPos.value;
+
     let debutEstLibre = false;
     if (qteDepartsMurs === 0) { debutEstLibre = true; } 
     else if (forme === 'L' && qteDepartsMurs === 1 && positionDepartUnique === 'B') { debutEstLibre = true; }
     if (debutEstLibre) {
         nbCapots++;
         if (GLOBAL_STATE.configMurs['A'].length === 1) nbMontantsSpeciaux++; else nbMontantsStandard++;
-        besoinsCoupesVerticales.push(H); 
     }
+
     let finEstLibre = false;
     let murFinId = (forme === 'U') ? 'C' : (forme === 'L' ? 'B' : 'A');
     if (qteDepartsMurs === 0) { finEstLibre = true; } 
@@ -204,34 +207,25 @@ export async function calculerInventaire() {
     if (finEstLibre) {
         nbCapots++;
         if (GLOBAL_STATE.configMurs[murFinId].length === 1) nbMontantsSpeciaux++; else nbMontantsStandard++;
-        besoinsCoupesVerticales.push(H);
     }
 
-    let qteBarresSpeciales = nbMontantsSpeciaux;
+    let qteBarresStandards = 0;
+    if (longueurBarreRetenue === 5750 && H <= 2875) { qteBarresStandards = Math.ceil(nbMontantsStandard / 2); } 
+    else { qteBarresStandards = nbMontantsStandard; }
+    ajouterAuStock(nomMontant, qteBarresStandards);
+    
+    let qteBarresSpeciales = 0;
+    if (longueurBarreRetenue === 5750 && H <= 2875) { qteBarresSpeciales = Math.ceil(nbMontantsSpeciaux / 2); } 
+    else { qteBarresSpeciales = nbMontantsSpeciaux; }
     ajouterAuStock(nomMontantSpecial, qteBarresSpeciales);
 
     add(nomDepart, nbDeparts);
-    if(nbDeparts > 0) {
-        let metrageJoint = nbDeparts * H * 2;
-        let qteRouleaux = Math.ceil(metrageJoint / 5000);
-        add('Joint de départ', qteRouleaux);
-    }
-
     if(nbAngles>0) add(`Angle Carré (H. ${hNom})`, nbAngles);
     if(nbCapots>0) add('Capots de finition (pour Montant)', nbCapots);
     
     let totVert = nbMontantsStandard + nbMontantsSpeciaux + nbDeparts + nbAngles; 
-    let cjVertCount = totVert * 2;
-    
-    if(isPorteTH) {
-        let nbPortesTH = 0;
-        ['A','B','C'].forEach(m => GLOBAL_STATE.configMurs[m].forEach(mod => { if(mod.type==='porte') nbPortesTH++; }));
-        cjVertCount -= (nbPortesTH * 4); 
-        if(cjVertCount < 0) cjVertCount = 0;
-    }
-
-    add(nomCJ_Vertical, cjVertCount);
-    add('Boîte de Clips couvre joints (100u)', Math.ceil(cjVertCount*8/100));
+    add(nomCJ_Vertical, totVert*2);
+    add('Boîte de Clips couvre joints (100u)', Math.ceil(totVert*2*8/100));
     
     let totalEclisses = 0;
     murs.forEach(id => {
@@ -286,19 +280,17 @@ export async function calculerInventaire() {
                  else { add(`Porte Double Cadre Alu ${lp}mm`, totalPortes); }
             } else { add(`Porte Cadre Alu ${lp}mm`, totalPortes); }
         }
+        
         if(document.getElementById('hauteurPorte').value==='2100') {
-             let nbBarresCJ_Porte = isD ? 2 : 1;
-             add(nomCJ_Horizontal, nbBarresCJ_Porte * totalPortes);
-
+             for(let k=0; k < totalPortes; k++) { besoinsCJ.push(lp); besoinsCJ.push(lp); }
              if(hasImposteModules && H > H_IMPOSTE+38 && H_IMPOSTE > 2100) {
-                 for(let k=0; k < totalPortes; k++) { 
-                     besoinsCoupesHorizontales.push(lp); 
-                 }
+                 for(let k=0; k < totalPortes; k++) { besoinsTraverses.push(lp); besoinsCJ.push(lp); besoinsCJ.push(lp); }
                  qteEquerresTraverse += totalPortes * 2; 
              }
              if(H > 2100 + 38) { 
                  let typeImp = document.getElementById('typeImposte').value;
                  if(typeImp === 'vitree') { 
+                     // IMPORTANT: Les parcloses d'impostes utilisent la même logique (ici on ajoute simplement la quantité calculée précédemment)
                      let nbParclosesBase = (H > 2600) ? 2 : 1;
                      let qteParcloseImposte = (isD ? (nbParclosesBase * 2) : nbParclosesBase) * totalPortes; 
                      add(nomParcloseDefaut, qteParcloseImposte);
@@ -318,89 +310,59 @@ export async function calculerInventaire() {
     if(nbAngles>0) { qteEq += nbAngles * 4; }
     add('Équerres (total)', qteEq);
 
-    // --- ALGORITHME DE COUPE & CHUTES ---
-    function optimiserCoupes(besoins, longueurBarreRef) {
-        besoins.sort((a, b) => b - a);
-        let stockChutes = [];
-        let barresNeuves = 0;
-        
-        besoins.forEach(coupe => {
-            stockChutes.sort((a,b) => a - b);
-            let index = -1;
-            for(let i=0; i<stockChutes.length; i++) {
-                if(stockChutes[i] >= coupe) { index = i; break; }
+    let barresNeuvesUtilisees = 0; let nbChutesRecyclees = 0; let chutesDe2500_Montants = [];
+    besoinsTraverses.sort((a, b) => b - a); chutesUtilisables.sort((a, b) => b - a);
+    besoinsTraverses.forEach(largeurRequise => {
+        let comble = false;
+        for(let i=0; i < chutesUtilisables.length; i++) {
+            if (chutesUtilisables[i] >= largeurRequise) {
+                let reste = chutesUtilisables[i] - largeurRequise;
+                chutesUtilisables.splice(i, 1);
+                if (reste > 50) { chutesUtilisables.push(reste); chutesUtilisables.sort((a, b) => b - a); }
+                comble = true; nbChutesRecyclees++; break;
             }
-            if(index !== -1) {
-                let reste = stockChutes[index] - coupe;
-                stockChutes.splice(index, 1);
-                if(reste > 50) stockChutes.push(reste);
-            } else {
-                barresNeuves++;
-                let reste = longueurBarreRef - coupe;
-                if(reste > 50) stockChutes.push(reste);
+        }
+        if (!comble) {
+            chutesDe2500_Montants.sort((a, b) => b - a);
+            for(let i=0; i < chutesDe2500_Montants.length; i++) {
+                    if (chutesDe2500_Montants[i] >= largeurRequise) { chutesDe2500_Montants[i] -= largeurRequise; comble = true; break; }
             }
-        });
-        return { barres: barresNeuves, chutes: stockChutes }; 
-    }
-
-    let resVert = optimiserCoupes(besoinsCoupesVerticales, longueurBarreRetenue);
-    let qteBarresVerticalesTotal = resVert.barres;
-    
-    let nbRecuperationChute = 0;
-    let chutesRestantesVert = resVert.chutes; 
-    
-    besoinsCoupesHorizontales.sort((a, b) => b - a);
-    let besoinsHorizRestants = [];
-
-    besoinsCoupesHorizontales.forEach(coupe => {
-        chutesRestantesVert.sort((a,b) => a - b);
-        let index = -1;
-        for(let i=0; i<chutesRestantesVert.length; i++) {
-            if(chutesRestantesVert[i] >= coupe) { index = i; break; }
         }
-        if(index !== -1) {
-            let reste = chutesRestantesVert[index] - coupe;
-            chutesRestantesVert.splice(index, 1);
-            if(reste > 50) chutesRestantesVert.push(reste);
-            nbRecuperationChute++;
-        } else {
-            besoinsHorizRestants.push(coupe);
-        }
+        if (!comble) { barresNeuvesUtilisees++; let resteNeuve = 2500 - largeurRequise; if (resteNeuve > 50) chutesDe2500_Montants.push(resteNeuve); }
     });
-
-    let resHoriz = optimiserCoupes(besoinsHorizRestants, 2500);
-    let qteBarresTraversesTotal = resHoriz.barres;
-
-    if (longueurBarreRetenue === 2500) {
-        add(nomMontant, qteBarresVerticalesTotal + qteBarresTraversesTotal);
-    } else {
-        if(qteBarresVerticalesTotal > 0) add(nomMontant, qteBarresVerticalesTotal);
-        if(qteBarresTraversesTotal > 0) add(nomTraverseBarre, qteBarresTraversesTotal);
-    }
-    if(nbRecuperationChute > 0) { add("Chutes de montant réutilisées (Traverses)", nbRecuperationChute); }
+    if (barresNeuvesUtilisees > 0) { add(nomTraverseBarre, barresNeuvesUtilisees); }
+    if (nbChutesRecyclees > 0) { add("Chutes de montant réutilisées (Traverses)", nbChutesRecyclees); }
+    
+    let finalBarresCJNeuves = 0; let finalNbChutesCJRecyclees = 0; let chutesDe2500 = []; 
+    besoinsCJ.sort((a, b) => b - a); chutesCJUtilisables.sort((a, b) => b - a);
+    besoinsCJ.forEach(largeurRequise => {
+        let comble = false;
+        for(let i=0; i < chutesCJUtilisables.length; i++) {
+            if (chutesCJUtilisables[i] >= largeurRequise) {
+                let reste = chutesCJUtilisables[i] - largeurRequise;
+                chutesCJUtilisables.splice(i, 1); 
+                if (reste > 50) { chutesCJUtilisables.push(reste); chutesCJUtilisables.sort((a, b) => b - a); }
+                comble = true; finalNbChutesCJRecyclees++; break;
+            }
+        }
+        if (!comble) {
+            chutesDe2500.sort((a, b) => b - a);
+            for(let i=0; i < chutesDe2500.length; i++) {
+                if (chutesDe2500[i] >= largeurRequise) { chutesDe2500[i] -= largeurRequise; comble = true; break; }
+            }
+        }
+        if (!comble) { finalBarresCJNeuves++; let resteNeuve = 2500 - largeurRequise; if(resteNeuve > 50) chutesDe2500.push(resteNeuve); }
+    });
+    if (finalBarresCJNeuves > 0) { add(nomCJ_Horizontal, finalBarresCJNeuves); }
+    if (finalNbChutesCJRecyclees > 0) { add("Chutes de CJ réutilisées", finalNbChutesCJRecyclees); }
 
     GLOBAL_STATE.derniereInventaire = inv;
 
     let keys = Object.keys(inv).sort();
     
-    let ossatureKeys = keys.filter(k => (
-        k.includes('Lisse') || 
-        (k.includes('Départ') && !k.includes('Joint')) || 
-        k.includes('Montants') || 
-        k.includes('Montant') || 
-        k.includes('Angle') || 
-        k.includes('Profilés') || 
-        k.includes('Chute')
-    ));
-    
-    let parcloseKeys = keys.filter(k => (
-        k.includes('Parclose') || 
-        (k.includes('Joint') && !k.includes('départ')) || 
-        k.includes('Vitrage')
-    ));
-    
+    let ossatureKeys = keys.filter(k => k.includes('Lisse') || k.includes('Départ') || k.includes('Montants') || k.includes('Montant') || k.includes('Angle') || k.includes('Profilés') || k.includes('Chute'));
+    let parcloseKeys = keys.filter(k => k.includes('Parclose') || k.includes('Joint') || k.includes('Vitrage'));
     let huisserieKeys = keys.filter(k => k.includes('Huisserie') || k.includes('Porte') || k.includes('Vantail') || k.includes('Semi-fixe') || k.includes('Paumelles') || k.includes('Béquilles') || k.includes('Kit') || k.includes('Plinthe'));
-    
     let accessoiresKeys = keys.filter(k => !ossatureKeys.includes(k) && !parcloseKeys.includes(k) && !huisserieKeys.includes(k));
 
     let tbl = `<h4>1. Ossature</h4><table><thead><tr><th>Pièce</th><th>Quantité</th></tr></thead><tbody>`;
@@ -491,7 +453,7 @@ export async function imprimerDevis() {
     if (GLOBAL_STATE.derniereInventaire) {
         const inv = GLOBAL_STATE.derniereInventaire;
         let keys = Object.keys(inv);
-        const ordrePriorite = ["Lisse", "Départ", "Montant", "Angle", "Couvre joints", "Capot", "Équerre", "éclisse", "Clips", "Cales", "Joint", "Parclose", "Huisserie", "Porte", "Vantail", "Paumelle", "Béquille", "Plinthe"];
+        const ordrePriorite = ["Lisse", "Départ", "Montant", "Angle", "Couvre joints", "Capot", "Équerre", "éclisse", "Clips", "Calle", "Joint", "Parclose", "Huisserie", "Porte", "Vantail", "Paumelle", "Béquille", "Plinthe"];
 
         function getScore(nomArticle) {
             for (let i = 0; i < ordrePriorite.length; i++) {
