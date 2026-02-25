@@ -302,4 +302,19 @@ export const AppManager = {
         };
         reader.readAsText(file);
     }
+
 };
+// Afficher l'option Traverse uniquement pour les portes "Toute Hauteur"
+const selectHauteurPorte = document.getElementById('hauteurPorte');
+if (selectHauteurPorte) {
+    selectHauteurPorte.addEventListener('change', function() {
+        const blocTTH = document.getElementById('blocOptionsTTH');
+        if (blocTTH) {
+            if (this.value === 'touteHauteur') {
+                blocTTH.style.display = 'block';
+            } else {
+                blocTTH.style.display = 'none';
+            }
+        }
+    });
+}
