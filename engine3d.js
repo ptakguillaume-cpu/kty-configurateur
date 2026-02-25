@@ -188,7 +188,7 @@ export async function dessinerSceneGlobale(murs, forme, H, configs) {
                 const isD = document.getElementById('doublePorte').checked;
                 const centreOuverture = x + lp/2; const lRailEffective = lp + 38;
                 const mp = createMesh(new THREE.BoxGeometry(38,H,38), mats.matProfil, g); mp.position.set(x + lb - 19, H/2, 0);
-                                // --- NOUVELLE LOGIQUE 3D POUR LA HAUTEUR DE LA PORTE ET LA TRAVERSE ---
+                                  // --- NOUVELLE LOGIQUE 3D POUR LA HAUTEUR DE LA PORTE ET LA TRAVERSE ---
                 let hOuv = 2100;
                 let drawTraverse = false;
                 let traverseYPos = 0;
@@ -204,8 +204,7 @@ export async function dessinerSceneGlobale(murs, forme, H, configs) {
                     let selectTTH = document.getElementById('typeTraverseTTH');
                     let typeTTH = selectTTH ? selectTTH.value : 'sansTraverse';
                     
-                    if (hasImposteM) {
-                        // RÈGLE : Traverse filante activée = la porte s'aligne !
+                    if (hasImposteM && H > hImpVal + 38) {
                         hOuv = hImpVal; 
                         drawTraverse = true;
                         traverseYPos = hImpVal;
@@ -224,6 +223,7 @@ export async function dessinerSceneGlobale(murs, forme, H, configs) {
                 }
                 
                 const yOuv = hOuv / 2;
+                const startV = x; // <--- C'EST CELLE-CI QUI MANQUAIT ET FAISAIT PLANTER LA 3D !
 
                 // 1. Dessin de la traverse au-dessus de la porte
                 if (drawTraverse) { 
@@ -235,21 +235,20 @@ export async function dessinerSceneGlobale(murs, forme, H, configs) {
                 const mrh = createMesh(new THREE.BoxGeometry(lRailEffective, 38, 38), mats.matProfil, g); 
                 mrh.position.set(centreOuverture, H - 19, 0);
 
-                // 3. NOUVEAU : Dessin du panneau pour boucher le "trou" au-dessus !
-                if (drawTraverse && H > traverseYPos + 38) {
+                // 3. Dessin du panneau pour boucher le "trou" au-dessus (UNIQUEMENT TTH)
+                if (hP === 'touteHauteur' && drawTraverse && H > traverseYPos + 38) {
                     let hVide = H - traverseYPos - 38;
                     let yVide = traverseYPos + 38 + (hVide / 2);
                     
                     let typeImp = document.getElementById('typeImposte') ? document.getElementById('typeImposte').value : 'vitree';
                     let matVide = (typeImp === 'vitree') ? mats.matVitre : mats.matPlein;
-                    let epVide = (typeImp === 'vitree') ? 6 : 12; // 6mm si verre, 12mm si plein
+                    let epVide = (typeImp === 'vitree') ? 6 : 12;
                     
                     const impostePorte = createMesh(new THREE.BoxGeometry(lRailEffective, hVide, epVide), matVide, g);
                     impostePorte.position.set(centreOuverture, yVide, 0);
                 }
                 // -------------------------------------------------------------------------
-
-                // Les variables hOuv et yOuv sont maintenant prêtes pour le reste du dessin !
+ // Les variables hOuv et yOuv sont maintenant prêtes pour le reste du dessin !
                 // -------------------------------------------------------------------------
                 if(isD) {
                     let l1 = lp/2, l2 = lp/2;
@@ -323,4 +322,5 @@ export async function dessinerSceneGlobale(murs, forme, H, configs) {
     }
 
 }
+
 
