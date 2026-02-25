@@ -297,7 +297,41 @@ export async function calculerInventaire() {
                  }
              }
         }
-    }
+    }        // --- NOUVEAU BLOC INTELLIGENT POUR LES PORTES TTH (Corrigé selon tes règles) ---
+        else if(document.getElementById('hauteurPorte').value==='touteHauteur') {
+             
+             let typeTTH = document.getElementById('typeTraverseTTH') ? document.getElementById('typeTraverseTTH').value : 'sansTraverse';
+             
+             // CAS 1 : Plafond > 3000mm. 
+             // (L'huisserie max est à 3000, donc on ferme avec une traverse à 3000 + imposte au-dessus)
+             if (H > 3000) {
+                 for(let k=0; k < totalPortes; k++) { 
+                     besoinsTraverses.push(lp); // La traverse
+                     besoinsCJ.push(2500); // Ajoute exactement 1 barre de CJ de 2500mm
+                 }
+                 // ZÉRO équerre ajoutée !
+                 
+                 // Gestion de l'imposte vitrée éventuelle au-dessus des 3000mm
+                 let typeImp = document.getElementById('typeImposte').value;
+                 if(typeImp === 'vitree') { 
+                     let nbParclosesBase = 2; 
+                     let qteParcloseImposte = (isD ? (nbParclosesBase * 2) : nbParclosesBase) * totalPortes; 
+                     add(nomParcloseDefaut, qteParcloseImposte);
+                 }
+             } 
+             // CAS 2 : Plafond <= 3000mm ET Huisserie AVEC traverse
+             else if (typeTTH === 'avecTraverse') {
+                 for(let k=0; k < totalPortes; k++) { 
+                     besoinsTraverses.push(lp); // La traverse
+                     besoinsCJ.push(2500); // Ajoute exactement 1 barre de CJ de 2500mm
+                 }
+                 // ZÉRO équerre ajoutée !
+             }
+             
+             // CAS 3 : Plafond <= 3000mm ET SANS traverse
+             // On ne fait rien. Les montants verticaux suffisent et vont jusqu'au plafond.
+        }
+
 
     for (const [vitrage, metrageTotal] of Object.entries(totalMetrageJointsByType)) {
         if (metrageTotal > 0) {
@@ -537,3 +571,4 @@ export async function imprimerDevis() {
     
     setTimeout(() => window.print(), 500);
 }
+
