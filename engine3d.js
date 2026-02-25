@@ -188,48 +188,67 @@ export async function dessinerSceneGlobale(murs, forme, H, configs) {
                 const isD = document.getElementById('doublePorte').checked;
                 const centreOuverture = x + lp/2; const lRailEffective = lp + 38;
                 const mp = createMesh(new THREE.BoxGeometry(38,H,38), mats.matProfil, g); mp.position.set(x + lb - 19, H/2, 0);
-                
                                 // --- NOUVELLE LOGIQUE 3D POUR LA HAUTEUR DE LA PORTE ET LA TRAVERSE ---
                 let hOuv = 2100;
-                let yOuv = 1050;
                 let drawTraverse = false;
                 let traverseYPos = 0;
 
+                let hasImposteM = document.getElementById('imposteModules').checked;
+                let hImpVal = parseFloat(document.getElementById('hauteurImposte').value) || 2100;
+
                 if (hP === '2100') {
                     hOuv = 2100;
-                    yOuv = 1050;
                     drawTraverse = true;
                     traverseYPos = 2100;
                 } else if (hP === 'touteHauteur') {
                     let selectTTH = document.getElementById('typeTraverseTTH');
                     let typeTTH = selectTTH ? selectTTH.value : 'sansTraverse';
                     
-                    if (H > 3000) {
+                    if (hasImposteM) {
+                        // RÈGLE : Traverse filante activée = la porte s'aligne !
+                        hOuv = hImpVal; 
+                        drawTraverse = true;
+                        traverseYPos = hImpVal;
+                    } else if (H > 3000) {
                         hOuv = 3000;
                         drawTraverse = true;
-                        traverseYPos = 3000; // La traverse se place à 3m
+                        traverseYPos = 3000;
                     } else if (typeTTH === 'avecTraverse') {
                         hOuv = H - 38;
                         drawTraverse = true;
-                        traverseYPos = H - 38; // La traverse se place juste sous le plafond
+                        traverseYPos = H - 38;
                     } else {
-                        hOuv = H; // Sans traverse, l'ouverture va jusqu'en haut
+                        hOuv = H;
                         drawTraverse = false;
                     }
-                    yOuv = hOuv / 2;
                 }
+                
+                const yOuv = hOuv / 2;
 
-                // Dessin de la traverse au-dessus de la porte (si elle est activée)
+                // 1. Dessin de la traverse au-dessus de la porte
                 if (drawTraverse) { 
                     const mt = createMesh(new THREE.BoxGeometry(lRailEffective, 38, 38), mats.matProfil, g); 
                     mt.position.set(centreOuverture, traverseYPos + 19, 0); 
                 }
 
-                // Dessin de la lisse haute du plafond (toujours présente)
+                // 2. Dessin de la lisse haute du plafond
                 const mrh = createMesh(new THREE.BoxGeometry(lRailEffective, 38, 38), mats.matProfil, g); 
                 mrh.position.set(centreOuverture, H - 19, 0);
-                
-                const startV = x; 
+
+                // 3. NOUVEAU : Dessin du panneau pour boucher le "trou" au-dessus !
+                if (drawTraverse && H > traverseYPos + 38) {
+                    let hVide = H - traverseYPos - 38;
+                    let yVide = traverseYPos + 38 + (hVide / 2);
+                    
+                    let typeImp = document.getElementById('typeImposte') ? document.getElementById('typeImposte').value : 'vitree';
+                    let matVide = (typeImp === 'vitree') ? mats.matVitre : mats.matPlein;
+                    let epVide = (typeImp === 'vitree') ? 6 : 12; // 6mm si verre, 12mm si plein
+                    
+                    const impostePorte = createMesh(new THREE.BoxGeometry(lRailEffective, hVide, epVide), matVide, g);
+                    impostePorte.position.set(centreOuverture, yVide, 0);
+                }
+                // -------------------------------------------------------------------------
+
                 // Les variables hOuv et yOuv sont maintenant prêtes pour le reste du dessin !
                 // -------------------------------------------------------------------------
                 if(isD) {
@@ -304,3 +323,4 @@ export async function dessinerSceneGlobale(murs, forme, H, configs) {
     }
 
 }
+
