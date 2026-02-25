@@ -189,16 +189,49 @@ export async function dessinerSceneGlobale(murs, forme, H, configs) {
                 const centreOuverture = x + lp/2; const lRailEffective = lp + 38;
                 const mp = createMesh(new THREE.BoxGeometry(38,H,38), mats.matProfil, g); mp.position.set(x + lb - 19, H/2, 0);
                 
-                if(hP==='2100') { 
-                    const mt = createMesh(new THREE.BoxGeometry(lRailEffective,38,38), mats.matProfil, g); 
-                    mt.position.set(centreOuverture, 2100+19, 0); 
+                                // --- NOUVELLE LOGIQUE 3D POUR LA HAUTEUR DE LA PORTE ET LA TRAVERSE ---
+                let hOuv = 2100;
+                let yOuv = 1050;
+                let drawTraverse = false;
+                let traverseYPos = 0;
+
+                if (hP === '2100') {
+                    hOuv = 2100;
+                    yOuv = 1050;
+                    drawTraverse = true;
+                    traverseYPos = 2100;
+                } else if (hP === 'touteHauteur') {
+                    let selectTTH = document.getElementById('typeTraverseTTH');
+                    let typeTTH = selectTTH ? selectTTH.value : 'sansTraverse';
+                    
+                    if (H > 3000) {
+                        hOuv = 3000;
+                        drawTraverse = true;
+                        traverseYPos = 3000; // La traverse se place à 3m
+                    } else if (typeTTH === 'avecTraverse') {
+                        hOuv = H - 38;
+                        drawTraverse = true;
+                        traverseYPos = H - 38; // La traverse se place juste sous le plafond
+                    } else {
+                        hOuv = H; // Sans traverse, l'ouverture va jusqu'en haut
+                        drawTraverse = false;
+                    }
+                    yOuv = hOuv / 2;
                 }
-                const mrh = createMesh(new THREE.BoxGeometry(lRailEffective,38,38), mats.matProfil, g); mrh.position.set(centreOuverture, H-19, 0);
+
+                // Dessin de la traverse au-dessus de la porte (si elle est activée)
+                if (drawTraverse) { 
+                    const mt = createMesh(new THREE.BoxGeometry(lRailEffective, 38, 38), mats.matProfil, g); 
+                    mt.position.set(centreOuverture, traverseYPos + 19, 0); 
+                }
+
+                // Dessin de la lisse haute du plafond (toujours présente)
+                const mrh = createMesh(new THREE.BoxGeometry(lRailEffective, 38, 38), mats.matProfil, g); 
+                mrh.position.set(centreOuverture, H - 19, 0);
                 
                 const startV = x; 
-                const hOuv = (hP==='touteHauteur') ? H-38 : 2100; 
-                const yOuv = (hP==='touteHauteur') ? H/2 : 1050; 
-
+                // Les variables hOuv et yOuv sont maintenant prêtes pour le reste du dessin !
+                // -------------------------------------------------------------------------
                 if(isD) {
                     let l1 = lp/2, l2 = lp/2;
                     const txt = document.getElementById('huisserieDoublePorteSelect').options[document.getElementById('huisserieDoublePorteSelect').selectedIndex].text;
@@ -269,4 +302,5 @@ export async function dessinerSceneGlobale(murs, forme, H, configs) {
         GLOBAL_STATE.currentScene.camera.position.copy(c).add(dir.multiplyScalar(dist));
         controls.update();
     }
+
 }
