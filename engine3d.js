@@ -292,12 +292,28 @@ export async function dessinerSceneGlobale(murs, forme, H, configs) {
                 limits.forEach((yEnd, i) => {
                     let hZone = yEnd - yStart;
                     if(hZone > 1) { 
-                        let yCenter = yStart + hZone/2;
+                       let yCenter = yStart + hZone/2;
+                        
                         let isVitre = (m.type.includes('vitree'));
-                        if(m.type === 'vitreeSurAllege') { let hA = m.hAllege || 1100; if(yEnd <= hA + 5) isVitre = false; }
-                        if(hasImposteModules && yStart > hImposteVal + 10) { isVitre = false; }
-                        const mat = isVitre ? mats.matVitre : mats.matPlein; const ep = isVitre ? 6 : 12;
-                        const mesh = createMesh(new THREE.BoxGeometry(lp, hZone, ep), mat, g); mesh.position.set(cx, yCenter, 0);
+                        
+                        // Cas 1 : La partie basse du vitré sur allège est pleine
+                        if(m.type === 'vitreeSurAllege') { 
+                            let hA = m.hAllege || 1100; 
+                            if(yEnd <= hA + 5) isVitre = false; 
+                        }
+                        
+                        // Cas 2 : On dessine la zone de l'imposte (tout en haut)
+                        if(hasImposteModules && yStart > hImposteVal + 10) { 
+                            // Le panneau prend le matériau choisi pour l'imposte, peu importe le module en dessous !
+                            let typeImp = document.getElementById('typeImposte') ? document.getElementById('typeImposte').value : 'vitree';
+                            isVitre = (typeImp === 'vitree'); 
+                        }
+
+                        const mat = isVitre ? mats.matVitre : mats.matPlein; 
+                        const ep = isVitre ? 6 : 12;
+                        
+                        const mesh = createMesh(new THREE.BoxGeometry(lp, hZone, ep), mat, g); 
+                        mesh.position.set(cx, yCenter, 0);
                     }
                     yStart = yEnd + 38;
                 });
@@ -322,5 +338,6 @@ export async function dessinerSceneGlobale(murs, forme, H, configs) {
     }
 
 }
+
 
 
