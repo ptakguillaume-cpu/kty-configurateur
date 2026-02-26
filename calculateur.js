@@ -131,7 +131,7 @@ export async function calculerInventaire() {
                 totalPortes++; 
                 htmlList += `<li>Huisserie (${getLargeurPorte()}mm) - ${sensTxt}</li>`; 
             } 
-            else {
+           else {
                 let nom = m.type === 'pleine' ? 'Module plein' : m.type === 'vitree' ? 'Module vitré' : 'Module allège';
                 htmlList += `<li>${nom} (${m.largeur.toFixed(0)}mm)</li>`;
                 add('Calles de lisse', m.type==='pleine'?2:(m.type==='vitree'?6:4));
@@ -192,15 +192,7 @@ export async function calculerInventaire() {
                     for(let k=0; k<nbTrav; k++) { 
                         besoinsTraverses.push(m.largeur); 
                         besoinsCJ.push(m.largeur); besoinsCJ.push(m.largeur); 
-                  }  
-                }
-                
-                let nbTrav = 0;
-                if(m.type==='vitreeSurAllege') nbTrav++;
-                if(hasImposteModules && H > H_IMPOSTE+38) nbTrav++;
-                if(nbTrav > 0) {
-                    qteEquerresTraverse += nbTrav * 2; 
-                    for(let k=0; k<nbTrav; k++) { besoinsTraverses.push(m.largeur); besoinsCJ.push(m.largeur); besoinsCJ.push(m.largeur); }
+                    }  
                 }
             }
         });
@@ -600,5 +592,6 @@ export async function imprimerDevis() {
     
     setTimeout(() => window.print(), 500);
 }
+
 
 
