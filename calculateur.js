@@ -136,34 +136,63 @@ export async function calculerInventaire() {
                 htmlList += `<li>${nom} (${m.largeur.toFixed(0)}mm)</li>`;
                 add('Calles de lisse', m.type==='pleine'?2:(m.type==='vitree'?6:4));
                 
-                if(m.type === 'vitree' || m.type === 'vitreeSurAllege') {
+                // --- 1. CALCUL DES PARCLOSES ET JOINTS (Partie Basse du module) ---
+                let barresPourCeModule = 0;
+
+                if (m.type === 'vitree') {
+                    barresPourCeModule += 2; // Verticaux
+                    let morceauxParBarre = 2; // Horizontaux
+                    if (m.largeur <= 590) morceauxParBarre = 5;
+                    else if (m.largeur <= 740) morceauxParBarre = 4;
+                    else if (m.largeur <= 990) morceauxParBarre = 3;
+                    barresPourCeModule += (2 / morceauxParBarre);
+                } 
+                else if (m.type === 'vitreeSurAllege') {
+                    // RÈGLE STRICTE : 2 parcloses exactement pour Vitré sur Allège
+                    barresPourCeModule += 2;
+                }
+
+                // Comptage des joints pour la partie basse
+                if ((m.type === 'vitree' || m.type === 'vitreeSurAllege') && !useParcloseAvecJoint) {
+                    let hV = H - (CONSTANTS.EPAISSEUR_PROFIL*2);
+                    if(m.type === 'vitreeSurAllege') { let ha = m.hAllege || 1100; hV = H - ha - CONSTANTS.EPAISSEUR_PROFIL; }
+                    let metrage = (hV * 2) + (m.largeur * 2);
+                    totalMetrageJointsByType[v1] = (totalMetrageJointsByType[v1] || 0) + metrage;
+                    if(v2 !== 'aucun') { totalMetrageJointsByType[v2] = (totalMetrageJointsByType[v2] || 0) + metrage; }
+                }
+
+                // --- 2. GESTION DES TRAVERSES ET DE L'IMPOSTE (Partie Haute) ---
+                let nbTrav = 0;
+                if(m.type === 'vitreeSurAllege') nbTrav++;
+                
+                if(hasImposteModules && H > H_IMPOSTE + 38) {
+                    nbTrav++; // La traverse filante
                     
-                    // --- NOUVEAU CALCUL DES PARCLOSES (Modules Indépendants, Barres 3000mm) ---
-                    // 1. Les Verticaux (H ~ 2600mm)
-                    // Chaque montant consomme une barre entière (chute de 400mm inutilisable pour un autre montant)
-                    totalBarresParcloses += 2;
+                    let typeImp = document.getElementById('typeImposte') ? document.getElementById('typeImposte').value : 'vitree';
+                    
+                    // Si l'imposte est vitrée, on ajoute le matos (MÊME si le module dessous est plein !)
+                    if (typeImp === 'vitree') {
+                        let hVide = H - H_IMPOSTE - 38;
+                        // 1 barre de 3m suffit pour encadrer une imposte classique. 2 barres si imposte très haute.
+                        barresPourCeModule += (hVide > 1000) ? 2 : 1; 
 
-                    // 2. Les Horizontaux (Traverses)
-                    const L = m.largeur;
-                    let morceauxParBarre = 2; // Par défaut, pour les grands modules (> 990mm)
-
-                    // Application des marges de sécurité (Trait de scie + Nettoyage)
-                    if (L <= 590) morceauxParBarre = 5;
-                    else if (L <= 740) morceauxParBarre = 4;
-                    else if (L <= 990) morceauxParBarre = 3;
-
-                    // On ajoute la fraction de barre nécessaire pour ces 2 traverses (haut et bas)
-                    // L'arrondi final se fera à la fin de la fonction globale.
-                    totalBarresParcloses += (2 / morceauxParBarre);
-                    // -------------------------------------------------------------------------
-
-                    if (!useParcloseAvecJoint) {
-                        let hV = H - (CONSTANTS.EPAISSEUR_PROFIL*2);
-                        if(m.type==='vitreeSurAllege') { let ha = m.hAllege || 0; hV = H - ha - CONSTANTS.EPAISSEUR_PROFIL; }
-                        let metrage = (hV * 2) + (m.largeur * 2);
-                        totalMetrageJointsByType[v1] = (totalMetrageJointsByType[v1] || 0) + metrage;
-                        if(v2 !== 'aucun') { totalMetrageJointsByType[v2] = (totalMetrageJointsByType[v2] || 0) + metrage; }
+                        if (!useParcloseAvecJoint) {
+                            let metrageImp = (hVide * 2) + (m.largeur * 2);
+                            totalMetrageJointsByType[v1] = (totalMetrageJointsByType[v1] || 0) + metrageImp;
+                            if(v2 !== 'aucun') { totalMetrageJointsByType[v2] = (totalMetrageJointsByType[v2] || 0) + metrageImp; }
+                        }
                     }
+                }
+                
+                totalBarresParcloses += barresPourCeModule;
+
+                // --- 3. AJOUT DES PROFILÉS DE TRAVERSE AU DEVIS ---
+                if(nbTrav > 0) {
+                    qteEquerresTraverse += nbTrav * 2; 
+                    for(let k=0; k<nbTrav; k++) { 
+                        besoinsTraverses.push(m.largeur); 
+                        besoinsCJ.push(m.largeur); besoinsCJ.push(m.largeur); 
+                  }  
                 }
                 
                 let nbTrav = 0;
@@ -571,4 +600,5 @@ export async function imprimerDevis() {
     
     setTimeout(() => window.print(), 500);
 }
+
 
