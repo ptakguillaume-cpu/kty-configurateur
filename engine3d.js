@@ -189,6 +189,7 @@ export async function dessinerSceneGlobale(murs, forme, H, configs) {
                 const centreOuverture = x + lp/2; const lRailEffective = lp + 38;
                 const mp = createMesh(new THREE.BoxGeometry(38,H,38), mats.matProfil, g); mp.position.set(x + lb - 19, H/2, 0);
                                   // --- NOUVELLE LOGIQUE 3D POUR LA HAUTEUR DE LA PORTE ET LA TRAVERSE ---
+           // --- NOUVELLE LOGIQUE 3D POUR LA HAUTEUR DE LA PORTE ET LA TRAVERSE ---
                 let hOuv = 2100;
                 let drawTraverse = false;
                 let traverseYPos = 0;
@@ -204,12 +205,9 @@ export async function dessinerSceneGlobale(murs, forme, H, configs) {
                     let selectTTH = document.getElementById('typeTraverseTTH');
                     let typeTTH = selectTTH ? selectTTH.value : 'sansTraverse';
                     
-                    if (hasImposteM && H > hImpVal + 38) {
-                        hOuv = hImpVal; 
-                        drawTraverse = true;
-                        traverseYPos = hImpVal;
-                    } else if (H > 3000) {
-                        hOuv = 3000;
+                    // RÈGLE : Une TTH est indépendante de l'imposte de la cloison.
+                    if (H > 3000) {
+                        hOuv = 3000; // S'arrête toujours à 3000mm max
                         drawTraverse = true;
                         traverseYPos = 3000;
                     } else if (typeTTH === 'avecTraverse') {
@@ -217,13 +215,13 @@ export async function dessinerSceneGlobale(murs, forme, H, configs) {
                         drawTraverse = true;
                         traverseYPos = H - 38;
                     } else {
-                        hOuv = H - 38;
+                        hOuv = H - 38; // SANS traverse : la porte glisse pile sous la lisse du plafond
                         drawTraverse = false;
                     }
                 }
                 
                 const yOuv = hOuv / 2;
-                const startV = x; // <--- C'EST CELLE-CI QUI MANQUAIT ET FAISAIT PLANTER LA 3D !
+                const startV = x;
 
                 // 1. Dessin de la traverse au-dessus de la porte
                 if (drawTraverse) { 
@@ -351,6 +349,7 @@ export async function dessinerSceneGlobale(murs, forme, H, configs) {
     }
 
 }
+
 
 
 
