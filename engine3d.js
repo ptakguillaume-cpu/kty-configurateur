@@ -217,7 +217,7 @@ export async function dessinerSceneGlobale(murs, forme, H, configs) {
                         drawTraverse = true;
                         traverseYPos = H - 38;
                     } else {
-                        hOuv = H;
+                        hOuv = H - 38;
                         drawTraverse = false;
                     }
                 }
@@ -265,13 +265,26 @@ export async function dessinerSceneGlobale(murs, forme, H, configs) {
                 if(hP==='2100' && H>2100 + 38) {
                      const typI = document.getElementById('typeImposte').value;
                      let splitImpostePorte = (hasImposteModules && hImposteVal > 2120 && H > hImposteVal + 38);
-                     if(splitImpostePorte) {
-                         const trSupp = createMesh(new THREE.BoxGeometry(lRailEffective, 38, 38), mats.matProfil, g); trSupp.position.set(centreOuverture, hImposteVal + 19, 0);
+                    if(splitImpostePorte) {
+                         // 1. La traverse filante
+                         const trSupp = createMesh(new THREE.BoxGeometry(lRailEffective, 38, 38), mats.matProfil, g); 
+                         trSupp.position.set(centreOuverture, hImposteVal + 19, 0);
+                         
                          let h1 = hImposteVal - (2100+38); let y1 = (2100+38) + h1/2;
                          let h2 = H - (hImposteVal + 38) - 38; let y2 = (hImposteVal + 38) + h2/2;
-                         const matI = (typI==='vitree')?mats.matVitre:mats.matPlein; const epI = (typI==='vitree')?6:12;
-                         if(h1>0) { const mi1 = createMesh(new THREE.BoxGeometry(lp,h1,epI), matI, g); mi1.position.set(centreOuverture, y1, 0); }
-                         if(h2>0) { const mi2 = createMesh(new THREE.BoxGeometry(lp,h2,12), mats.matPlein, g); mi2.position.set(centreOuverture, y2, 0); }
+                         
+                         // 2. MATÉRIAU DU BAS (S'aligne avec le style du mur : Plein ou Vitré)
+                         const typMur = document.getElementById('typeCloison').value;
+                         const matBas = (typMur==='pleine') ? mats.matPlein : mats.matVitre;
+                         const epBas = (typMur==='pleine') ? 12 : 6;
+                         
+                         // 3. MATÉRIAU DU HAUT (Prend le réglage de l'imposte : généralement Vitré)
+                         const matHaut = (typI==='vitree') ? mats.matVitre : mats.matPlein; 
+                         const epHaut = (typI==='vitree') ? 6 : 12;
+
+                         // Dessin dans le bon ordre !
+                         if(h1>0) { const mi1 = createMesh(new THREE.BoxGeometry(lp,h1,epBas), matBas, g); mi1.position.set(centreOuverture, y1, 0); }
+                         if(h2>0) { const mi2 = createMesh(new THREE.BoxGeometry(lp,h2,epHaut), matHaut, g); mi2.position.set(centreOuverture, y2, 0); }
                      } else {
                          const hi = H-(2100+38); const matI = (typI==='vitree')?mats.matVitre:mats.matPlein; const epI = (typI==='vitree')?6:12;
                          const mi = createMesh(new THREE.BoxGeometry(lp,hi,epI), matI, g); mi.position.set(centreOuverture, (2100+38)+hi/2, 0);
@@ -338,6 +351,7 @@ export async function dessinerSceneGlobale(murs, forme, H, configs) {
     }
 
 }
+
 
 
 
