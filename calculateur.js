@@ -309,7 +309,8 @@ export async function calculerInventaire() {
         }
     }
     
-    let qteEq = ((2 + (nbMontantsStandard + nbMontantsSpeciaux)) * 2) + qteEquerresTraverse; 
+        // Calcul exact : 2 équerres par montant vertical (les départs murs n'en prennent pas)
+    let qteEq = ((nbMontantsStandard + nbMontantsSpeciaux) * 2) + qteEquerresTraverse; 
     if(nbAngles>0) { qteEq += nbAngles * 4; }
     add('Équerres (total)', qteEq);
 
