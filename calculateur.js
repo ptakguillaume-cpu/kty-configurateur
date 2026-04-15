@@ -309,10 +309,18 @@ export async function calculerInventaire() {
         }
     }
     
-        // Calcul exact : 2 équerres par montant vertical (les départs murs n'en prennent pas)
-    let qteEq = ((nbMontantsStandard + nbMontantsSpeciaux) * 2) + qteEquerresTraverse; 
-    if(nbAngles>0) { qteEq += nbAngles * 4; }
-    add('Équerres (total)', qteEq);
+            // --- CALCUL EXACT DES ÉQUERRES SELON TES RÈGLES ---
+    // 1. On prend le total des montants et on RETIRE ceux qui vont dans les capots (pas d'équerre)
+    let montantsIntermediaires = (nbMontantsStandard + nbMontantsSpeciaux) - nbCapots;
+    
+    // 2. On applique la formule (2 par départ, 2 par montant, + traverses)
+    let qteEq = (nbDeparts * 2) + (montantsIntermediaires * 2) + qteEquerresTraverse; 
+    
+    // 3. On ajoute les angles (4 par angle)
+    if (nbAngles > 0) { 
+        qteEq += nbAngles * 4; 
+    }
+    // --------------------------------------------------
 
     // Optimisation des traverses
     let barresNeuvesUtilisees = 0; let nbChutesRecyclees = 0; let chutesDe2500_Montants = [];
