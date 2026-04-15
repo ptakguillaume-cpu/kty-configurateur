@@ -317,6 +317,7 @@ export async function calculerInventaire() {
     if (nbAngles > 0) { 
         qteEq += nbAngles * 4; 
     }
+    add('Équerres (total)', qteEq);
     // ---------------------------------
 
     // Optimisation des traverses
