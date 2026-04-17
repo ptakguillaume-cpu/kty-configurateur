@@ -274,9 +274,9 @@ export async function dessinerSceneGlobale(murs, forme, H, configs) {
         }); // Fin du dessin des modules pour ce mur
 
         // --- C'EST ICI QU'ON APPELLE LA FONCTION DES COTES ---
-        // Largeur (en dessous du mur)
-        drawDimension(g, 0, -100, 50, x, -100, 50, `${Math.round(x)} mm`, 0, -90);
-        // Hauteur (uniquement sur le 1er mur)
+                // Largeur (Placée au-dessus du mur)
+        drawDimension(g, 0, H + 100, 50, x, H + 100, 50, `${Math.round(x)} mm`, 0, 80);
+               // Hauteur (uniquement sur le 1er mur)
         if (idx === 0) {
             drawDimension(g, -100, 0, 50, -100, H, 50, `${Math.round(H)} mm`, -200, 0);
         }
@@ -307,7 +307,7 @@ function drawDimension(parent, x1, y1, z1, x2, y2, z2, textMsg, textOffsetX, tex
     points.push(new THREE.Vector3(x1, y1, z1));
     points.push(new THREE.Vector3(x2, y2, z2));
     const geo = new THREE.BufferGeometry().setFromPoints(points);
-    const mat = new THREE.LineBasicMaterial({ color: 0x2563EB, linewidth: 2 }); 
+    const mat = new THREE.LineBasicMaterial({ color: 0x2563EB, linewidth: 1 }); 
     const line = new THREE.Line(geo, mat);
     parent.add(line);
 
