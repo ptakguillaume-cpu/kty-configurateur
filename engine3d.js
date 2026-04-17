@@ -346,6 +346,65 @@ export async function dessinerSceneGlobale(murs, forme, H, configs) {
         const dist = maxDim * 1.5; const dir = new THREE.Vector3(0.8, 0.6, 1.0).normalize(); 
         GLOBAL_STATE.currentScene.camera.position.copy(c).add(dir.multiplyScalar(dist));
         controls.update();
+        // --- FONCTION UTILITAIRE POUR DESSINER LES COTES (MESURES) EN 3D ---
+function drawDimension(parent, x1, y1, z1, x2, y2, z2, textMsg, textOffsetX, textOffsetY) {
+    // 1. La ligne de cote
+    const points = [];
+    points.push(new THREE.Vector3(x1, y1, z1));
+    points.push(new THREE.Vector3(x2, y2, z2));
+    const geo = new THREE.BufferGeometry().setFromPoints(points);
+    const mat = new THREE.LineBasicMaterial({ color: 0x2563EB, linewidth: 2 }); // Bleu KTY
+    const line = new THREE.Line(geo, mat);
+    parent.add(line);
+
+    // 2. Les petits taquets aux extrémités
+    const tickSize = 30;
+    if (x1 !== x2) { // Ligne horizontale
+        const pT1 = [new THREE.Vector3(x1, y1-tickSize, z1), new THREE.Vector3(x1, y1+tickSize, z1)];
+        parent.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pT1), mat));
+        const pT2 = [new THREE.Vector3(x2, y2-tickSize, z2), new THREE.Vector3(x2, y2+tickSize, z2)];
+        parent.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pT2), mat));
+    } else { // Ligne verticale
+        const pT1 = [new THREE.Vector3(x1-tickSize, y1, z1), new THREE.Vector3(x1+tickSize, y1, z1)];
+        parent.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pT1), mat));
+        const pT2 = [new THREE.Vector3(x2-tickSize, y2, z2), new THREE.Vector3(x2+tickSize, y2, z2)];
+        parent.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pT2), mat));
+    }
+
+    // 3. Le texte (Sprite Canvas)
+    const canvas = document.createElement('canvas');
+    canvas.width = 512; canvas.height = 128;
+    const ctx = canvas.getContext('2d');
+    
+    // Fond blanc avec bordure pour la lisibilité
+    ctx.fillStyle = "rgba(255, 255, 255, 0.85)";
+    ctx.fillRect(0, 0, 512, 128);
+    ctx.strokeStyle = "#2563EB";
+    ctx.lineWidth = 4;
+    ctx.strokeRect(0, 0, 512, 128);
+    
+    // Texte
+    ctx.font = "bold 60px sans-serif";
+    ctx.fillStyle = "#0F172A";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(textMsg, 256, 64);
+
+    const texture = new THREE.CanvasTexture(canvas);
+    const spriteMat = new THREE.SpriteMaterial({ map: texture, depthTest: false }); // depthTest=false pour passer à travers les objets
+    const sprite = new THREE.Sprite(spriteMat);
+    sprite.scale.set(350, 85, 1); // Taille de l'étiquette dans la scène
+    
+    // 4. Positionnement du texte
+    const midX = (x1 + x2) / 2;
+    const midY = (y1 + y2) / 2;
+    const midZ = (z1 + z2) / 2;
+    sprite.position.set(midX + textOffsetX, midY + textOffsetY, midZ);
+    sprite.renderOrder = 999; // Au premier plan
+    
+    parent.add(sprite);
+}
+
     }
 
 }
