@@ -330,7 +330,25 @@ export async function dessinerSceneGlobale(murs, forme, H, configs) {
                 });
                 x += lb;
             }
-        });
+        });                x += lb;
+            }
+        }); // Fin du conf.forEach (les modules)
+
+        // ====================================================
+        // NOUVEAU : DESSIN DES COTES (LARGEUR ET HAUTEUR)
+        // ====================================================
+        // 1. Cote de Largeur (Placée en dessous du mur, légèrement en avant)
+        drawDimension(g, 0, -100, 50, x, -100, 50, `${Math.round(x)} mm`, 0, -90);
+        
+        // 2. Cote de Hauteur (Placée sur le côté gauche du 1er mur uniquement)
+        if (idx === 0) {
+            drawDimension(g, -100, 0, 50, -100, H, 50, `${Math.round(H)} mm`, -200, 0);
+        }
+        // ====================================================
+
+        fwd(x); // Avance la "plume" 3D
+        if(idx < murs.length-1) {
+
         fwd(x);
         if(idx < murs.length-1) {
             const ang = createMesh(new THREE.BoxGeometry(90.5,H,90.5), mats.matProfil, root); 
