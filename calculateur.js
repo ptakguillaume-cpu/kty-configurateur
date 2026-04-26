@@ -5,6 +5,7 @@ import { dessinerSceneGlobale } from './engine3d.js';
 import * as THREE from 'three'; 
 import { getDonneesPorte } from './portes.js';
 import { LEXIQUE } from './lexique.js'; 
+import { OSSATURE_CONFIG, getBarreOptimale } from './ossature.js'; // <-- NOUVEL IMPORT
 
 export async function calculerInventaire() {
     let inv = {};
@@ -30,11 +31,10 @@ export async function calculerInventaire() {
     const hpGlobal = document.getElementById('hauteurPorte').value;
     const isTTHGlobal = (hpGlobal === 'touteHauteur');
 
-    const BARRES_DISPO = [2500, 2700, 3050, 3250, 5750];
-    let longueurBarreRetenue = 5750; 
-    for (let l of BARRES_DISPO) { if (l >= H) { longueurBarreRetenue = l; break; } }
-    
+    // --- NOUVEAU : ON UTILISE LA FONCTION INTELLIGENTE ---
+    let longueurBarreRetenue = getBarreOptimale(H);
     let hNom = `${longueurBarreRetenue}mm`;
+    // -----------------------------------------------------
     
     let nbDeparts = qteDepartsMurs; 
     let nbAngles = (forme==='L') ? 1 : (forme==='U' ? 2 : 0);
@@ -57,19 +57,19 @@ export async function calculerInventaire() {
         } else if (m.type === 'vitreeSurAllege') { barresPourCeModule += 2; }
 
         if ((m.type === 'vitree' || m.type === 'vitreeSurAllege') && !useParcloseAvecJoint) {
-            let hV = H - (CONSTANTS.EPAISSEUR_PROFIL*2);
-            if(m.type === 'vitreeSurAllege') { let ha = m.hAllege || 1100; hV = H - ha - CONSTANTS.EPAISSEUR_PROFIL; }
+            let hV = H - (OSSATURE_CONFIG.EPAISSEUR_PROFIL * 2);
+            if(m.type === 'vitreeSurAllege') { let ha = m.hAllege || 1100; hV = H - ha - OSSATURE_CONFIG.EPAISSEUR_PROFIL; }
             let metrage = (hV * 2) + (m.largeur * 2);
             totalMetrageJointsByType[v1] = (totalMetrageJointsByType[v1] || 0) + metrage;
             if(v2 !== 'aucun') totalMetrageJointsByType[v2] = (totalMetrageJointsByType[v2] || 0) + metrage;
         }
 
         let nbTrav = (m.type === 'vitreeSurAllege') ? 1 : 0;
-        if(hasImposteModules && H > H_IMPOSTE + 38) {
+        if(hasImposteModules && H > H_IMPOSTE + OSSATURE_CONFIG.EPAISSEUR_PROFIL) {
             nbTrav++;
             let typeImp = document.getElementById('typeImposte') ? document.getElementById('typeImposte').value : 'vitree';
             if (typeImp === 'vitree') {
-                let hVide = H - H_IMPOSTE - 38;
+                let hVide = H - H_IMPOSTE - OSSATURE_CONFIG.EPAISSEUR_PROFIL;
                 barresPourCeModule += (hVide > 1000) ? 2 : 1; 
                 if (!useParcloseAvecJoint) {
                     let metrageImp = (hVide * 2) + (m.largeur * 2);
@@ -101,7 +101,6 @@ export async function calculerInventaire() {
 
         let donnees = getDonneesPorte(lp, tp, isCoulissante, isTTHGlobal);
         
-        // --- NOUVEAU : CALCUL INTELLIGENT DE LA HAUTEUR D'OUVERTURE ---
         let hHuisserieLabel = 2100;
         let hVantail = donnees.hauteurVantailStandard; 
         
@@ -109,28 +108,19 @@ export async function calculerInventaire() {
             let selectTTH = document.getElementById('typeTraverseTTH');
             let typeTTH = selectTTH ? selectTTH.value : 'sansTraverse';
             
-            // Si on a une traverse (imposte) définie, la porte s'arrête là !
-            if (hasImposteModules && H > H_IMPOSTE + 72) {
+            if (hasImposteModules && H > H_IMPOSTE + OSSATURE_CONFIG.EPAISSEUR_PROFIL) {
                 hHuisserieLabel = H_IMPOSTE;
-            } 
-            // Sécurité si plafond hyper haut sans traverse (bridé à 3000)
-            else if (H > 3000) {
+            } else if (H > 3000) {
                 hHuisserieLabel = 3000;
-            } 
-            // Si le client a demandé une traverse haute spécifique porte
-            else if (typeTTH === 'avecTraverse') {
-                hHuisserieLabel = H - 72;
-            } 
-            // Sinon (Vraiment toute hauteur jusqu'au plafond)
-            else {
+            } else if (typeTTH === 'avecTraverse') {
+                hHuisserieLabel = H - OSSATURE_CONFIG.EPAISSEUR_PROFIL;
+            } else {
                 hHuisserieLabel = H;
             }
 
-            // Ex: 38mm de lisse haute + 4mm de jour de sol + 40mm huis = 72mm de jeu total
             const JEU_TTH = 72; 
             hVantail = Math.round(hHuisserieLabel - JEU_TTH); 
         }
-        // --------------------------------------------------------------
 
         if (isCoulissante) {
             add(`Ouverture / ${donnees.nomDevisHuisserie} x ${hHuisserieLabel} mm`, totalPortes);
@@ -143,10 +133,7 @@ export async function calculerInventaire() {
             add(LEXIQUE.RENFORT_COULISSANT, 1 * totalPortes);
             qteEquerresTraverse += 6 * totalPortes;
 
-            if (hasGache) {
-                add(LEXIQUE.MONTANT_GACHE, 1 * totalPortes);
-            }
-
+            if (hasGache) { add(LEXIQUE.MONTANT_GACHE, 1 * totalPortes); }
             if(!donnees.isBois) { add(LEXIQUE.POIGNEE_CUVETTE, totalPortes); }
         } 
         else {
@@ -182,11 +169,11 @@ export async function calculerInventaire() {
             }
             if (hp === '2100') {
                  for(let k=0; k < totalPortes; k++) { besoinsCJ.push(lp); besoinsCJ.push(lp); }
-                 if(hasImposteModules && H > H_IMPOSTE+38 && H_IMPOSTE > 2100) {
+                 if(hasImposteModules && H > H_IMPOSTE + OSSATURE_CONFIG.EPAISSEUR_PROFIL && H_IMPOSTE > 2100) {
                      for(let k=0; k < totalPortes; k++) { besoinsTraverses.push(lp); besoinsCJ.push(lp); besoinsCJ.push(lp); }
                      qteEquerresTraverse += totalPortes * 2; 
                  }
-                 if(H > 2100 + 38) { 
+                 if(H > 2100 + OSSATURE_CONFIG.EPAISSEUR_PROFIL) { 
                      let typeImp = document.getElementById('typeImposte').value;
                      if(typeImp === 'vitree') { 
                          let nbParclosesBase = (H > 2600) ? 2 : 1;
@@ -199,7 +186,7 @@ export async function calculerInventaire() {
                  let selectTTH = document.getElementById('typeTraverseTTH');
                  let typeTTH = selectTTH ? selectTTH.value : 'sansTraverse';
                  if (H > 3000 || typeTTH === 'avecTraverse') {
-                     for(let k=0; k < totalPortes; k++) { besoinsTraverses.push(lp); besoinsCJ.push(2500); }
+                     for(let k=0; k < totalPortes; k++) { besoinsTraverses.push(lp); besoinsCJ.push(OSSATURE_CONFIG.LONGUEUR_CJ_HORIZ); }
                  }
                  if (H > 3000) {
                      let typeImp = document.getElementById('typeImposte').value;
@@ -217,9 +204,12 @@ export async function calculerInventaire() {
         murs.forEach(id => {
             let L = (id==='A') ? parseFloat(document.getElementById('longueur').value) : (id==='B') ? parseFloat(document.getElementById('longueurB').value) : parseFloat(document.getElementById('longueurC').value);
             let deduction = 0;
-            if(id==='A') { deduction += 38; deduction += (forme !== 'droite') ? 90.5 : 38; }
-            if(id==='B') { deduction += 90.5; deduction += (forme === 'U') ? 90.5 : 38; }
-            if(id==='C') { deduction += 90.5 + 38; }
+            
+            // --- NOUVEAU : ON UTILISE LA LARGEUR D'ANGLE DYNAMIQUE ---
+            if(id==='A') { deduction += OSSATURE_CONFIG.EPAISSEUR_PROFIL; deduction += (forme !== 'droite') ? OSSATURE_CONFIG.LARGEUR_ANGLE : OSSATURE_CONFIG.EPAISSEUR_PROFIL; }
+            if(id==='B') { deduction += OSSATURE_CONFIG.LARGEUR_ANGLE; deduction += (forme === 'U') ? OSSATURE_CONFIG.LARGEUR_ANGLE : OSSATURE_CONFIG.EPAISSEUR_PROFIL; }
+            if(id==='C') { deduction += OSSATURE_CONFIG.LARGEUR_ANGLE + OSSATURE_CONFIG.EPAISSEUR_PROFIL; }
+            // ---------------------------------------------------------
 
             let dispo = L - deduction;
             
@@ -243,14 +233,14 @@ export async function calculerInventaire() {
                 if (typeGlob === 'pleine') {
                     let nb = Math.floor(dispo / L_MOD_AXE);
                     let resteLargeur = dispo - (nb * L_MOD_AXE);
-                    let largeurDernierPanneau = resteLargeur - 38;
+                    let largeurDernierPanneau = resteLargeur - OSSATURE_CONFIG.EPAISSEUR_PROFIL;
                     if (largeurDernierPanneau < 100 && nb > 0) { nb--; largeurDernierPanneau += L_MOD_AXE; }
                     for(let k=0; k<nb; k++) GLOBAL_STATE.configMurs[id].push({type:typeGlob, largeur:1178});
                     if (largeurDernierPanneau > 10) { GLOBAL_STATE.configMurs[id].push({type:typeGlob, largeur:largeurDernierPanneau}); }
                 } else {
                     let nb = Math.ceil(dispo / L_MOD_AXE);
                     if(nb < 1) nb = 1;
-                    let wUnit = (dispo / nb) - 38;
+                    let wUnit = (dispo / nb) - OSSATURE_CONFIG.EPAISSEUR_PROFIL;
                     for(let k=0; k<nb; k++) GLOBAL_STATE.configMurs[id].push({type:typeGlob, largeur:wUnit});
                 }
             }
@@ -285,15 +275,13 @@ export async function calculerInventaire() {
             if(m.type==='porte') { 
                 totalPortes++; 
                 let hp = document.getElementById('hauteurPorte').value;
-                
-                // MÊME CALCUL INTELLIGENT POUR LA LISTE A PUCES !
                 let hLabel = 2100;
                 if (hp === 'touteHauteur') {
                     let selectTTH = document.getElementById('typeTraverseTTH');
                     let typeTTH = selectTTH ? selectTTH.value : 'sansTraverse';
-                    if (hasImposteModules && H > H_IMPOSTE + 38) hLabel = H_IMPOSTE;
+                    if (hasImposteModules && H > H_IMPOSTE + OSSATURE_CONFIG.EPAISSEUR_PROFIL) hLabel = H_IMPOSTE;
                     else if (H > 3000) hLabel = 3000;
-                    else if (typeTTH === 'avecTraverse') hLabel = H - 38;
+                    else if (typeTTH === 'avecTraverse') hLabel = H - OSSATURE_CONFIG.EPAISSEUR_PROFIL;
                     else hLabel = H;
                 }
 
@@ -331,15 +319,17 @@ export async function calculerInventaire() {
     add(LEXIQUE.CJ_VERT(hNom), totVert*2);
     add(LEXIQUE.CLIPS_CJ, Math.ceil(totVert*2*8/100));
     
+    // --- NOUVEAU : CALCUL ECLISSES ET LISSES VIA CONFIG ---
     let totalEclisses = 0; let Ltot = 0;
     murs.forEach(id => {
         let L = (id==='A') ? parseFloat(document.getElementById('longueur').value) : (id==='B') ? parseFloat(document.getElementById('longueurB').value) : parseFloat(document.getElementById('longueurC').value);
         Ltot += L;
-        let nbBarres = Math.ceil(L / 3000);
+        let nbBarres = Math.ceil(L / OSSATURE_CONFIG.LONGUEUR_LISSE);
         totalEclisses += ((nbBarres > 0) ? nbBarres - 1 : 0) * 2;
     });
     add(LEXIQUE.ECLISSES, totalEclisses);
-    add(LEXIQUE.LISSES, Math.ceil(Ltot*2/3000));
+    add(LEXIQUE.LISSES, Math.ceil(Ltot*2/OSSATURE_CONFIG.LONGUEUR_LISSE));
+    // ------------------------------------------------------
 
     for (const [vitrage, metrageTotal] of Object.entries(totalMetrageJointsByType)) {
         if (metrageTotal > 0) {
@@ -353,6 +343,7 @@ export async function calculerInventaire() {
     if (nbAngles > 0) { qteEq += nbAngles * 4; }
     add(LEXIQUE.EQUERRES, qteEq);
 
+    // --- NOUVEAU : CALCUL CHUTES VIA CONFIG ---
     let barresNeuvesUtilisees = 0; let nbChutesRecyclees = 0; let chutesDe2500_Montants = [];
     besoinsTraverses.sort((a, b) => b - a); chutesUtilisables.sort((a, b) => b - a);
     besoinsTraverses.forEach(largeurRequise => {
@@ -361,7 +352,7 @@ export async function calculerInventaire() {
             if (chutesUtilisables[i] >= largeurRequise) { let reste = chutesUtilisables[i] - largeurRequise; chutesUtilisables.splice(i, 1); if (reste > 50) chutesUtilisables.push(reste); comble = true; nbChutesRecyclees++; break; }
         }
         if (!comble) { chutesDe2500_Montants.sort((a, b) => b - a); for(let i=0; i < chutesDe2500_Montants.length; i++) { if (chutesDe2500_Montants[i] >= largeurRequise) { chutesDe2500_Montants[i] -= largeurRequise; comble = true; break; } } }
-        if (!comble) { barresNeuvesUtilisees++; let resteNeuve = 2500 - largeurRequise; if (resteNeuve > 50) chutesDe2500_Montants.push(resteNeuve); }
+        if (!comble) { barresNeuvesUtilisees++; let resteNeuve = OSSATURE_CONFIG.LONGUEUR_CJ_HORIZ - largeurRequise; if (resteNeuve > 50) chutesDe2500_Montants.push(resteNeuve); }
     });
     if (barresNeuvesUtilisees > 0) add(LEXIQUE.MONTANT_TRAVERSE, barresNeuvesUtilisees);
     if (nbChutesRecyclees > 0) add(LEXIQUE.CHUTES_TRAVERSES, nbChutesRecyclees);
@@ -374,7 +365,7 @@ export async function calculerInventaire() {
             if (chutesCJUtilisables[i] >= largeurRequise) { let reste = chutesCJUtilisables[i] - largeurRequise; chutesCJUtilisables.splice(i, 1); if (reste > 50) chutesCJUtilisables.push(reste); comble = true; finalNbChutesCJRecyclees++; break; }
         }
         if (!comble) { chutesDe2500.sort((a, b) => b - a); for(let i=0; i < chutesDe2500.length; i++) { if (chutesDe2500[i] >= largeurRequise) { chutesDe2500[i] -= largeurRequise; comble = true; break; } } }
-        if (!comble) { finalBarresCJNeuves++; let resteNeuve = 2500 - largeurRequise; if(resteNeuve > 50) chutesDe2500.push(resteNeuve); }
+        if (!comble) { finalBarresCJNeuves++; let resteNeuve = OSSATURE_CONFIG.LONGUEUR_CJ_HORIZ - largeurRequise; if(resteNeuve > 50) chutesDe2500.push(resteNeuve); }
     });
     if (finalBarresCJNeuves > 0) add(LEXIQUE.CJ_HORIZ, finalBarresCJNeuves);
     if (finalNbChutesCJRecyclees > 0) add(LEXIQUE.CHUTES_CJ, finalNbChutesCJRecyclees);
