@@ -22,6 +22,7 @@
     </script>
 </head>
 <body>
+
     <div id="splashScreen" class="splash-screen">
         <div class="splash-content">
             <img src="icon-512.png" alt="KTY Logo" class="splash-logo">
@@ -35,90 +36,20 @@
     </div>
 
     <script>
-        // Vérifie si le nom est déjà enregistré
         document.addEventListener("DOMContentLoaded", () => {
             const entreprise = localStorage.getItem('kty_entreprise');
             if(entreprise) {
                 document.getElementById('nomEntrepriseInput').value = entreprise;
             }
         });
-
-        // Enregistre le nom et ferme l'écran avec une belle animation
         function fermerSplashScreen() {
             const nom = document.getElementById('nomEntrepriseInput').value || "Non renseigné";
-            localStorage.setItem('kty_entreprise', nom); // Sauvegarde
+            localStorage.setItem('kty_entreprise', nom); 
             const splash = document.getElementById('splashScreen');
             splash.style.opacity = '0';
-            setTimeout(() => { splash.style.display = 'none'; }, 600); // Laisse le temps à l'animation de finir
+            setTimeout(() => { splash.style.display = 'none'; }, 600); 
         }
     </script>
-    ```
-
-### Étape 2 : Le design du Splash Screen dans `style.css`
-Pour que cet écran soit magnifique, ouvre ton fichier **`style.css`** et ajoute ça tout à la fin :
-
-```css
-/* --- DESIGN DU SPLASH SCREEN --- */
-.splash-screen {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100vw; height: 100vh;
-    background: var(--primary-gradient);
-    z-index: 99999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: opacity 0.6s ease;
-}
-.splash-content {
-    background: white;
-    padding: 40px;
-    border-radius: 20px;
-    text-align: center;
-    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
-    max-width: 400px; width: 90%;
-}
-.splash-logo {
-    width: 120px;
-    animation: pulse 2s infinite;
-    margin-bottom: 15px;
-}
-.splash-input {
-    width: 100%;
-    padding: 15px;
-    margin-bottom: 20px;
-    border: 2px solid var(--c-border);
-    border-radius: 8px;
-    font-size: 16px;
-    box-sizing: border-box;
-    text-align: center;
-    transition: border-color 0.3s;
-}
-.splash-input:focus {
-    border-color: var(--c-primary);
-    outline: none;
-}
-.splash-btn {
-    background: var(--c-primary);
-    color: white;
-    border: none;
-    padding: 15px;
-    border-radius: 8px;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    width: 100%;
-    transition: background 0.3s, transform 0.1s;
-}
-.splash-btn:hover { background: var(--c-primary-dark); }
-.splash-btn:active { transform: scale(0.98); }
-
-@keyframes pulse {
-    0% { transform: scale(0.95); }
-    50% { transform: scale(1.05); }
-    100% { transform: scale(0.95); }
-}
-
     <header class="app-header">
         <div class="logo-area">
             <img src="icon-512.png" alt="Logo KTY" class="header-logo">
@@ -129,31 +60,32 @@ Pour que cet écran soit magnifique, ouvre ton fichier **`style.css`** et ajoute
             <div class="step" id="ind-step-3">3</div>
         </div>
     </header>
-<section id="step-1" class="wizard-step active-step">
-    
-    <h2>Tableau de Bord</h2>
-    <<div class="dashboard-container">
-    <div class="welcome-card" onclick="app.nouveauProjet()">
-        <div class="icon">+</div>
-        <h3>Nouveau Projet</h3>
-        <p>Démarrer une nouvelle configuration vierge</p>
-    </div>
 
-    <div class="welcome-card" onclick="document.getElementById('inputImport').click()" style="background: #e3f2fd; border-color: #2196f3;">
-        <div class="icon" style="color:#2196f3;">📂</div>
-        <h3 style="color:#0d47a1;">Ouvrir un fichier</h3>
-        <p>Importer un projet envoyé par un collègue (.json)</p>
-    </div>
-    
-    <input type="file" id="inputImport" accept=".json" style="display:none" onchange="app.importerProjet(this)">
+    <main>
+        <section id="step-1" class="wizard-step active-step">
+            <h2>Tableau de Bord</h2>
+            <div class="dashboard-container">
+                <div class="welcome-card" onclick="app.nouveauProjet()">
+                    <div class="icon">+</div>
+                    <h3>Nouveau Projet</h3>
+                    <p>Démarrer une nouvelle configuration vierge</p>
+                </div>
 
-    <div class="projects-list-container">
-        <h3>Projets Récents (Sauvegarde Locale)</h3>
-        <div id="listeSauvegardes" class="saved-list">
-            <p style="color:#888; font-style:italic;">Aucun projet sauvegardé.</p>
-        </div>
-    </div>
-</div>
+                <div class="welcome-card" onclick="document.getElementById('inputImport').click()" style="background: #e3f2fd; border-color: #2196f3;">
+                    <div class="icon" style="color:#2196f3;">📂</div>
+                    <h3 style="color:#0d47a1;">Ouvrir un fichier</h3>
+                    <p>Importer un projet envoyé par un collègue (.json)</p>
+                </div>
+                
+                <input type="file" id="inputImport" accept=".json" style="display:none" onchange="app.importerProjet(this)">
+
+                <div class="projects-list-container">
+                    <h3>Projets Récents (Sauvegarde Locale)</h3>
+                    <div id="listeSauvegardes" class="saved-list">
+                        <p style="color:#888; font-style:italic;">Aucun projet sauvegardé.</p>
+                    </div>
+                </div>
+            </div>
             <a href="/admin/" class="btn-admin-floating" title="Accès Interface Admin" style="text-decoration:none;">⚙️</a>
         </section>
 
@@ -257,15 +189,9 @@ Pour que cet écran soit magnifique, ouvre ton fichier **`style.css`** et ajoute
                     <h3>3. Détails & Finitions</h3>
                     
                     <div id="optionsPortes" class="options-sub">
-                        <div class="form-group" style="margin-top: 10px; background: #eef2ff; padding: 10px; border-radius: 8px;">
-    <label style="font-weight: bold; color: #2563EB;">
-        <input type="checkbox" id="isCoulissante" style="margin-right: 8px;">
-        🚪 Option : Porte Coulissante en applique
-    </label>
-</div>
                         <h4>Portes</h4>
                         <label for="qtePortes">Nombre de portes :</label>
-                        <input type="number" id="qtePortes" value="0" onchange="adapterFormulaire()">
+                        <input type="number" id="qtePortes" value="1" onchange="adapterFormulaire()">
                         
                         <div id="detailsPorte" class="mt-10">
                             <label>Type & Dimensions</label>
@@ -284,6 +210,13 @@ Pour que cet écran soit magnifique, ouvre ton fichier **`style.css`** et ajoute
                             <div class="checkbox-wrapper mt-10">
                                 <input type="checkbox" id="doublePorte" onchange="adapterFormulaire()">
                                 <label for="doublePorte">Double Porte</label>
+                            </div>
+                            
+                            <div class="form-group" style="margin-top: 10px; background: #eef2ff; padding: 10px; border-radius: 8px;">
+                                <label style="font-weight: bold; color: #2563EB;">
+                                    <input type="checkbox" id="isCoulissante" style="margin-right: 8px;" onchange="adapterFormulaire()">
+                                    🚪 Option : Porte Coulissante en applique
+                                </label>
                             </div>
 
                             <div id="optionsSimplePortePleine" class="mt-5 hidden">
@@ -334,13 +267,12 @@ Pour que cet écran soit magnifique, ouvre ton fichier **`style.css`** et ajoute
                                     </select>
                                 </div>
                                 <div id="blocOptionsTTH" style="display: none; margin-top: 10px; padding-left: 15px; border-left: 2px solid var(--c-primary);">
-    <label for="typeTraverseTTH" style="font-size: 0.9em;">Finition Huisserie TTH :</label>
-    <select id="typeTraverseTTH" class="input-field" style="margin-bottom: 0;">
-        <option value="sansTraverse">Sans traverse haute</option>
-        <option value="avecTraverse">Avec traverse haute</option>
-    </select>
-</div>
-
+                                    <label for="typeTraverseTTH" style="font-size: 0.9em;">Finition Huisserie TTH :</label>
+                                    <select id="typeTraverseTTH" class="input-field" style="margin-bottom: 0;">
+                                        <option value="sansTraverse">Sans traverse haute</option>
+                                        <option value="avecTraverse">Avec traverse haute</option>
+                                    </select>
+                                </div>
                             </div>
                             
                             <div id="containerSensPortes" class="full-width mt-10 p-10 bg-light border-radius"></div>
@@ -378,66 +310,68 @@ Pour que cet écran soit magnifique, ouvre ton fichier **`style.css`** et ajoute
                             </div>
                         </div>
                     </div>
-<div class="options-sub">
-    <div class="checkbox-wrapper">
-        <input type="checkbox" id="imposteModules" onchange="adapterFormulaire()">
-        <label for="imposteModules">Traverse filante (Imposte)</label>
-    </div>
-    <div id="optionsImposteModules" class="hidden mt-5">
-        <label>Hauteur Traverse :</label>
-        <input type="number" id="hauteurImposte" value="2100">
-    </div>
-</div>
-                   <div id="optionsMixte" class="options-sub hidden border-accent">
-    <h4>Composition Mixte (Sur mesure)</h4>
-    
-    <div id="selecteurMurActif" class="mur-selector hidden">
-        <label><input type="radio" name="murActif" value="A" checked> <span>Mur A</span></label>
-        <label id="radioMurB"><input type="radio" name="murActif" value="B"> <span>Mur B</span></label>
-        <label id="radioMurC"><input type="radio" name="murActif" value="C"> <span>Mur C</span></label>
-    </div>
+                    
+                    <div class="options-sub">
+                        <div class="checkbox-wrapper">
+                            <input type="checkbox" id="imposteModules" onchange="adapterFormulaire()">
+                            <label for="imposteModules">Traverse filante (Imposte)</label>
+                        </div>
+                        <div id="optionsImposteModules" class="hidden mt-5">
+                            <label>Hauteur Traverse :</label>
+                            <input type="number" id="hauteurImposte" value="2100">
+                        </div>
+                    </div>
+                    
+                    <div id="optionsMixte" class="options-sub hidden border-accent">
+                        <h4>Composition Mixte (Sur mesure)</h4>
+                        
+                        <div id="selecteurMurActif" class="mur-selector hidden">
+                            <label><input type="radio" name="murActif" value="A" checked> <span>Mur A</span></label>
+                            <label id="radioMurB"><input type="radio" name="murActif" value="B"> <span>Mur B</span></label>
+                            <label id="radioMurC"><input type="radio" name="murActif" value="C"> <span>Mur C</span></label>
+                        </div>
 
-    <div class="grid-2-col">
-        <div>
-            <label>Module :</label>
-            <select id="mixteTypeModule" onchange="adapterFormulaireMixte()">
-                <option value="pleine">Plein</option>
-                <option value="vitree">Vitré TH</option>
-                <option value="vitreeSurAllege">Vitré/Allège</option>
-                <option value="porte">Porte</option>
-            </select>
-        </div>
-        <div id="mixteLargeurContainer">
-            <label>Largeur (mm) :</label>
-            <input type="number" id="mixteLargeurModule" value="1178">
-        </div>
-        <div id="mixteSensContainer" class="hidden">
-            <label>Sens :</label>
-            <select id="mixteSensPorte">
-                <option value="droite">Poussant Droit</option>
-                <option value="gauche">Poussant Gauche</option>
-            </select>
-        </div>
-    </div>
-    
-    <div id="mixteAllegeContainer" class="hidden mt-5">
-            <label>H. Allège (mm) :</label>
-            <input type="number" id="mixteHauteurAllege" value="1100">
-    </div>
+                        <div class="grid-2-col">
+                            <div>
+                                <label>Module :</label>
+                                <select id="mixteTypeModule" onchange="adapterFormulaireMixte()">
+                                    <option value="pleine">Plein</option>
+                                    <option value="vitree">Vitré TH</option>
+                                    <option value="vitreeSurAllege">Vitré/Allège</option>
+                                    <option value="porte">Porte</option>
+                                </select>
+                            </div>
+                            <div id="mixteLargeurContainer">
+                                <label>Largeur (mm) :</label>
+                                <input type="number" id="mixteLargeurModule" value="1178">
+                            </div>
+                            <div id="mixteSensContainer" class="hidden">
+                                <label>Sens :</label>
+                                <select id="mixteSensPorte">
+                                    <option value="droite">Poussant Droit</option>
+                                    <option value="gauche">Poussant Gauche</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div id="mixteAllegeContainer" class="hidden mt-5">
+                                <label>H. Allège (mm) :</label>
+                                <input type="number" id="mixteHauteurAllege" value="1100">
+                        </div>
 
-    <div class="btn-group mt-10">
-        <button type="button" onclick="ajouterModuleMixte()" id="btnAjouterMixte" class="btn-danger">+ Ajouter</button>
-        <button type="button" onclick="remplirAutomatiquement()" id="btnRemplirMixte" class="btn-success">Remplir</button>
-    </div>
-    
-    <div id="mixteSuggestions" class="hidden mt-10 p-10 bg-light border-radius" style="border-left: 4px solid #17a2b8; font-size: 0.9em;">
-        </div>
-    
-    <div class="module-list-container">
-        <ul id="compositionModules"></ul>
-        <p id="mixteResumeLargeur" style="font-weight:bold; margin-top:5px;"></p>
-    </div>
-</div>
+                        <div class="btn-group mt-10">
+                            <button type="button" onclick="ajouterModuleMixte()" id="btnAjouterMixte" class="btn-danger">+ Ajouter</button>
+                            <button type="button" onclick="remplirAutomatiquement()" id="btnRemplirMixte" class="btn-success">Remplir</button>
+                        </div>
+                        
+                        <div id="mixteSuggestions" class="hidden mt-10 p-10 bg-light border-radius" style="border-left: 4px solid #17a2b8; font-size: 0.9em;">
+                            </div>
+                        
+                        <div class="module-list-container">
+                            <ul id="compositionModules"></ul>
+                            <p id="mixteResumeLargeur" style="font-weight:bold; margin-top:5px;"></p>
+                        </div>
+                    </div>
 
                     <div class="btn-group-vertical mt-20">
                         <button onclick="app.sauvegarderProjet()" class="btn-secondary" style="background:#6c757d;">💾 Sauvegarder</button>
