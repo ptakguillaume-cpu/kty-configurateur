@@ -10,28 +10,23 @@ export const CATALOGUE_PORTES = {
     "verre_827": { largeurVantail: 827, largeurEntreMontants: 880, hauteurVantailStandard: 2035, nomDevisVantail: "Vantail Verre Clarit", nomDevisHuisserie: "Huisserie passage 880" }
 };
 
-// Fonction qui cherche la bonne dimension
 export function getDonneesPorte(largeurSaisie, typeSaisi, isCoulissante = false) {
-    
-    // --- NOUVEAU : RÈGLES POUR PORTE COULISSANTE ---
+    // RÈGLES POUR PORTE COULISSANTE
     if (isCoulissante) {
         let isBois = (typeSaisi === 'pleine');
-        // Règle Fiche 11683 : Passage libre = Largeur porte - 71mm
         let passageLibre = largeurSaisie - 71; 
-        
         return {
             largeurVantail: largeurSaisie,
-            largeurEntreMontants: passageLibre, // On réserve un trou plus petit !
+            largeurEntreMontants: passageLibre, 
             hauteurVantailStandard: 2040,
-            // Si c'est du bois, on marque à fournir !
             nomDevisVantail: isBois ? "Vantail Bois Coulissant (À FOURNIR PAR VOS SOINS)" : "Vantail Cadre Alu Coulissant",
             nomDevisHuisserie: `Habillage passage libre ${passageLibre}`,
             isCoulissante: true,
             isBois: isBois
         };
     }
-    // -----------------------------------------------
 
+    // RÈGLES CLASSIQUES
     let typeCle = "";
     if (typeSaisi === 'cadreAlu') typeCle = "alu_";
     else if (typeSaisi === 'pleine') typeCle = "bois_"; 
