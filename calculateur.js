@@ -94,6 +94,9 @@ export async function calculerInventaire() {
         let elCoulissante = document.getElementById('isCoulissante');
         let isCoulissante = elCoulissante ? elCoulissante.checked : false;
 
+        // --- NOUVELLE INFO GACHE ---
+        let hasGache = document.getElementById('hasMontantGache') ? document.getElementById('hasMontantGache').checked : false;
+
         let donnees = getDonneesPorte(lp, tp, isCoulissante);
         let hVantail = (hp === 'touteHauteur') ? Math.round(H) : donnees.hauteurVantailStandard; 
         let hHuisserieLabel = (hp === 'touteHauteur') ? Math.round(H) : "2100"; 
@@ -105,8 +108,14 @@ export async function calculerInventaire() {
             
             add(LEXIQUE.CAPOT_COULISSANT, 3 * totalPortes);
             add(LEXIQUE.MONTANT_TRAVERSE, 1 * totalPortes);
+            add(LEXIQUE.CJ_HORIZ, 1 * totalPortes); // <-- NOUVEAU COUVRE-JOINT POUR LA TRAVERSE
             add(LEXIQUE.RENFORT_COULISSANT, 1 * totalPortes);
             qteEquerresTraverse += 6 * totalPortes;
+
+            // --- NOUVEAU MONTANT GACHE ---
+            if (hasGache) {
+                add(LEXIQUE.MONTANT_GACHE, 1 * totalPortes);
+            }
 
             if(!donnees.isBois) { add(LEXIQUE.POIGNEE_CUVETTE, totalPortes); }
         } 
@@ -125,13 +134,11 @@ export async function calculerInventaire() {
                     add(LEXIQUE.PLINTHE, qteExtras); add(LEXIQUE.VITRAGE_ISOLANT, qteExtras); 
                 }
                 
-                // --- CORRECTION DU BUG DES PORTES DOUBLES ---
                 if(isD) { 
                      let selectDouble = document.getElementById('huisserieDoublePorteSelect');
                      let txt = selectDouble ? selectDouble.options[selectDouble.selectedIndex].text : "";
                      let match = txt.match(/\((\d+)\+(\d+)\)/);
                      if(match) {
-                         // On décompose le vantail et le semi-fixe
                          let d1 = getDonneesPorte(parseFloat(match[1]), tp);
                          let d2 = getDonneesPorte(parseFloat(match[2]), tp);
                          add(`Vantail principal ${d1.nomDevisVantail} ${match[1]} x ${hVantail} mm`, totalPortes);
@@ -142,7 +149,6 @@ export async function calculerInventaire() {
                 } else { 
                      add(`${donnees.nomDevisVantail} ${lp} x ${hVantail} mm`, totalPortes); 
                 }
-                // ----------------------------------------------
             }
             if (hp === '2100') {
                  for(let k=0; k < totalPortes; k++) { besoinsCJ.push(lp); besoinsCJ.push(lp); }
@@ -195,8 +201,9 @@ export async function calculerInventaire() {
                     let elSens = document.getElementById('sensPorte_' + k);
                     let elCoulissante = document.getElementById('isCoulissante');
                     let isCoul = elCoulissante ? elCoulissante.checked : false;
+                    let hasGache = document.getElementById('hasMontantGache') ? document.getElementById('hasMontantGache').checked : false;
                     
-                    GLOBAL_STATE.configMurs[id].push({type:'porte', sens: elSens ? elSens.value : 'droite', isCoulissante: isCoul}); 
+                    GLOBAL_STATE.configMurs[id].push({type:'porte', sens: elSens ? elSens.value : 'droite', isCoulissante: isCoul, hasMontantGache: hasGache}); 
                     dispo -= getDonneesPorte(lP, tP, isCoul).largeurEntreMontants; 
                 }
             }
@@ -336,7 +343,7 @@ export async function calculerInventaire() {
     let keys = Object.keys(inv).sort();
     let ossatureKeys = keys.filter(k => k.includes('Lisse') || k.includes('Départ') || k.includes('Montants') || k.includes('Montant') || k.includes('Angle') || k.includes('Chute') || k.includes('Capot') || k.includes('Équerre') || k.includes('éclisse') || k.includes('Clips') || k.includes('Calle'));
     let parcloseKeys = keys.filter(k => k.includes('Parclose') || k.includes('Joint') || k.includes('Vitrage'));
-    let huisserieKeys = keys.filter(k => k.includes('Habillage') || k.includes('Ouverture') || k.includes('Huisserie') || k.includes('Porte') || k.includes('Vantail') || k.includes('Semi-fixe') || k.includes('Paumelles') || k.includes('Béquilles') || k.includes('Kit') || k.includes('Rail') || k.includes('Poignée') || k.includes('Plinthe'));
+    let huisserieKeys = keys.filter(k => k.includes('Habillage') || k.includes('Ouverture') || k.includes('Huisserie') || k.includes('Porte') || k.includes('Vantail') || k.includes('Paumelles') || k.includes('Béquilles') || k.includes('Kit') || k.includes('Rail') || k.includes('Poignée') || k.includes('Plinthe') || k.includes('Gâche'));
     let accessoiresKeys = keys.filter(k => !ossatureKeys.includes(k) && !parcloseKeys.includes(k) && !huisserieKeys.includes(k));
 
     const buildTable = (title, arr) => {
@@ -357,11 +364,7 @@ export async function calculerInventaire() {
 
 export async function imprimerDevis() {
     const nom = document.getElementById('nomChantier').value || "Chantier sans nom";
-    
-    // --- NOUVEAU : Récupération du nom de l'entreprise depuis le Splash Screen ---
     const nomEntreprise = localStorage.getItem('kty_entreprise') || "Entreprise non renseignée";
-    // -----------------------------------------------------------------------------
-
     const ralSelect = document.getElementById('couleurRal');
     const ral = ralSelect.options[ralSelect.selectedIndex].text;
     const ralValue = ralSelect.value;
@@ -434,7 +437,7 @@ export async function imprimerDevis() {
     if (GLOBAL_STATE.derniereInventaire) {
         const inv = GLOBAL_STATE.derniereInventaire;
         let keys = Object.keys(inv);
-        const ordrePriorite = ["Lisse", "Départ", "Montant", "Angle", "Couvre joints", "Capot", "Équerre", "éclisse", "Clips", "Calle", "Joint", "Parclose", "Habillage", "Ouverture", "Huisserie", "Porte", "Vantail", "Rail", "Paumelle", "Béquille", "Poignée", "Plinthe"];
+        const ordrePriorite = ["Lisse", "Départ", "Montant", "Angle", "Couvre joints", "Capot", "Équerre", "éclisse", "Clips", "Calle", "Joint", "Parclose", "Habillage", "Ouverture", "Gâche", "Huisserie", "Porte", "Vantail", "Rail", "Paumelle", "Béquille", "Poignée", "Plinthe"];
 
         function getScore(nomArticle) {
             for (let i = 0; i < ordrePriorite.length; i++) {
