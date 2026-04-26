@@ -433,5 +433,33 @@
     <div id="zoneImpression" style="display:none;"></div>
     
     <script type="module" src="script.js"></script>
+        <script>
+        // 1. Bloquer le clic droit (empêche "Inspecter l'élément")
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+        });
+
+        // 2. Bloquer les raccourcis clavier des développeurs
+        document.addEventListener('keydown', function(e) {
+            // Bloque F12
+            if (e.key === 'F12' || e.keyCode === 123) {
+                e.preventDefault();
+            }
+            // Bloque Ctrl+Maj+I (ou Cmd+Option+I sur Mac) - Outils de dev
+            if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'Ι')) {
+                e.preventDefault();
+            }
+            // Bloque Ctrl+Maj+J - Console
+            if (e.ctrlKey && e.shiftKey && (e.key === 'J' || e.key === 'j')) {
+                e.preventDefault();
+            }
+            // Bloque Ctrl+U - Afficher le code source
+            if (e.ctrlKey && (e.key === 'U' || e.key === 'u')) {
+                e.preventDefault();
+            }
+        });
+    </script>
+    ```
+
 </body>
 </html>
