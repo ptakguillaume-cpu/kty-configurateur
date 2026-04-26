@@ -101,12 +101,36 @@ export async function calculerInventaire() {
 
         let donnees = getDonneesPorte(lp, tp, isCoulissante, isTTHGlobal);
         
-        // --- NOUVEAU : Réglage précis de la hauteur TTH sur le devis ---
-        // Ex: 38mm de lisse haute + 4mm de jour de sol = 42mm de jeu total
-        const JEU_TTH = 72; 
-        let hVantail = (hp === 'touteHauteur') ? Math.round(H - JEU_TTH) : donnees.hauteurVantailStandard; 
-        let hHuisserieLabel = (hp === 'touteHauteur') ? Math.round(H) : "2100"; 
-        // ---------------------------------------------------------------
+        // --- NOUVEAU : CALCUL INTELLIGENT DE LA HAUTEUR D'OUVERTURE ---
+        let hHuisserieLabel = 2100;
+        let hVantail = donnees.hauteurVantailStandard; 
+        
+        if (hp === 'touteHauteur') {
+            let selectTTH = document.getElementById('typeTraverseTTH');
+            let typeTTH = selectTTH ? selectTTH.value : 'sansTraverse';
+            
+            // Si on a une traverse (imposte) définie, la porte s'arrête là !
+            if (hasImposteModules && H > H_IMPOSTE + 72) {
+                hHuisserieLabel = H_IMPOSTE;
+            } 
+            // Sécurité si plafond hyper haut sans traverse (bridé à 3000)
+            else if (H > 3000) {
+                hHuisserieLabel = 3000;
+            } 
+            // Si le client a demandé une traverse haute spécifique porte
+            else if (typeTTH === 'avecTraverse') {
+                hHuisserieLabel = H - 72;
+            } 
+            // Sinon (Vraiment toute hauteur jusqu'au plafond)
+            else {
+                hHuisserieLabel = H;
+            }
+
+            // Ex: 38mm de lisse haute + 4mm de jour de sol + 40mm huis = 72mm de jeu total
+            const JEU_TTH = 72; 
+            hVantail = Math.round(hHuisserieLabel - JEU_TTH); 
+        }
+        // --------------------------------------------------------------
 
         if (isCoulissante) {
             add(`Ouverture / ${donnees.nomDevisHuisserie} x ${hHuisserieLabel} mm`, totalPortes);
@@ -261,7 +285,18 @@ export async function calculerInventaire() {
             if(m.type==='porte') { 
                 totalPortes++; 
                 let hp = document.getElementById('hauteurPorte').value;
-                let hLabel = (hp === 'touteHauteur') ? Math.round(H) : "2100";
+                
+                // MÊME CALCUL INTELLIGENT POUR LA LISTE A PUCES !
+                let hLabel = 2100;
+                if (hp === 'touteHauteur') {
+                    let selectTTH = document.getElementById('typeTraverseTTH');
+                    let typeTTH = selectTTH ? selectTTH.value : 'sansTraverse';
+                    if (hasImposteModules && H > H_IMPOSTE + 38) hLabel = H_IMPOSTE;
+                    else if (H > 3000) hLabel = 3000;
+                    else if (typeTTH === 'avecTraverse') hLabel = H - 38;
+                    else hLabel = H;
+                }
+
                 let donneesH = getDonneesPorte(getLargeurPorte(), document.getElementById('typePorte').value, m.isCoulissante, isTTHGlobal);
                 
                 if (m.isCoulissante) {
