@@ -27,6 +27,9 @@ export async function calculerInventaire() {
     const hasImposteModules = document.getElementById('imposteModules').checked;
     const couleurRal = document.getElementById('couleurRal').value;
     
+    const hpGlobal = document.getElementById('hauteurPorte').value;
+    const isTTHGlobal = (hpGlobal === 'touteHauteur');
+
     const BARRES_DISPO = [2500, 2700, 3050, 3250, 5750];
     let longueurBarreRetenue = 5750; 
     for (let l of BARRES_DISPO) { if (l >= H) { longueurBarreRetenue = l; break; } }
@@ -94,12 +97,16 @@ export async function calculerInventaire() {
         let elCoulissante = document.getElementById('isCoulissante');
         let isCoulissante = elCoulissante ? elCoulissante.checked : false;
 
-        // --- NOUVELLE INFO GACHE ---
         let hasGache = document.getElementById('hasMontantGache') ? document.getElementById('hasMontantGache').checked : false;
 
-        let donnees = getDonneesPorte(lp, tp, isCoulissante);
-        let hVantail = (hp === 'touteHauteur') ? Math.round(H) : donnees.hauteurVantailStandard; 
+        let donnees = getDonneesPorte(lp, tp, isCoulissante, isTTHGlobal);
+        
+        // --- NOUVEAU : Réglage précis de la hauteur TTH sur le devis ---
+        // Ex: 38mm de lisse haute + 4mm de jour de sol = 42mm de jeu total
+        const JEU_TTH = 72; 
+        let hVantail = (hp === 'touteHauteur') ? Math.round(H - JEU_TTH) : donnees.hauteurVantailStandard; 
         let hHuisserieLabel = (hp === 'touteHauteur') ? Math.round(H) : "2100"; 
+        // ---------------------------------------------------------------
 
         if (isCoulissante) {
             add(`Ouverture / ${donnees.nomDevisHuisserie} x ${hHuisserieLabel} mm`, totalPortes);
@@ -108,11 +115,10 @@ export async function calculerInventaire() {
             
             add(LEXIQUE.CAPOT_COULISSANT, 3 * totalPortes);
             add(LEXIQUE.MONTANT_TRAVERSE, 1 * totalPortes);
-            add(LEXIQUE.CJ_HORIZ, 1 * totalPortes); // <-- NOUVEAU COUVRE-JOINT POUR LA TRAVERSE
+            add(LEXIQUE.CJ_HORIZ, 1 * totalPortes); 
             add(LEXIQUE.RENFORT_COULISSANT, 1 * totalPortes);
             qteEquerresTraverse += 6 * totalPortes;
 
-            // --- NOUVEAU MONTANT GACHE ---
             if (hasGache) {
                 add(LEXIQUE.MONTANT_GACHE, 1 * totalPortes);
             }
@@ -139,8 +145,8 @@ export async function calculerInventaire() {
                      let txt = selectDouble ? selectDouble.options[selectDouble.selectedIndex].text : "";
                      let match = txt.match(/\((\d+)\+(\d+)\)/);
                      if(match) {
-                         let d1 = getDonneesPorte(parseFloat(match[1]), tp);
-                         let d2 = getDonneesPorte(parseFloat(match[2]), tp);
+                         let d1 = getDonneesPorte(parseFloat(match[1]), tp, false, isTTHGlobal);
+                         let d2 = getDonneesPorte(parseFloat(match[2]), tp, false, isTTHGlobal);
                          add(`Vantail principal ${d1.nomDevisVantail} ${match[1]} x ${hVantail} mm`, totalPortes);
                          add(`Semi-fixe ${d2.nomDevisVantail} ${match[2]} x ${hVantail} mm`, totalPortes);
                      } else {
@@ -204,7 +210,7 @@ export async function calculerInventaire() {
                     let hasGache = document.getElementById('hasMontantGache') ? document.getElementById('hasMontantGache').checked : false;
                     
                     GLOBAL_STATE.configMurs[id].push({type:'porte', sens: elSens ? elSens.value : 'droite', isCoulissante: isCoul, hasMontantGache: hasGache}); 
-                    dispo -= getDonneesPorte(lP, tP, isCoul).largeurEntreMontants; 
+                    dispo -= getDonneesPorte(lP, tP, isCoul, isTTHGlobal).largeurEntreMontants; 
                 }
             }
             
@@ -256,7 +262,7 @@ export async function calculerInventaire() {
                 totalPortes++; 
                 let hp = document.getElementById('hauteurPorte').value;
                 let hLabel = (hp === 'touteHauteur') ? Math.round(H) : "2100";
-                let donneesH = getDonneesPorte(getLargeurPorte(), document.getElementById('typePorte').value, m.isCoulissante);
+                let donneesH = getDonneesPorte(getLargeurPorte(), document.getElementById('typePorte').value, m.isCoulissante, isTTHGlobal);
                 
                 if (m.isCoulissante) {
                     htmlList += `<li>Passage libre coulissant ${donneesH.largeurEntreMontants}x${hLabel}mm</li>`;
