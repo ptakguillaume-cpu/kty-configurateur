@@ -124,11 +124,25 @@ export async function calculerInventaire() {
                     let qteExtras = (isD ? 2 : 1) * totalPortes; 
                     add(LEXIQUE.PLINTHE, qteExtras); add(LEXIQUE.VITRAGE_ISOLANT, qteExtras); 
                 }
+                
+                // --- CORRECTION DU BUG DES PORTES DOUBLES ---
                 if(isD) { 
-                     add(`Porte Double ${donnees.nomDevisVantail} ${lp} x ${hVantail} mm`, totalPortes); 
+                     let selectDouble = document.getElementById('huisserieDoublePorteSelect');
+                     let txt = selectDouble ? selectDouble.options[selectDouble.selectedIndex].text : "";
+                     let match = txt.match(/\((\d+)\+(\d+)\)/);
+                     if(match) {
+                         // On décompose le vantail et le semi-fixe
+                         let d1 = getDonneesPorte(parseFloat(match[1]), tp);
+                         let d2 = getDonneesPorte(parseFloat(match[2]), tp);
+                         add(`Vantail principal ${d1.nomDevisVantail} ${match[1]} x ${hVantail} mm`, totalPortes);
+                         add(`Semi-fixe ${d2.nomDevisVantail} ${match[2]} x ${hVantail} mm`, totalPortes);
+                     } else {
+                         add(`Porte Double ${donnees.nomDevisVantail} ${lp} x ${hVantail} mm`, totalPortes);
+                     }
                 } else { 
                      add(`${donnees.nomDevisVantail} ${lp} x ${hVantail} mm`, totalPortes); 
                 }
+                // ----------------------------------------------
             }
             if (hp === '2100') {
                  for(let k=0; k < totalPortes; k++) { besoinsCJ.push(lp); besoinsCJ.push(lp); }
@@ -182,7 +196,6 @@ export async function calculerInventaire() {
                     let elCoulissante = document.getElementById('isCoulissante');
                     let isCoul = elCoulissante ? elCoulissante.checked : false;
                     
-                    // ON SAUVEGARDE L'INFO POUR LE MOTEUR 3D
                     GLOBAL_STATE.configMurs[id].push({type:'porte', sens: elSens ? elSens.value : 'droite', isCoulissante: isCoul}); 
                     dispo -= getDonneesPorte(lP, tP, isCoul).largeurEntreMontants; 
                 }
@@ -323,7 +336,7 @@ export async function calculerInventaire() {
     let keys = Object.keys(inv).sort();
     let ossatureKeys = keys.filter(k => k.includes('Lisse') || k.includes('Départ') || k.includes('Montants') || k.includes('Montant') || k.includes('Angle') || k.includes('Chute') || k.includes('Capot') || k.includes('Équerre') || k.includes('éclisse') || k.includes('Clips') || k.includes('Calle'));
     let parcloseKeys = keys.filter(k => k.includes('Parclose') || k.includes('Joint') || k.includes('Vitrage'));
-    let huisserieKeys = keys.filter(k => k.includes('Habillage') || k.includes('Ouverture') || k.includes('Huisserie') || k.includes('Porte') || k.includes('Vantail') || k.includes('Paumelles') || k.includes('Béquilles') || k.includes('Kit') || k.includes('Rail') || k.includes('Poignée') || k.includes('Plinthe'));
+    let huisserieKeys = keys.filter(k => k.includes('Habillage') || k.includes('Ouverture') || k.includes('Huisserie') || k.includes('Porte') || k.includes('Vantail') || k.includes('Semi-fixe') || k.includes('Paumelles') || k.includes('Béquilles') || k.includes('Kit') || k.includes('Rail') || k.includes('Poignée') || k.includes('Plinthe'));
     let accessoiresKeys = keys.filter(k => !ossatureKeys.includes(k) && !parcloseKeys.includes(k) && !huisserieKeys.includes(k));
 
     const buildTable = (title, arr) => {
@@ -342,9 +355,13 @@ export async function calculerInventaire() {
     try { await dessinerSceneGlobale(murs, forme, H, GLOBAL_STATE.configMurs); } catch(e) { console.error("Erreur 3D:", e); }
 }
 
-// --- IMPRESSION PDF (AVEC MULTI-VUES) ---
 export async function imprimerDevis() {
     const nom = document.getElementById('nomChantier').value || "Chantier sans nom";
+    
+    // --- NOUVEAU : Récupération du nom de l'entreprise depuis le Splash Screen ---
+    const nomEntreprise = localStorage.getItem('kty_entreprise') || "Entreprise non renseignée";
+    // -----------------------------------------------------------------------------
+
     const ralSelect = document.getElementById('couleurRal');
     const ral = ralSelect.options[ralSelect.selectedIndex].text;
     const ralValue = ralSelect.value;
@@ -357,7 +374,7 @@ export async function imprimerDevis() {
     if(forme === 'L' || forme === 'U') dimsSup += `<li><strong>Mur B :</strong> ${document.getElementById('longueurB').value} mm</li>`;
     if(forme === 'U') dimsSup += `<li><strong>Mur C :</strong> ${document.getElementById('longueurC').value} mm</li>`;
 
-    let imagesData = []; // On stocke toutes nos vues
+    let imagesData = []; 
     const { currentScene } = GLOBAL_STATE;
     
     if (currentScene.camera && currentScene.scene && currentScene.renderer) {
@@ -383,27 +400,22 @@ export async function imprimerDevis() {
                 const maxDim = Math.max(sz.x, sz.y, sz.z);
                 const dist = maxDim * 2.2; 
                 
-                // Positionnement initial (Mur A)
                 currentScene.camera.position.copy(centerC).add(new THREE.Vector3(0.8, 0.5, 1.0).normalize().multiplyScalar(dist));
                 currentScene.camera.lookAt(centerC);
                 currentScene.controls.update();
             }
         }
         
-        // VUE 1 : Mur A (par défaut)
         currentScene.renderer.render(currentScene.scene, currentScene.camera);
         imagesData.push(canvas.toDataURL('image/jpeg', 0.9));
 
-        // VUE 2 : Mur B (Si L ou U)
         if (forme === 'L' || forme === 'U') {
-            // Fait tourner la caméra de 90 degrés autour du centre
             currentScene.camera.position.sub(centerC).applyAxisAngle(new THREE.Vector3(0, 1, 0), -Math.PI / 2).add(centerC);
             currentScene.camera.lookAt(centerC);
             currentScene.renderer.render(currentScene.scene, currentScene.camera);
             imagesData.push(canvas.toDataURL('image/jpeg', 0.9));
         }
 
-        // VUE 3 : Mur C (Si U)
         if (forme === 'U') {
             currentScene.camera.position.sub(centerC).applyAxisAngle(new THREE.Vector3(0, 1, 0), -Math.PI / 2).add(centerC);
             currentScene.camera.lookAt(centerC);
@@ -411,7 +423,6 @@ export async function imprimerDevis() {
             imagesData.push(canvas.toDataURL('image/jpeg', 0.9));
         }
 
-        // Restaure la taille de l'écran normal
         currentScene.renderer.setSize(originalSize.x, originalSize.y);
         currentScene.camera.aspect = originalAspect;
         currentScene.camera.updateProjectionMatrix();
@@ -458,7 +469,6 @@ export async function imprimerDevis() {
     }
     tableauHTMLAvecCodes += '</tbody></table>';
     
-    // NOUVEAU: Assemblage de la galerie de vues 3D pour le PDF
     let vuesHtml = imagesData.map((img, i) => `
         <div style="margin-bottom: 20px; text-align: center; page-break-inside: avoid;">
             <h4 style="color: #64748B; margin-bottom: 5px;">Angle de vue n°${i+1}</h4>
@@ -469,7 +479,12 @@ export async function imprimerDevis() {
     let html = `
         <div class="print-header">
             <div class="print-logo"><img src="icon-512.png" alt="Logo KTY" style="height: 80px; width: auto;"></div>
-            <div class="print-info"><strong>Date :</strong> ${dateDuJour}<br><strong>Projet :</strong> ${nom}<br><strong>Config :</strong> ${forme.toUpperCase()} / ${ral}</div>
+            <div class="print-info">
+                <strong>Entreprise :</strong> ${nomEntreprise}<br>
+                <strong>Date :</strong> ${dateDuJour}<br>
+                <strong>Projet :</strong> ${nom}<br>
+                <strong>Config :</strong> ${forme.toUpperCase()} / ${ral}
+            </div>
         </div>
         <div class="client-box">
             <h3 style="margin-top:0; border:none; color:#333; padding-bottom:10px;">Configuration Retenue</h3>
