@@ -22,6 +22,102 @@
     </script>
 </head>
 <body>
+    <div id="splashScreen" class="splash-screen">
+        <div class="splash-content">
+            <img src="icon-512.png" alt="KTY Logo" class="splash-logo">
+            <h2 style="margin-bottom: 10px; color: #0F172A;">KTY Configurator Pro</h2>
+            <p style="color: #64748B; font-size: 0.95em; margin-bottom: 20px;">
+                Veuillez renseigner le nom de votre entreprise pour l'en-tête de vos devis.
+            </p>
+            <input type="text" id="nomEntrepriseInput" placeholder="Ex: Menuiserie Dupont" class="splash-input">
+            <button onclick="fermerSplashScreen()" class="splash-btn">Démarrer l'application</button>
+        </div>
+    </div>
+
+    <script>
+        // Vérifie si le nom est déjà enregistré
+        document.addEventListener("DOMContentLoaded", () => {
+            const entreprise = localStorage.getItem('kty_entreprise');
+            if(entreprise) {
+                document.getElementById('nomEntrepriseInput').value = entreprise;
+            }
+        });
+
+        // Enregistre le nom et ferme l'écran avec une belle animation
+        function fermerSplashScreen() {
+            const nom = document.getElementById('nomEntrepriseInput').value || "Non renseigné";
+            localStorage.setItem('kty_entreprise', nom); // Sauvegarde
+            const splash = document.getElementById('splashScreen');
+            splash.style.opacity = '0';
+            setTimeout(() => { splash.style.display = 'none'; }, 600); // Laisse le temps à l'animation de finir
+        }
+    </script>
+    ```
+
+### Étape 2 : Le design du Splash Screen dans `style.css`
+Pour que cet écran soit magnifique, ouvre ton fichier **`style.css`** et ajoute ça tout à la fin :
+
+```css
+/* --- DESIGN DU SPLASH SCREEN --- */
+.splash-screen {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background: var(--primary-gradient);
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.6s ease;
+}
+.splash-content {
+    background: white;
+    padding: 40px;
+    border-radius: 20px;
+    text-align: center;
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+    max-width: 400px; width: 90%;
+}
+.splash-logo {
+    width: 120px;
+    animation: pulse 2s infinite;
+    margin-bottom: 15px;
+}
+.splash-input {
+    width: 100%;
+    padding: 15px;
+    margin-bottom: 20px;
+    border: 2px solid var(--c-border);
+    border-radius: 8px;
+    font-size: 16px;
+    box-sizing: border-box;
+    text-align: center;
+    transition: border-color 0.3s;
+}
+.splash-input:focus {
+    border-color: var(--c-primary);
+    outline: none;
+}
+.splash-btn {
+    background: var(--c-primary);
+    color: white;
+    border: none;
+    padding: 15px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    width: 100%;
+    transition: background 0.3s, transform 0.1s;
+}
+.splash-btn:hover { background: var(--c-primary-dark); }
+.splash-btn:active { transform: scale(0.98); }
+
+@keyframes pulse {
+    0% { transform: scale(0.95); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(0.95); }
+}
 
     <header class="app-header">
         <div class="logo-area">
