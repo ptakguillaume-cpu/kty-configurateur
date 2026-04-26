@@ -96,7 +96,6 @@ export async function calculerInventaire() {
             }  
         }
     }
-
     // --- TIROIR B : PORTES (UTILISE LE DICTIONNAIRE) ---
     function calculerToutesLesPortes(nomParcloseDefaut) {
         if (totalPortes === 0) return;
@@ -106,76 +105,63 @@ export async function calculerInventaire() {
         let tp = document.getElementById('typePorte').value; 
         let hp = document.getElementById('hauteurPorte').value;
         let vitragePorteVal = document.getElementById('typeVitragePorte').value;
+        
+        // NOUVEAU : On regarde si la case coulissante est cochée
+        let isCoulissante = document.getElementById('isCoulissante') ? document.getElementById('isCoulissante').checked : false;
 
-        // On interroge le dictionnaire (portes.js)
-        let donnees = getDonneesPorte(lp, tp);
+        // On interroge le dictionnaire avec cette info !
+        let donnees = getDonneesPorte(lp, tp, isCoulissante);
 
-        let hVantail = (hp === 'touteHauteur') ? Math.round(H) : donnees.hauteurVantailStandard; // ex: 2040
+        let hVantail = (hp === 'touteHauteur') ? Math.round(H) : donnees.hauteurVantailStandard; 
         let hHuisserieLabel = (hp === 'touteHauteur') ? Math.round(H) : "2100"; 
 
-        let nomH = isD ? `Huisserie Double passage ${donnees.largeurEntreMontants} x ${hHuisserieLabel} mm` : `${donnees.nomDevisHuisserie} x ${hHuisserieLabel} mm`;
-        nomH += (tp === 'cadreAlu') ? " (Cadre Alu)" : " (Pleine)";
-        add(nomH, totalPortes);
-        
-        let nbPaumellesParVantail = (hp === 'touteHauteur' || (hp === '2100' && tp === 'cadreAlu' && vitragePorteVal === 'isolant')) ? 4 : 3;
-        let nomKit = isD ? `Kit Paumelles (jeu de ${nbPaumellesParVantail*2})` : `Kit Paumelles (jeu de ${nbPaumellesParVantail})`;
-        add(nomKit, totalPortes);
-        
-        if(tp === 'cadreAlu' || tp === 'pleine') { 
-            add('Béquilles', totalPortes);
-            if(vitragePorteVal === 'isolant') { 
-                let qteExtras = (isD ? 2 : 1) * totalPortes; 
-                add('Plinthe automatique', qteExtras); add('Vitrage isolant', qteExtras); 
+        // ==========================================
+        // SI C'EST UNE PORTE COULISSANTE
+        // ==========================================
+        if (isCoulissante) {
+            add(`Ouverture / ${donnees.nomDevisHuisserie} x ${hHuisserieLabel} mm`, totalPortes);
+            
+            // 1. Le Vantail (avec la mention "à fournir" si c'est du bois)
+            add(`${donnees.nomDevisVantail} ${lp} x ${hVantail} mm`, totalPortes);
+            
+            // 2. Le Kit rail et accessoires
+            add(`Kit Rail Coulissant + Accessoires (pour porte ${donnees.isBois ? 'bois' : 'alu'})`, totalPortes);
+            
+            // 3. Les pièces de structure exactes que tu as demandées !
+            add('Capots de finition (pour habillage passage)', 3 * totalPortes);
+            add('Montant (2500mm) traverses', 1 * totalPortes);
+            add('Montant Spécial (renfort rail coulissant)', 1 * totalPortes);
+            
+            if(!donnees.isBois) {
+                add('Poignée Cuvette Alu', totalPortes);
             }
-            if(isD) { 
-                 let txt = document.getElementById('huisserieDoublePorteSelect').options[document.getElementById('huisserieDoublePorteSelect').selectedIndex].text;
-                 let match = txt.match(/\((\d+)\+(\d+)\)/);
-                 if(match) { 
-                     let d1 = getDonneesPorte(parseFloat(match[1]), tp);
-                     let d2 = getDonneesPorte(parseFloat(match[2]), tp);
-                     add(`Vantail principal ${d1.nomDevisVantail} ${match[1]} x ${hVantail} mm`, totalPortes); 
-                     add(`Semi-fixe ${d2.nomDevisVantail} ${match[2]} x ${hVantail} mm`, totalPortes); 
-                 } else { 
-                     add(`Porte Double ${donnees.nomDevisVantail} ${lp} x ${hVantail} mm`, totalPortes); 
-                 }
-            } else { 
-                 add(`${donnees.nomDevisVantail} ${lp} x ${hVantail} mm`, totalPortes); 
-            }
-        }
-
-        if (hp === '2100') {
-             for(let k=0; k < totalPortes; k++) { besoinsCJ.push(lp); besoinsCJ.push(lp); }
-             if(hasImposteModules && H > H_IMPOSTE+38 && H_IMPOSTE > 2100) {
-                 for(let k=0; k < totalPortes; k++) { besoinsTraverses.push(lp); besoinsCJ.push(lp); besoinsCJ.push(lp); }
-                 qteEquerresTraverse += totalPortes * 2; 
-             }
-             if(H > 2100 + 38) { 
-                 let typeImp = document.getElementById('typeImposte').value;
-                 if(typeImp === 'vitree') { 
-                     let nbParclosesBase = (H > 2600) ? 2 : 1;
-                     let qteParcloseImposte = (isD ? (nbParclosesBase * 2) : nbParclosesBase) * totalPortes; 
-                     add(nomParcloseDefaut, qteParcloseImposte);
-                 }
-             }
         } 
-        else if (hp === 'touteHauteur') {
-             let selectTTH = document.getElementById('typeTraverseTTH');
-             let typeTTH = selectTTH ? selectTTH.value : 'sansTraverse';
-             
-             if (H > 3000) {
-                 for(let k=0; k < totalPortes; k++) { besoinsTraverses.push(lp); besoinsCJ.push(2500); }
-                 let typeImp = document.getElementById('typeImposte').value;
-                 if(typeImp === 'vitree') { 
-                     let nbParclosesBase = 2; 
-                     let qteParcloseImposte = (isD ? (nbParclosesBase * 2) : nbParclosesBase) * totalPortes; 
-                     add(nomParcloseDefaut, qteParcloseImposte);
-                 }
-             } 
-             else if (typeTTH === 'avecTraverse') {
-                 for(let k=0; k < totalPortes; k++) { besoinsTraverses.push(lp); besoinsCJ.push(2500); }
-             }
+        // ==========================================
+        // SI C'EST UNE PORTE BATTANTE CLASSIQUE
+        // ==========================================
+        else {
+            let nomH = isD ? `Huisserie Double passage ${donnees.largeurEntreMontants} x ${hHuisserieLabel} mm` : `${donnees.nomDevisHuisserie} x ${hHuisserieLabel} mm`;
+            nomH += (tp === 'cadreAlu') ? " (Cadre Alu)" : " (Pleine)";
+            add(nomH, totalPortes);
+            
+            let nbPaumellesParVantail = (hp === 'touteHauteur' || (hp === '2100' && tp === 'cadreAlu' && vitragePorteVal === 'isolant')) ? 4 : 3;
+            add(isD ? `Kit Paumelles (jeu de ${nbPaumellesParVantail*2})` : `Kit Paumelles (jeu de ${nbPaumellesParVantail})`, totalPortes);
+            
+            if(tp === 'cadreAlu' || tp === 'pleine') { 
+                add('Béquilles', totalPortes);
+                if(isD) { 
+                     add(`Porte Double ${donnees.nomDevisVantail} ${lp} x ${hVantail} mm`, totalPortes); 
+                } else { 
+                     add(`${donnees.nomDevisVantail} ${lp} x ${hVantail} mm`, totalPortes); 
+                }
+            }
+            if (hp === '2100') {
+                 for(let k=0; k < totalPortes; k++) { besoinsCJ.push(lp); besoinsCJ.push(lp); }
+            }
         }
     }
+
+     
 
     // --- CALCUL DES MURS ---
     if (typeGlob !== 'mixte') {
@@ -198,8 +184,7 @@ export async function calculerInventaire() {
                     let sensChoisi = elSens ? elSens.value : 'droite';
                     GLOBAL_STATE.configMurs[id].push({type:'porte', sens: sensChoisi}); 
                     // NOUVEAU: Utilise la dimension d'encadrement depuis portes.js
-                    dispo -= getDonneesPorte(lP, tP).largeurEntreMontants; 
-                }
+                    dispo -= getDonneesPorte(lP, tP, document.getElementById('isCoulissante') ? document.getElementById('isCoulissante').checked : false).largeurEntreMontants;
             }
             
             if(dispo > 5) {
