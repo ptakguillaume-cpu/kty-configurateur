@@ -4,7 +4,7 @@ import { getLargeurPorte } from './uiManager.js';
 import { dessinerSceneGlobale } from './engine3d.js';
 import * as THREE from 'three'; 
 import { getDonneesPorte } from './portes.js';
-import { LEXIQUE } from './lexique.js'; // <-- NOUVEL IMPORT
+import { LEXIQUE } from './lexique.js'; 
 
 export async function calculerInventaire() {
     let inv = {};
@@ -103,19 +103,15 @@ export async function calculerInventaire() {
             add(`${donnees.nomDevisVantail} ${lp} x ${hVantail} mm`, totalPortes);
             add(LEXIQUE.KIT_RAIL(donnees.isBois ? 'bois' : 'alu'), totalPortes);
             
-            // Les pièces de structure exactes
             add(LEXIQUE.CAPOT_COULISSANT, 3 * totalPortes);
             add(LEXIQUE.MONTANT_TRAVERSE, 1 * totalPortes);
             add(LEXIQUE.RENFORT_COULISSANT, 1 * totalPortes);
-            
-            // --- AJOUT DES 6 ÉQUERRES (2 traverse + 4 renfort) ---
             qteEquerresTraverse += 6 * totalPortes;
-            // ------------------------------------------------------
 
             if(!donnees.isBois) { add(LEXIQUE.POIGNEE_CUVETTE, totalPortes); }
         } 
         else {
-            let nomH = isD ? `${LEXIQUE.HUISSERIE_DOUBLE} ${donnees.largeurEntreMontants} x ${hHuisserieLabel} mm` : `${donnees.nomDevisHuisserie} x ${hHuisserieLabel} mm`;
+            let nomH = isD ? `Huisserie Double passage ${donnees.largeurEntreMontants} x ${hHuisserieLabel} mm` : `${donnees.nomDevisHuisserie} x ${hHuisserieLabel} mm`;
             nomH += (tp === 'cadreAlu') ? " (Cadre Alu)" : " (Pleine)";
             add(nomH, totalPortes);
             
@@ -183,9 +179,12 @@ export async function calculerInventaire() {
                 let tP = document.getElementById('typePorte').value;
                 for(let k=0; k<qP; k++) { 
                     let elSens = document.getElementById('sensPorte_' + k);
-                    GLOBAL_STATE.configMurs[id].push({type:'porte', sens: elSens ? elSens.value : 'droite'}); 
                     let elCoulissante = document.getElementById('isCoulissante');
-                    dispo -= getDonneesPorte(lP, tP, elCoulissante ? elCoulissante.checked : false).largeurEntreMontants; 
+                    let isCoul = elCoulissante ? elCoulissante.checked : false;
+                    
+                    // ON SAUVEGARDE L'INFO POUR LE MOTEUR 3D
+                    GLOBAL_STATE.configMurs[id].push({type:'porte', sens: elSens ? elSens.value : 'droite', isCoulissante: isCoul}); 
+                    dispo -= getDonneesPorte(lP, tP, isCoul).largeurEntreMontants; 
                 }
             }
             
@@ -237,11 +236,9 @@ export async function calculerInventaire() {
                 totalPortes++; 
                 let hp = document.getElementById('hauteurPorte').value;
                 let hLabel = (hp === 'touteHauteur') ? Math.round(H) : "2100";
-                let elCoulissante = document.getElementById('isCoulissante');
-                let isCoul = elCoulissante ? elCoulissante.checked : false;
-                let donneesH = getDonneesPorte(getLargeurPorte(), document.getElementById('typePorte').value, isCoul);
+                let donneesH = getDonneesPorte(getLargeurPorte(), document.getElementById('typePorte').value, m.isCoulissante);
                 
-                if (isCoul) {
+                if (m.isCoulissante) {
                     htmlList += `<li>Passage libre coulissant ${donneesH.largeurEntreMontants}x${hLabel}mm</li>`;
                 } else {
                     let sensTxt = (m.sens === 'gauche') ? 'PG' : 'PD';
@@ -290,17 +287,10 @@ export async function calculerInventaire() {
         }
     }
     
-        // --- CALCUL EXACT DES ÉQUERRES ---
     let montantsIntermediaires = (nbMontantsStandard + nbMontantsSpeciaux) - nbCapots;
-    
-    // CORRECTION : Un départ prend 2 équerres (et non 4 !)
     let qteEq = (nbDeparts * 2) + (montantsIntermediaires * 2) + qteEquerresTraverse; 
-    
-    // (L'angle reste à 4 équerres, dis-moi si c'est bon pour tes poteaux d'angle)
-    if (nbAngles > 0) { qteEq += nbAngles * 4; } 
-    
+    if (nbAngles > 0) { qteEq += nbAngles * 4; }
     add(LEXIQUE.EQUERRES, qteEq);
-
 
     let barresNeuvesUtilisees = 0; let nbChutesRecyclees = 0; let chutesDe2500_Montants = [];
     besoinsTraverses.sort((a, b) => b - a); chutesUtilisables.sort((a, b) => b - a);
@@ -331,8 +321,6 @@ export async function calculerInventaire() {
     GLOBAL_STATE.derniereInventaire = inv;
 
     let keys = Object.keys(inv).sort();
-    
-    // Rangement dans les tableaux
     let ossatureKeys = keys.filter(k => k.includes('Lisse') || k.includes('Départ') || k.includes('Montants') || k.includes('Montant') || k.includes('Angle') || k.includes('Chute') || k.includes('Capot') || k.includes('Équerre') || k.includes('éclisse') || k.includes('Clips') || k.includes('Calle'));
     let parcloseKeys = keys.filter(k => k.includes('Parclose') || k.includes('Joint') || k.includes('Vitrage'));
     let huisserieKeys = keys.filter(k => k.includes('Habillage') || k.includes('Ouverture') || k.includes('Huisserie') || k.includes('Porte') || k.includes('Vantail') || k.includes('Paumelles') || k.includes('Béquilles') || k.includes('Kit') || k.includes('Rail') || k.includes('Poignée') || k.includes('Plinthe'));
@@ -348,14 +336,13 @@ export async function calculerInventaire() {
     let tbl = buildTable('1. Ossature', ossatureKeys) + buildTable('2. Vitrage & Parcloses', parcloseKeys) + buildTable('3. Accessoires', accessoiresKeys) + buildTable('4. Huisserie & Portes', huisserieKeys);
     
     document.getElementById('tableauTotal').innerHTML = tbl;
-    
     const zoneDownload = document.getElementById('zoneTelechargEMENT');
     if (zoneDownload) { zoneDownload.classList.remove('hidden'); zoneDownload.style.display = 'block'; }
-    
     document.getElementById('listePieces').innerHTML = htmlList;
     try { await dessinerSceneGlobale(murs, forme, H, GLOBAL_STATE.configMurs); } catch(e) { console.error("Erreur 3D:", e); }
 }
 
+// --- IMPRESSION PDF (AVEC MULTI-VUES) ---
 export async function imprimerDevis() {
     const nom = document.getElementById('nomChantier').value || "Chantier sans nom";
     const ralSelect = document.getElementById('couleurRal');
@@ -370,8 +357,9 @@ export async function imprimerDevis() {
     if(forme === 'L' || forme === 'U') dimsSup += `<li><strong>Mur B :</strong> ${document.getElementById('longueurB').value} mm</li>`;
     if(forme === 'U') dimsSup += `<li><strong>Mur C :</strong> ${document.getElementById('longueurC').value} mm</li>`;
 
-    let imgData = '';
+    let imagesData = []; // On stocke toutes nos vues
     const { currentScene } = GLOBAL_STATE;
+    
     if (currentScene.camera && currentScene.scene && currentScene.renderer) {
         const canvas = document.querySelector('#apercuElevationContainer canvas');
         const originalSize = new THREE.Vector2();
@@ -385,20 +373,45 @@ export async function imprimerDevis() {
         currentScene.camera.updateProjectionMatrix();
 
         const root = currentScene.scene.children.find(c => c.type === 'Group'); 
+        let centerC = new THREE.Vector3(0,0,0);
+        
         if(root) {
             const b = new THREE.Box3().setFromObject(root);
             if(!b.isEmpty()) {
-                const c = b.getCenter(new THREE.Vector3());
+                centerC = b.getCenter(new THREE.Vector3());
                 const sz = b.getSize(new THREE.Vector3());
                 const maxDim = Math.max(sz.x, sz.y, sz.z);
-                const dist = maxDim * 2.5; 
-                currentScene.camera.position.copy(c).add(new THREE.Vector3(0.8, 0.6, 1.0).normalize().multiplyScalar(dist));
-                currentScene.camera.lookAt(c);
+                const dist = maxDim * 2.2; 
+                
+                // Positionnement initial (Mur A)
+                currentScene.camera.position.copy(centerC).add(new THREE.Vector3(0.8, 0.5, 1.0).normalize().multiplyScalar(dist));
+                currentScene.camera.lookAt(centerC);
                 currentScene.controls.update();
             }
         }
+        
+        // VUE 1 : Mur A (par défaut)
         currentScene.renderer.render(currentScene.scene, currentScene.camera);
-        imgData = canvas.toDataURL('image/jpeg', 0.9); 
+        imagesData.push(canvas.toDataURL('image/jpeg', 0.9));
+
+        // VUE 2 : Mur B (Si L ou U)
+        if (forme === 'L' || forme === 'U') {
+            // Fait tourner la caméra de 90 degrés autour du centre
+            currentScene.camera.position.sub(centerC).applyAxisAngle(new THREE.Vector3(0, 1, 0), -Math.PI / 2).add(centerC);
+            currentScene.camera.lookAt(centerC);
+            currentScene.renderer.render(currentScene.scene, currentScene.camera);
+            imagesData.push(canvas.toDataURL('image/jpeg', 0.9));
+        }
+
+        // VUE 3 : Mur C (Si U)
+        if (forme === 'U') {
+            currentScene.camera.position.sub(centerC).applyAxisAngle(new THREE.Vector3(0, 1, 0), -Math.PI / 2).add(centerC);
+            currentScene.camera.lookAt(centerC);
+            currentScene.renderer.render(currentScene.scene, currentScene.camera);
+            imagesData.push(canvas.toDataURL('image/jpeg', 0.9));
+        }
+
+        // Restaure la taille de l'écran normal
         currentScene.renderer.setSize(originalSize.x, originalSize.y);
         currentScene.camera.aspect = originalAspect;
         currentScene.camera.updateProjectionMatrix();
@@ -445,6 +458,14 @@ export async function imprimerDevis() {
     }
     tableauHTMLAvecCodes += '</tbody></table>';
     
+    // NOUVEAU: Assemblage de la galerie de vues 3D pour le PDF
+    let vuesHtml = imagesData.map((img, i) => `
+        <div style="margin-bottom: 20px; text-align: center; page-break-inside: avoid;">
+            <h4 style="color: #64748B; margin-bottom: 5px;">Angle de vue n°${i+1}</h4>
+            <img src="${img}" alt="Vue 3D" style="width:95%; max-height:450px; object-fit:contain; border:1px solid #E2E8F0; border-radius: 8px;">
+        </div>
+    `).join('');
+
     let html = `
         <div class="print-header">
             <div class="print-logo"><img src="icon-512.png" alt="Logo KTY" style="height: 80px; width: auto;"></div>
@@ -457,7 +478,12 @@ export async function imprimerDevis() {
             </ul>
         </div>
         <h3>Détail des Modules</h3><div style="font-size: 0.9em; margin-bottom: 30px; border:1px solid #eee; padding:10px;">${document.getElementById('listePieces').innerHTML}</div>
-        <h3>Aperçu Technique</h3><div class="print-3d-view"><img src="${imgData}" alt="Vue 3D du projet" style="width:100%; max-height:600px; object-fit:contain;"></div>
+        
+        <h3>Aperçu Technique (Plans 3D)</h3>
+        <div class="print-3d-views">
+            ${vuesHtml}
+        </div>
+
         <h3>Inventaire Matériel Estimatif</h3>${tableauHTMLAvecCodes}
         <div class="print-footer" style="margin-top: 100px;">
             Document généré par le Configurateur KTY Solutions.<br>Merci de transmettre ce PDF à <strong>kty.chassieu@kty.fr</strong> pour validation technique.<br>KTY Solutions - Votre partenaire cloisonnement.
