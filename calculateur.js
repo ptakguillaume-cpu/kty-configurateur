@@ -2,23 +2,10 @@ import { GLOBAL_STATE } from './state.js';
 import { CONSTANTS } from './constants.js';
 import { getLargeurPorte } from './uiManager.js';
 import { dessinerSceneGlobale } from './engine3d.js';
-import * as THREE from 'three'; // Nécessaire pour l'impression (capture 3D)
-
-// --- NOUVELLE FONCTION TECHNIQUE ISSUE DES FICHES ---
-function getEntreMontants(largeurVantail, typePorte) {
-    // Règle issue des fiches 11680.jpg et 11682.jpg
-    // Pour les portes standards (828 ou 830), l'entre montants est de 880mm
-    if (largeurVantail >= 820 && largeurVantail <= 840) {
-        return 880;
-    }
-    // Pour les autres dimensions, on garde une marge de sécurité
-    return largeurVantail + 52; 
-}
+import * as THREE from 'three'; 
+import { getDonneesPorte } from './portes.js'; // <-- NOUVEAU IMPORT !
 
 export async function calculerInventaire() {
-    // ==========================================
-    // 1. INITIALISATION & VARIABLES GLOBALES
-    // ==========================================
     let inv = {};
     const add = (n, q) => { if(q>0) inv[n] = (inv[n]||0) + q; };
     function ajouterAuStock(nom, quantite) { if (quantite > 0) { inv[nom] = (inv[nom] || 0) + quantite; } }
@@ -31,7 +18,6 @@ export async function calculerInventaire() {
     let qteEquerresTraverse = 0;
     let totalBarresParcloses = 0;
     
-    // Récupération des valeurs du formulaire
     const forme = document.getElementById('formeCloison').value;
     const qteDepartsMurs = parseInt(document.getElementById('configDepart').value, 10);
     const typeGlob = document.getElementById('typeCloison').value;
@@ -60,11 +46,7 @@ export async function calculerInventaire() {
     if(forme==='L') murs.push('B'); 
     if(forme==='U') { murs.push('B'); murs.push('C'); }
 
-    // ==========================================
-    // 2. LES "TIROIRS" D'INTELLIGENCE MÉTIER
-    // ==========================================
-
-    // Tiroir A : Calcul du remplissage
+    // --- TIROIR A : MODULES ---
     function calculerModules(m, v1, v2, useParcloseAvecJoint) {
         let nom = m.type === 'pleine' ? 'Module plein' : m.type === 'vitree' ? 'Module vitré' : 'Module allège';
         htmlList += `<li>${nom} (${m.largeur.toFixed(0)}mm)</li>`;
@@ -115,20 +97,23 @@ export async function calculerInventaire() {
         }
     }
 
-    // Tiroir B : Calcul des Portes
+    // --- TIROIR B : PORTES (UTILISE LE DICTIONNAIRE) ---
     function calculerToutesLesPortes(nomParcloseDefaut) {
         if (totalPortes === 0) return;
 
-        let lp = getLargeurPorte();
+        let lp = getLargeurPorte(); 
         let isD = document.getElementById('doublePorte').checked;
-        let tp = document.getElementById('typePorte').value;
+        let tp = document.getElementById('typePorte').value; 
         let hp = document.getElementById('hauteurPorte').value;
         let vitragePorteVal = document.getElementById('typeVitragePorte').value;
-        
-        // NOUVEAU : Récupération de la hauteur pour le libellé
-        let hLabel = (hp === 'touteHauteur') ? Math.round(H) : hp;
 
-        let nomH = isD ? `Huisserie Double (${lp}x${hLabel}mm)` : `Huisserie (${lp}x${hLabel}mm)`;
+        // On interroge le dictionnaire (portes.js)
+        let donnees = getDonneesPorte(lp, tp);
+
+        let hVantail = (hp === 'touteHauteur') ? Math.round(H) : donnees.hauteurVantailStandard; // ex: 2040
+        let hHuisserieLabel = (hp === 'touteHauteur') ? Math.round(H) : "2100"; 
+
+        let nomH = isD ? `Huisserie Double passage ${donnees.largeurEntreMontants} x ${hHuisserieLabel} mm` : `${donnees.nomDevisHuisserie} x ${hHuisserieLabel} mm`;
         nomH += (tp === 'cadreAlu') ? " (Cadre Alu)" : " (Pleine)";
         add(nomH, totalPortes);
         
@@ -136,7 +121,7 @@ export async function calculerInventaire() {
         let nomKit = isD ? `Kit Paumelles (jeu de ${nbPaumellesParVantail*2})` : `Kit Paumelles (jeu de ${nbPaumellesParVantail})`;
         add(nomKit, totalPortes);
         
-        if(tp === 'cadreAlu') { 
+        if(tp === 'cadreAlu' || tp === 'pleine') { 
             add('Béquilles', totalPortes);
             if(vitragePorteVal === 'isolant') { 
                 let qteExtras = (isD ? 2 : 1) * totalPortes; 
@@ -145,9 +130,17 @@ export async function calculerInventaire() {
             if(isD) { 
                  let txt = document.getElementById('huisserieDoublePorteSelect').options[document.getElementById('huisserieDoublePorteSelect').selectedIndex].text;
                  let match = txt.match(/\((\d+)\+(\d+)\)/);
-                 if(match) { add(`Vantail Cadre Alu ${match[1]}x${hLabel}mm`, totalPortes); add(`Semi-fixe Cadre Alu ${match[2]}x${hLabel}mm`, totalPortes); } 
-                 else { add(`Porte Double Cadre Alu ${lp}x${hLabel}mm`, totalPortes); }
-            } else { add(`Porte Cadre Alu ${lp}x${hLabel}mm`, totalPortes); }
+                 if(match) { 
+                     let d1 = getDonneesPorte(parseFloat(match[1]), tp);
+                     let d2 = getDonneesPorte(parseFloat(match[2]), tp);
+                     add(`Vantail principal ${d1.nomDevisVantail} ${match[1]} x ${hVantail} mm`, totalPortes); 
+                     add(`Semi-fixe ${d2.nomDevisVantail} ${match[2]} x ${hVantail} mm`, totalPortes); 
+                 } else { 
+                     add(`Porte Double ${donnees.nomDevisVantail} ${lp} x ${hVantail} mm`, totalPortes); 
+                 }
+            } else { 
+                 add(`${donnees.nomDevisVantail} ${lp} x ${hVantail} mm`, totalPortes); 
+            }
         }
 
         if (hp === '2100') {
@@ -184,10 +177,7 @@ export async function calculerInventaire() {
         }
     }
 
-    // ==========================================
-    // 3. LE CHEF D'ORCHESTRE (Exécution)
-    // ==========================================
-
+    // --- CALCUL DES MURS ---
     if (typeGlob !== 'mixte') {
         GLOBAL_STATE.configMurs = { A:[], B:[], C:[] };
         murs.forEach(id => {
@@ -207,8 +197,8 @@ export async function calculerInventaire() {
                     let elSens = document.getElementById('sensPorte_' + k);
                     let sensChoisi = elSens ? elSens.value : 'droite';
                     GLOBAL_STATE.configMurs[id].push({type:'porte', sens: sensChoisi}); 
-                    // --- CORRECTION ISSUE DES FICHES : On déduit l'entre montants réel ---
-                    dispo -= getEntreMontants(lP, tP); 
+                    // NOUVEAU: Utilise la dimension d'encadrement depuis portes.js
+                    dispo -= getDonneesPorte(lP, tP).largeurEntreMontants; 
                 }
             }
             
@@ -262,8 +252,11 @@ export async function calculerInventaire() {
                 let sensTxt = (m.sens === 'gauche') ? 'PG' : 'PD';
                 totalPortes++; 
                 let hp = document.getElementById('hauteurPorte').value;
-                let hLabel = (hp === 'touteHauteur') ? Math.round(H) : hp;
-                htmlList += `<li>Huisserie (${getLargeurPorte()}x${hLabel}mm) - ${sensTxt}</li>`; 
+                let hLabel = (hp === 'touteHauteur') ? Math.round(H) : "2100";
+                let donneesH = getDonneesPorte(getLargeurPorte(), document.getElementById('typePorte').value);
+                
+                // On met à jour la liste avec l'encombrement "Huisserie passage 880x2100"
+                htmlList += `<li>Huisserie passage ${donneesH.largeurEntreMontants}x${hLabel}mm - ${sensTxt}</li>`; 
             } else {
                 calculerModules(m, v1, v2, useParcloseAvecJoint); 
             }
@@ -272,10 +265,7 @@ export async function calculerInventaire() {
 
     calculerToutesLesPortes(nomParcloseDefaut); 
 
-    // ==========================================
-    // 4. CALCUL DE L'OSSATURE GLOBALE & OPTIMISATIONS
-    // ==========================================
-    
+    // --- CALCUL DE L'OSSATURE ---
     if (totalBarresParcloses > 0) add(nomParcloseDefaut, Math.ceil(totalBarresParcloses));
 
     let nbCapots = 0;
@@ -315,13 +305,11 @@ export async function calculerInventaire() {
         }
     }
     
-    // --- CALCUL EXACT DES ÉQUERRES ---
     let montantsIntermediaires = (nbMontantsStandard + nbMontantsSpeciaux) - nbCapots;
     let qteEq = (nbDeparts * 4) + (montantsIntermediaires * 2) + qteEquerresTraverse; 
     if (nbAngles > 0) { qteEq += nbAngles * 4; }
     add('Équerres (total)', qteEq);
 
-    // Optimisation des traverses
     let barresNeuvesUtilisees = 0; let nbChutesRecyclees = 0; let chutesDe2500_Montants = [];
     besoinsTraverses.sort((a, b) => b - a); chutesUtilisables.sort((a, b) => b - a);
     besoinsTraverses.forEach(largeurRequise => {
@@ -335,7 +323,6 @@ export async function calculerInventaire() {
     if (barresNeuvesUtilisees > 0) add(nomTraverseBarre, barresNeuvesUtilisees);
     if (nbChutesRecyclees > 0) add("Chutes de montant réutilisées (Traverses)", nbChutesRecyclees);
     
-    // Optimisation des Couvre-joints Horizontaux
     let finalBarresCJNeuves = 0; let finalNbChutesCJRecyclees = 0; let chutesDe2500 = []; 
     besoinsCJ.sort((a, b) => b - a); chutesCJUtilisables.sort((a, b) => b - a);
     besoinsCJ.forEach(largeurRequise => {
@@ -349,9 +336,7 @@ export async function calculerInventaire() {
     if (finalBarresCJNeuves > 0) add(nomCJ_Horizontal, finalBarresCJNeuves);
     if (finalNbChutesCJRecyclees > 0) add("Chutes de CJ réutilisées", finalNbChutesCJRecyclees);
 
-    // ==========================================
-    // 5. AFFICHAGE DES RÉSULTATS
-    // ==========================================
+    // --- AFFICHAGE ---
     GLOBAL_STATE.derniereInventaire = inv;
 
     let keys = Object.keys(inv).sort();
@@ -378,9 +363,7 @@ export async function calculerInventaire() {
     try { await dessinerSceneGlobale(murs, forme, H, GLOBAL_STATE.configMurs); } catch(e) { console.error("Erreur 3D:", e); }
 }
 
-// ==========================================
-// 6. IMPRESSION (LE CODE QUI MANQUAIT !)
-// ==========================================
+// --- IMPRESSION PDF ---
 export async function imprimerDevis() {
     const nom = document.getElementById('nomChantier').value || "Chantier sans nom";
     const ralSelect = document.getElementById('couleurRal');
