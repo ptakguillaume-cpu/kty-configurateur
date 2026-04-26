@@ -3,55 +3,35 @@
 // ==========================================
 
 export const CATALOGUE_PORTES = {
-    // --- PORTES CADRE ALU ---
-    "alu_828": {
-        largeurVantail: 828,
-        largeurEntreMontants: 880,
-        hauteurVantailStandard: 2040, 
-        hauteurFondFeuillure: 2049.5,
-        nomDevisVantail: "Vantail Cadre Alu",
-        nomDevisHuisserie: "Huisserie passage 880"
-    },
-    "alu_928": {
-        largeurVantail: 928,
-        largeurEntreMontants: 980,
-        hauteurVantailStandard: 2040,
-        hauteurFondFeuillure: 2049.5,
-        nomDevisVantail: "Vantail Cadre Alu",
-        nomDevisHuisserie: "Huisserie passage 980"
-    },
-
-    // --- PORTES BOIS ---
-    "bois_830": {
-        largeurVantail: 830,
-        largeurEntreMontants: 880,
-        hauteurVantailStandard: 2040,
-        hauteurFondFeuillure: 2049.5,
-        nomDevisVantail: "Vantail Bois",
-        nomDevisHuisserie: "Huisserie passage 880"
-    },
-    "bois_930": {
-        largeurVantail: 930,
-        largeurEntreMontants: 980,
-        hauteurVantailStandard: 2040,
-        hauteurFondFeuillure: 2049.5,
-        nomDevisVantail: "Vantail Bois",
-        nomDevisHuisserie: "Huisserie passage 980"
-    },
-    
-    // --- PORTES CLARIT (VERRE) ---
-    "verre_827": {
-        largeurVantail: 827,
-        largeurEntreMontants: 880,
-        hauteurVantailStandard: 2035, // Jeu différent selon fiche
-        hauteurFondFeuillure: 2049.5,
-        nomDevisVantail: "Vantail Verre Clarit",
-        nomDevisHuisserie: "Huisserie passage 880"
-    }
+    "alu_828": { largeurVantail: 828, largeurEntreMontants: 880, hauteurVantailStandard: 2040, nomDevisVantail: "Vantail Cadre Alu", nomDevisHuisserie: "Huisserie passage 880" },
+    "alu_928": { largeurVantail: 928, largeurEntreMontants: 980, hauteurVantailStandard: 2040, nomDevisVantail: "Vantail Cadre Alu", nomDevisHuisserie: "Huisserie passage 980" },
+    "bois_830": { largeurVantail: 830, largeurEntreMontants: 880, hauteurVantailStandard: 2040, nomDevisVantail: "Vantail Bois", nomDevisHuisserie: "Huisserie passage 880" },
+    "bois_930": { largeurVantail: 930, largeurEntreMontants: 980, hauteurVantailStandard: 2040, nomDevisVantail: "Vantail Bois", nomDevisHuisserie: "Huisserie passage 980" },
+    "verre_827": { largeurVantail: 827, largeurEntreMontants: 880, hauteurVantailStandard: 2035, nomDevisVantail: "Vantail Verre Clarit", nomDevisHuisserie: "Huisserie passage 880" }
 };
 
-// Fonction qui cherche la bonne dimension dans le catalogue
-export function getDonneesPorte(largeurSaisie, typeSaisi) {
+// Fonction qui cherche la bonne dimension
+export function getDonneesPorte(largeurSaisie, typeSaisi, isCoulissante = false) {
+    
+    // --- NOUVEAU : RÈGLES POUR PORTE COULISSANTE ---
+    if (isCoulissante) {
+        let isBois = (typeSaisi === 'pleine');
+        // Règle Fiche 11683 : Passage libre = Largeur porte - 71mm
+        let passageLibre = largeurSaisie - 71; 
+        
+        return {
+            largeurVantail: largeurSaisie,
+            largeurEntreMontants: passageLibre, // On réserve un trou plus petit !
+            hauteurVantailStandard: 2040,
+            // Si c'est du bois, on marque à fournir !
+            nomDevisVantail: isBois ? "Vantail Bois Coulissant (À FOURNIR PAR VOS SOINS)" : "Vantail Cadre Alu Coulissant",
+            nomDevisHuisserie: `Habillage passage libre ${passageLibre}`,
+            isCoulissante: true,
+            isBois: isBois
+        };
+    }
+    // -----------------------------------------------
+
     let typeCle = "";
     if (typeSaisi === 'cadreAlu') typeCle = "alu_";
     else if (typeSaisi === 'pleine') typeCle = "bois_"; 
@@ -60,11 +40,8 @@ export function getDonneesPorte(largeurSaisie, typeSaisi) {
 
     let cle = typeCle + largeurSaisie;
 
-    if (CATALOGUE_PORTES[cle]) {
-        return CATALOGUE_PORTES[cle];
-    }
+    if (CATALOGUE_PORTES[cle]) return CATALOGUE_PORTES[cle];
     
-    // Si sur-mesure ou non trouvé, on calcule une valeur de sécurité
     return {
         largeurVantail: largeurSaisie,
         largeurEntreMontants: largeurSaisie + 52,
