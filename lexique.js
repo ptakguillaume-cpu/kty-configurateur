@@ -38,7 +38,7 @@ export const LEXIQUE = {
 
     // --- 5. NOMS DES PORTES (VANTAUX) ---
     V_ALU: "Vantail Cadre Alu",
-    V_BOIS: "Vantail Bois",
+    V_BOIS: "Vantail Bois (À FOURNIR PAR VOS SOINS)",
     V_VERRE: "Vantail Verre Clarit",
     V_BOIS_COULISSANT: "Vantail Bois Coulissant (À FOURNIR PAR VOS SOINS)",
     V_ALU_COULISSANT: "Vantail Cadre Alu Coulissant",
