@@ -28,6 +28,7 @@ export const LEXIQUE = {
     HUISSERIE_PASSAGE: "Huisserie passage",
     HABILLAGE_PASSAGE: "Habillage passage libre",
     CAPOT_COULISSANT: "Capots de finition (pour habillage passage)",
+    MONTANT_GACHE: "Montant Gâche (Tube de réception pour coulissant)",
     RENFORT_COULISSANT: "Montant Spécial (renfort rail coulissant)",
     KIT_RAIL: (mat) => `Kit Rail Coulissant + Accessoires (pour porte ${mat})`,
     POIGNEE_CUVETTE: "Poignée Cuvette Alu",
