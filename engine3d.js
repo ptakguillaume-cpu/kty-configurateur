@@ -115,8 +115,6 @@ function dessinerPanneauPorte3D(groupe, cx, cy, l, h, typeP, mats, sens, zOffset
     if(sens !== 'aucune') {
         const YP = 1050; const realYP = cy - h/2 + YP; 
         if(realYP > cy-h/2 && realYP < cy+h/2) {
-            
-            // --- CORRECTION : UNIQUEMENT LA POIGNÉE EST INVERSÉE ---
             let handleOnLeft = (sens === 'gauche');
             if (isCoul) { handleOnLeft = (sens === 'droite'); } 
 
@@ -205,15 +203,17 @@ export async function dessinerSceneGlobale(murs, forme, H, configs) {
                 let hasImposteM = document.getElementById('imposteModules').checked;
                 let hImpVal = parseFloat(document.getElementById('hauteurImposte').value) || 2100;
 
+                // --- CORRECTION DU BUG 3D TOUTE HAUTEUR ---
                 if (hP === '2100') { hOuv = 2100; drawTraverse = true; traverseYPos = 2100; } 
                 else if (hP === 'touteHauteur') {
                     let selectTTH = document.getElementById('typeTraverseTTH');
                     let typeTTH = selectTTH ? selectTTH.value : 'sansTraverse';
                     if (hasImposteM && H > hImpVal + 38) { hOuv = hImpVal; drawTraverse = true; traverseYPos = hImpVal; } 
                     else if (H > 3000) { hOuv = 3000; drawTraverse = true; traverseYPos = 3000; } 
-                    else if (typeTTH === 'avecTraverse') { hOuv = H - 38; drawTraverse = true; traverseYPos = H - 38; } 
-                    else { hOuv = H; drawTraverse = false; }
+                    else if (typeTTH === 'avecTraverse') { hOuv = H - 76; drawTraverse = true; traverseYPos = H - 76; } 
+                    else { hOuv = H - 38; drawTraverse = false; } // LA PORTE S'ARRÊTE JUSTE SOUS LA LISSE HAUTE
                 }
+                // ------------------------------------------
                 
                 const yOuv = hOuv / 2; const startV = x;
 
@@ -240,26 +240,27 @@ export async function dessinerSceneGlobale(murs, forme, H, configs) {
                     dessinerPanneauPorte3D(g, startV+lp/2, yOuv, lp, hOuv, typP, mats, sens, zOff, isCoul); 
                 }
 
-                // --- DESSIN CORRIGÉ DU RAIL ET DU MONTANT GACHE ---
                 if (isCoul) {
                     let railWidth = lp * 2; 
                     let railCx = startV + lp/2;
                     let opensRight = (sens === 'droite'); 
 
-                    // Le rail s'étend du bon côté de l'ouverture
                     if (!isD) { railCx = opensRight ? startV + lp : startV; }
                     
+                    let railY = hOuv + 30;
+                    if (hP === 'touteHauteur' && !drawTraverse) {
+                        railY = H - 38 - 30; // On descend le rail pour éviter qu'il traverse le plafond
+                    }
+                    
                     const mRail = createMesh(new THREE.BoxGeometry(railWidth, 60, 45), mats.matProfil, g);
-                    mRail.position.set(railCx, hOuv + 30, zOff / 2);
+                    mRail.position.set(railCx, railY, zOff / 2);
 
                     if (hasGache) {
                         if (!isD) {
-                            // La gâche est du côté où la porte vient taper pour fermer
                             let gacheX = opensRight ? startV - 19 : startV + lp + 19;
                             const mGache = createMesh(new THREE.BoxGeometry(38, hOuv, 30), mats.matProfil, g);
                             mGache.position.set(gacheX, hOuv/2, 29); 
                         } else {
-                            // Pour les portes doubles, on met 2 gâches sur les murs de chaque côté
                             const mGache1 = createMesh(new THREE.BoxGeometry(38, hOuv, 30), mats.matProfil, g);
                             mGache1.position.set(startV - 19, hOuv/2, 29); 
                             const mGache2 = createMesh(new THREE.BoxGeometry(38, hOuv, 30), mats.matProfil, g);
@@ -267,7 +268,6 @@ export async function dessinerSceneGlobale(murs, forme, H, configs) {
                         }
                     }
                 }
-                // ---------------------------------------------------
 
                 if(hP==='2100' && H>2100 + 38) {
                      const typI = document.getElementById('typeImposte').value;
