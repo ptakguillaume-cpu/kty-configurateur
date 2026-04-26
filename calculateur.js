@@ -3,7 +3,7 @@ import { CONSTANTS } from './constants.js';
 import { getLargeurPorte } from './uiManager.js';
 import { dessinerSceneGlobale } from './engine3d.js';
 import * as THREE from 'three'; 
-import { getDonneesPorte } from './portes.js'; // <-- NOUVEAU IMPORT !
+import { getDonneesPorte } from './portes.js';
 
 export async function calculerInventaire() {
     let inv = {};
@@ -46,21 +46,17 @@ export async function calculerInventaire() {
     if(forme==='L') murs.push('B'); 
     if(forme==='U') { murs.push('B'); murs.push('C'); }
 
-    // --- TIROIR A : MODULES ---
     function calculerModules(m, v1, v2, useParcloseAvecJoint) {
         let nom = m.type === 'pleine' ? 'Module plein' : m.type === 'vitree' ? 'Module vitré' : 'Module allège';
         htmlList += `<li>${nom} (${m.largeur.toFixed(0)}mm)</li>`;
         add('Calles de lisse', m.type==='pleine'?2:(m.type==='vitree'?6:4));
         
         let barresPourCeModule = 0;
-
         if (m.type === 'vitree') {
             barresPourCeModule += 2; 
             let morceauxParBarre = (m.largeur <= 590) ? 5 : (m.largeur <= 740) ? 4 : (m.largeur <= 990) ? 3 : 2;
             barresPourCeModule += (2 / morceauxParBarre);
-        } else if (m.type === 'vitreeSurAllege') {
-            barresPourCeModule += 2;
-        }
+        } else if (m.type === 'vitreeSurAllege') { barresPourCeModule += 2; }
 
         if ((m.type === 'vitree' || m.type === 'vitreeSurAllege') && !useParcloseAvecJoint) {
             let hV = H - (CONSTANTS.EPAISSEUR_PROFIL*2);
@@ -71,7 +67,6 @@ export async function calculerInventaire() {
         }
 
         let nbTrav = (m.type === 'vitreeSurAllege') ? 1 : 0;
-        
         if(hasImposteModules && H > H_IMPOSTE + 38) {
             nbTrav++;
             let typeImp = document.getElementById('typeImposte') ? document.getElementById('typeImposte').value : 'vitree';
@@ -85,18 +80,13 @@ export async function calculerInventaire() {
                 }
             }
         }
-        
         totalBarresParcloses += barresPourCeModule;
-
         if(nbTrav > 0) {
             qteEquerresTraverse += nbTrav * 2; 
-            for(let k=0; k<nbTrav; k++) { 
-                besoinsTraverses.push(m.largeur); 
-                besoinsCJ.push(m.largeur); besoinsCJ.push(m.largeur); 
-            }  
+            for(let k=0; k<nbTrav; k++) { besoinsTraverses.push(m.largeur); besoinsCJ.push(m.largeur); besoinsCJ.push(m.largeur); }  
         }
     }
-    // --- TIROIR B : PORTES (UTILISE LE DICTIONNAIRE) ---
+
     function calculerToutesLesPortes(nomParcloseDefaut) {
         if (totalPortes === 0) return;
 
@@ -106,39 +96,25 @@ export async function calculerInventaire() {
         let hp = document.getElementById('hauteurPorte').value;
         let vitragePorteVal = document.getElementById('typeVitragePorte').value;
         
-        // NOUVEAU : On regarde si la case coulissante est cochée
-        let isCoulissante = document.getElementById('isCoulissante') ? document.getElementById('isCoulissante').checked : false;
+        let elCoulissante = document.getElementById('isCoulissante');
+        let isCoulissante = elCoulissante ? elCoulissante.checked : false;
 
-        // On interroge le dictionnaire avec cette info !
         let donnees = getDonneesPorte(lp, tp, isCoulissante);
-
         let hVantail = (hp === 'touteHauteur') ? Math.round(H) : donnees.hauteurVantailStandard; 
         let hHuisserieLabel = (hp === 'touteHauteur') ? Math.round(H) : "2100"; 
 
-        // ==========================================
-        // SI C'EST UNE PORTE COULISSANTE
-        // ==========================================
         if (isCoulissante) {
             add(`Ouverture / ${donnees.nomDevisHuisserie} x ${hHuisserieLabel} mm`, totalPortes);
-            
-            // 1. Le Vantail (avec la mention "à fournir" si c'est du bois)
             add(`${donnees.nomDevisVantail} ${lp} x ${hVantail} mm`, totalPortes);
-            
-            // 2. Le Kit rail et accessoires
             add(`Kit Rail Coulissant + Accessoires (pour porte ${donnees.isBois ? 'bois' : 'alu'})`, totalPortes);
             
-            // 3. Les pièces de structure exactes que tu as demandées !
+            // Les pièces de structure exactes
             add('Capots de finition (pour habillage passage)', 3 * totalPortes);
             add('Montant (2500mm) traverses', 1 * totalPortes);
             add('Montant Spécial (renfort rail coulissant)', 1 * totalPortes);
             
-            if(!donnees.isBois) {
-                add('Poignée Cuvette Alu', totalPortes);
-            }
+            if(!donnees.isBois) { add('Poignée Cuvette Alu', totalPortes); }
         } 
-        // ==========================================
-        // SI C'EST UNE PORTE BATTANTE CLASSIQUE
-        // ==========================================
         else {
             let nomH = isD ? `Huisserie Double passage ${donnees.largeurEntreMontants} x ${hHuisserieLabel} mm` : `${donnees.nomDevisHuisserie} x ${hHuisserieLabel} mm`;
             nomH += (tp === 'cadreAlu') ? " (Cadre Alu)" : " (Pleine)";
@@ -149,6 +125,10 @@ export async function calculerInventaire() {
             
             if(tp === 'cadreAlu' || tp === 'pleine') { 
                 add('Béquilles', totalPortes);
+                if(vitragePorteVal === 'isolant' && tp === 'cadreAlu') { 
+                    let qteExtras = (isD ? 2 : 1) * totalPortes; 
+                    add('Plinthe automatique', qteExtras); add('Vitrage isolant', qteExtras); 
+                }
                 if(isD) { 
                      add(`Porte Double ${donnees.nomDevisVantail} ${lp} x ${hVantail} mm`, totalPortes); 
                 } else { 
@@ -157,13 +137,36 @@ export async function calculerInventaire() {
             }
             if (hp === '2100') {
                  for(let k=0; k < totalPortes; k++) { besoinsCJ.push(lp); besoinsCJ.push(lp); }
+                 if(hasImposteModules && H > H_IMPOSTE+38 && H_IMPOSTE > 2100) {
+                     for(let k=0; k < totalPortes; k++) { besoinsTraverses.push(lp); besoinsCJ.push(lp); besoinsCJ.push(lp); }
+                     qteEquerresTraverse += totalPortes * 2; 
+                 }
+                 if(H > 2100 + 38) { 
+                     let typeImp = document.getElementById('typeImposte').value;
+                     if(typeImp === 'vitree') { 
+                         let nbParclosesBase = (H > 2600) ? 2 : 1;
+                         let qteParcloseImposte = (isD ? (nbParclosesBase * 2) : nbParclosesBase) * totalPortes; 
+                         add(nomParcloseDefaut, qteParcloseImposte);
+                     }
+                 }
+            } 
+            else if (hp === 'touteHauteur') {
+                 let selectTTH = document.getElementById('typeTraverseTTH');
+                 let typeTTH = selectTTH ? selectTTH.value : 'sansTraverse';
+                 if (H > 3000 || typeTTH === 'avecTraverse') {
+                     for(let k=0; k < totalPortes; k++) { besoinsTraverses.push(lp); besoinsCJ.push(2500); }
+                 }
+                 if (H > 3000) {
+                     let typeImp = document.getElementById('typeImposte').value;
+                     if(typeImp === 'vitree') { 
+                         let qteParcloseImposte = (isD ? 4 : 2) * totalPortes; 
+                         add(nomParcloseDefaut, qteParcloseImposte);
+                     }
+                 }
             }
         }
     }
 
-     
-
-    // --- CALCUL DES MURS ---
     if (typeGlob !== 'mixte') {
         GLOBAL_STATE.configMurs = { A:[], B:[], C:[] };
         murs.forEach(id => {
@@ -181,10 +184,10 @@ export async function calculerInventaire() {
                 let tP = document.getElementById('typePorte').value;
                 for(let k=0; k<qP; k++) { 
                     let elSens = document.getElementById('sensPorte_' + k);
-                    let sensChoisi = elSens ? elSens.value : 'droite';
-                    GLOBAL_STATE.configMurs[id].push({type:'porte', sens: sensChoisi}); 
-                    // NOUVEAU: Utilise la dimension d'encadrement depuis portes.js
-                    dispo -= getDonneesPorte(lP, tP, document.getElementById('isCoulissante') ? document.getElementById('isCoulissante').checked : false).largeurEntreMontants;
+                    GLOBAL_STATE.configMurs[id].push({type:'porte', sens: elSens ? elSens.value : 'droite'}); 
+                    let elCoulissante = document.getElementById('isCoulissante');
+                    dispo -= getDonneesPorte(lP, tP, elCoulissante ? elCoulissante.checked : false).largeurEntreMontants; 
+                }
             }
             
             if(dispo > 5) {
@@ -210,9 +213,7 @@ export async function calculerInventaire() {
     let v1 = document.getElementById('typeVitrage1').value;
     let v2 = document.getElementById('typeVitrage2').value;
     let isStandardRal = (['9016','7016','9005','anodise'].includes(couleurRal));
-    let isStandardGlass1 = (['33.2','44.2'].includes(v1));
-    let isStandardGlass2 = (['aucun','33.2','44.2'].includes(v2));
-    let useParcloseAvecJoint = (isStandardRal && isStandardGlass1 && isStandardGlass2);
+    let useParcloseAvecJoint = (isStandardRal && ['33.2','44.2'].includes(v1) && ['aucun','33.2','44.2'].includes(v2));
     let nomParcloseDefaut = ((v2 === 'aucun') ? 'Parclose SV' : 'Parclose DV') + (useParcloseAvecJoint ? ' (avec joint intégré)' : ' (sans joint)') + " (Barre 3000mm)";
 
     murs.forEach(id => {
@@ -234,14 +235,19 @@ export async function calculerInventaire() {
 
         modulesDuMur.forEach(m => {
             if(m.type==='porte') { 
-                let sensTxt = (m.sens === 'gauche') ? 'PG' : 'PD';
                 totalPortes++; 
                 let hp = document.getElementById('hauteurPorte').value;
                 let hLabel = (hp === 'touteHauteur') ? Math.round(H) : "2100";
-                let donneesH = getDonneesPorte(getLargeurPorte(), document.getElementById('typePorte').value);
+                let elCoulissante = document.getElementById('isCoulissante');
+                let isCoul = elCoulissante ? elCoulissante.checked : false;
+                let donneesH = getDonneesPorte(getLargeurPorte(), document.getElementById('typePorte').value, isCoul);
                 
-                // On met à jour la liste avec l'encombrement "Huisserie passage 880x2100"
-                htmlList += `<li>Huisserie passage ${donneesH.largeurEntreMontants}x${hLabel}mm - ${sensTxt}</li>`; 
+                if (isCoul) {
+                    htmlList += `<li>Passage libre coulissant ${donneesH.largeurEntreMontants}x${hLabel}mm</li>`;
+                } else {
+                    let sensTxt = (m.sens === 'gauche') ? 'PG' : 'PD';
+                    htmlList += `<li>Huisserie passage ${donneesH.largeurEntreMontants}x${hLabel}mm - ${sensTxt}</li>`; 
+                }
             } else {
                 calculerModules(m, v1, v2, useParcloseAvecJoint); 
             }
@@ -250,17 +256,12 @@ export async function calculerInventaire() {
 
     calculerToutesLesPortes(nomParcloseDefaut); 
 
-    // --- CALCUL DE L'OSSATURE ---
     if (totalBarresParcloses > 0) add(nomParcloseDefaut, Math.ceil(totalBarresParcloses));
 
     let nbCapots = 0;
     let positionDepartUnique = document.querySelector('input[name="posDepartL"]:checked') ? document.querySelector('input[name="posDepartL"]:checked').value : 'A';
-
-    let debutEstLibre = (qteDepartsMurs === 0) || (forme === 'L' && qteDepartsMurs === 1 && positionDepartUnique === 'B');
-    if (debutEstLibre) { nbCapots++; if (GLOBAL_STATE.configMurs['A'].length === 1) nbMontantsSpeciaux++; else nbMontantsStandard++; }
-
-    let finEstLibre = (qteDepartsMurs === 0) || (qteDepartsMurs === 1 && (forme === 'droite' || (forme === 'L' && positionDepartUnique === 'A') || forme === 'U'));
-    if (finEstLibre) { nbCapots++; let murFinId = (forme === 'U') ? 'C' : (forme === 'L' ? 'B' : 'A'); if (GLOBAL_STATE.configMurs[murFinId].length === 1) nbMontantsSpeciaux++; else nbMontantsStandard++; }
+    if (qteDepartsMurs === 0 || (forme === 'L' && qteDepartsMurs === 1 && positionDepartUnique === 'B')) { nbCapots++; if (GLOBAL_STATE.configMurs['A'].length === 1) nbMontantsSpeciaux++; else nbMontantsStandard++; }
+    if (qteDepartsMurs === 0 || (qteDepartsMurs === 1 && (forme === 'droite' || (forme === 'L' && positionDepartUnique === 'A') || forme === 'U'))) { nbCapots++; let murFinId = (forme === 'U') ? 'C' : (forme === 'L' ? 'B' : 'A'); if (GLOBAL_STATE.configMurs[murFinId].length === 1) nbMontantsSpeciaux++; else nbMontantsStandard++; }
 
     ajouterAuStock(nomMontant, (longueurBarreRetenue === 5750 && H <= 2875) ? Math.ceil(nbMontantsStandard / 2) : nbMontantsStandard);
     ajouterAuStock(nomMontantSpecial, (longueurBarreRetenue === 5750 && H <= 2875) ? Math.ceil(nbMontantsSpeciaux / 2) : nbMontantsSpeciaux);
@@ -321,13 +322,12 @@ export async function calculerInventaire() {
     if (finalBarresCJNeuves > 0) add(nomCJ_Horizontal, finalBarresCJNeuves);
     if (finalNbChutesCJRecyclees > 0) add("Chutes de CJ réutilisées", finalNbChutesCJRecyclees);
 
-    // --- AFFICHAGE ---
     GLOBAL_STATE.derniereInventaire = inv;
 
     let keys = Object.keys(inv).sort();
     let ossatureKeys = keys.filter(k => k.includes('Lisse') || k.includes('Départ') || k.includes('Montants') || k.includes('Montant') || k.includes('Angle') || k.includes('Profilés') || k.includes('Chute') || k.includes('Capot') || k.includes('Équerre') || k.includes('éclisse') || k.includes('Clips') || k.includes('Calle'));
     let parcloseKeys = keys.filter(k => k.includes('Parclose') || k.includes('Joint') || k.includes('Vitrage'));
-    let huisserieKeys = keys.filter(k => k.includes('Huisserie') || k.includes('Porte') || k.includes('Vantail') || k.includes('Semi-fixe') || k.includes('Paumelles') || k.includes('Béquilles') || k.includes('Kit') || k.includes('Plinthe'));
+    let huisserieKeys = keys.filter(k => k.includes('Habillage') || k.includes('Ouverture') || k.includes('Huisserie') || k.includes('Porte') || k.includes('Vantail') || k.includes('Semi-fixe') || k.includes('Paumelles') || k.includes('Béquilles') || k.includes('Kit') || k.includes('Rail') || k.includes('Poignée') || k.includes('Plinthe'));
     let accessoiresKeys = keys.filter(k => !ossatureKeys.includes(k) && !parcloseKeys.includes(k) && !huisserieKeys.includes(k));
 
     const buildTable = (title, arr) => {
@@ -337,7 +337,7 @@ export async function calculerInventaire() {
         return t + `</tbody></table>`;
     };
 
-    let tbl = buildTable('1. Ossature', ossatureKeys) + buildTable('2. Vitrage & Parcloses', parcloseKeys) + buildTable('3. Accessoires', accessoiresKeys) + buildTable('4. Huisserie', huisserieKeys);
+    let tbl = buildTable('1. Ossature', ossatureKeys) + buildTable('2. Vitrage & Parcloses', parcloseKeys) + buildTable('3. Accessoires', accessoiresKeys) + buildTable('4. Huisserie & Portes', huisserieKeys);
     
     document.getElementById('tableauTotal').innerHTML = tbl;
     
@@ -348,7 +348,6 @@ export async function calculerInventaire() {
     try { await dessinerSceneGlobale(murs, forme, H, GLOBAL_STATE.configMurs); } catch(e) { console.error("Erreur 3D:", e); }
 }
 
-// --- IMPRESSION PDF ---
 export async function imprimerDevis() {
     const nom = document.getElementById('nomChantier').value || "Chantier sans nom";
     const ralSelect = document.getElementById('couleurRal');
@@ -404,7 +403,7 @@ export async function imprimerDevis() {
     if (GLOBAL_STATE.derniereInventaire) {
         const inv = GLOBAL_STATE.derniereInventaire;
         let keys = Object.keys(inv);
-        const ordrePriorite = ["Lisse", "Départ", "Montant", "Angle", "Couvre joints", "Capot", "Équerre", "éclisse", "Clips", "Calle", "Joint", "Parclose", "Huisserie", "Porte", "Vantail", "Paumelle", "Béquille", "Plinthe"];
+        const ordrePriorite = ["Lisse", "Départ", "Montant", "Angle", "Couvre joints", "Capot", "Équerre", "éclisse", "Clips", "Calle", "Joint", "Parclose", "Habillage", "Ouverture", "Huisserie", "Porte", "Vantail", "Rail", "Paumelle", "Béquille", "Poignée", "Plinthe"];
 
         function getScore(nomArticle) {
             for (let i = 0; i < ordrePriorite.length; i++) {
