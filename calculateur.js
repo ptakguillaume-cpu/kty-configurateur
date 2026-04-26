@@ -4,6 +4,7 @@ import { getLargeurPorte } from './uiManager.js';
 import { dessinerSceneGlobale } from './engine3d.js';
 import * as THREE from 'three'; 
 import { getDonneesPorte } from './portes.js';
+import { LEXIQUE } from './lexique.js'; // <-- NOUVEL IMPORT
 
 export async function calculerInventaire() {
     let inv = {};
@@ -31,12 +32,6 @@ export async function calculerInventaire() {
     for (let l of BARRES_DISPO) { if (l >= H) { longueurBarreRetenue = l; break; } }
     
     let hNom = `${longueurBarreRetenue}mm`;
-    let nomMontant = `Montants (H. ${hNom})`;
-    let nomMontantSpecial = `Montant Spécial (H. ${hNom})`;
-    let nomDepart = `Départ (H. ${hNom})`;
-    let nomCJ_Horizontal = "Couvre joints H.2500mm (horizontaux)"; 
-    let nomCJ_Vertical = `Couvre joints (H. ${hNom})`;
-    let nomTraverseBarre = "Montant (2500mm) traverses"; 
     
     let nbDeparts = qteDepartsMurs; 
     let nbAngles = (forme==='L') ? 1 : (forme==='U' ? 2 : 0);
@@ -49,7 +44,7 @@ export async function calculerInventaire() {
     function calculerModules(m, v1, v2, useParcloseAvecJoint) {
         let nom = m.type === 'pleine' ? 'Module plein' : m.type === 'vitree' ? 'Module vitré' : 'Module allège';
         htmlList += `<li>${nom} (${m.largeur.toFixed(0)}mm)</li>`;
-        add('Calles de lisse', m.type==='pleine'?2:(m.type==='vitree'?6:4));
+        add(LEXIQUE.CALLES_LISSE, m.type==='pleine'?2:(m.type==='vitree'?6:4));
         
         let barresPourCeModule = 0;
         if (m.type === 'vitree') {
@@ -106,28 +101,32 @@ export async function calculerInventaire() {
         if (isCoulissante) {
             add(`Ouverture / ${donnees.nomDevisHuisserie} x ${hHuisserieLabel} mm`, totalPortes);
             add(`${donnees.nomDevisVantail} ${lp} x ${hVantail} mm`, totalPortes);
-            add(`Kit Rail Coulissant + Accessoires (pour porte ${donnees.isBois ? 'bois' : 'alu'})`, totalPortes);
+            add(LEXIQUE.KIT_RAIL(donnees.isBois ? 'bois' : 'alu'), totalPortes);
             
             // Les pièces de structure exactes
-            add('Capots de finition (pour habillage passage)', 3 * totalPortes);
-            add('Montant (2500mm) traverses', 1 * totalPortes);
-            add('Montant Spécial (renfort rail coulissant)', 1 * totalPortes);
+            add(LEXIQUE.CAPOT_COULISSANT, 3 * totalPortes);
+            add(LEXIQUE.MONTANT_TRAVERSE, 1 * totalPortes);
+            add(LEXIQUE.RENFORT_COULISSANT, 1 * totalPortes);
             
-            if(!donnees.isBois) { add('Poignée Cuvette Alu', totalPortes); }
+            // --- AJOUT DES 6 ÉQUERRES (2 traverse + 4 renfort) ---
+            qteEquerresTraverse += 6 * totalPortes;
+            // ------------------------------------------------------
+
+            if(!donnees.isBois) { add(LEXIQUE.POIGNEE_CUVETTE, totalPortes); }
         } 
         else {
-            let nomH = isD ? `Huisserie Double passage ${donnees.largeurEntreMontants} x ${hHuisserieLabel} mm` : `${donnees.nomDevisHuisserie} x ${hHuisserieLabel} mm`;
+            let nomH = isD ? `${LEXIQUE.HUISSERIE_DOUBLE} ${donnees.largeurEntreMontants} x ${hHuisserieLabel} mm` : `${donnees.nomDevisHuisserie} x ${hHuisserieLabel} mm`;
             nomH += (tp === 'cadreAlu') ? " (Cadre Alu)" : " (Pleine)";
             add(nomH, totalPortes);
             
             let nbPaumellesParVantail = (hp === 'touteHauteur' || (hp === '2100' && tp === 'cadreAlu' && vitragePorteVal === 'isolant')) ? 4 : 3;
-            add(isD ? `Kit Paumelles (jeu de ${nbPaumellesParVantail*2})` : `Kit Paumelles (jeu de ${nbPaumellesParVantail})`, totalPortes);
+            add(LEXIQUE.KIT_PAUMELLES(isD ? nbPaumellesParVantail*2 : nbPaumellesParVantail), totalPortes);
             
             if(tp === 'cadreAlu' || tp === 'pleine') { 
-                add('Béquilles', totalPortes);
+                add(LEXIQUE.BEQUILLES, totalPortes);
                 if(vitragePorteVal === 'isolant' && tp === 'cadreAlu') { 
                     let qteExtras = (isD ? 2 : 1) * totalPortes; 
-                    add('Plinthe automatique', qteExtras); add('Vitrage isolant', qteExtras); 
+                    add(LEXIQUE.PLINTHE, qteExtras); add(LEXIQUE.VITRAGE_ISOLANT, qteExtras); 
                 }
                 if(isD) { 
                      add(`Porte Double ${donnees.nomDevisVantail} ${lp} x ${hVantail} mm`, totalPortes); 
@@ -263,16 +262,16 @@ export async function calculerInventaire() {
     if (qteDepartsMurs === 0 || (forme === 'L' && qteDepartsMurs === 1 && positionDepartUnique === 'B')) { nbCapots++; if (GLOBAL_STATE.configMurs['A'].length === 1) nbMontantsSpeciaux++; else nbMontantsStandard++; }
     if (qteDepartsMurs === 0 || (qteDepartsMurs === 1 && (forme === 'droite' || (forme === 'L' && positionDepartUnique === 'A') || forme === 'U'))) { nbCapots++; let murFinId = (forme === 'U') ? 'C' : (forme === 'L' ? 'B' : 'A'); if (GLOBAL_STATE.configMurs[murFinId].length === 1) nbMontantsSpeciaux++; else nbMontantsStandard++; }
 
-    ajouterAuStock(nomMontant, (longueurBarreRetenue === 5750 && H <= 2875) ? Math.ceil(nbMontantsStandard / 2) : nbMontantsStandard);
-    ajouterAuStock(nomMontantSpecial, (longueurBarreRetenue === 5750 && H <= 2875) ? Math.ceil(nbMontantsSpeciaux / 2) : nbMontantsSpeciaux);
+    ajouterAuStock(LEXIQUE.MONTANT_STD(hNom), (longueurBarreRetenue === 5750 && H <= 2875) ? Math.ceil(nbMontantsStandard / 2) : nbMontantsStandard);
+    ajouterAuStock(LEXIQUE.MONTANT_SPEC(hNom), (longueurBarreRetenue === 5750 && H <= 2875) ? Math.ceil(nbMontantsSpeciaux / 2) : nbMontantsSpeciaux);
 
-    add(nomDepart, nbDeparts);
-    if(nbAngles>0) add(`Angle Carré (H. ${hNom})`, nbAngles);
-    if(nbCapots>0) add('Capots de finition (pour Montant)', nbCapots);
+    add(LEXIQUE.DEPART(hNom), nbDeparts);
+    if(nbAngles>0) add(LEXIQUE.ANGLE(hNom), nbAngles);
+    if(nbCapots>0) add(LEXIQUE.CAPOT_MONTANT, nbCapots);
     
     let totVert = nbMontantsStandard + nbMontantsSpeciaux + nbDeparts + nbAngles; 
-    add(nomCJ_Vertical, totVert*2);
-    add('Boîte de Clips couvre joints (100u)', Math.ceil(totVert*2*8/100));
+    add(LEXIQUE.CJ_VERT(hNom), totVert*2);
+    add(LEXIQUE.CLIPS_CJ, Math.ceil(totVert*2*8/100));
     
     let totalEclisses = 0; let Ltot = 0;
     murs.forEach(id => {
@@ -281,20 +280,20 @@ export async function calculerInventaire() {
         let nbBarres = Math.ceil(L / 3000);
         totalEclisses += ((nbBarres > 0) ? nbBarres - 1 : 0) * 2;
     });
-    add('Clips de raccordement (éclisses)', totalEclisses);
-    add('Lisses (barre 3000mm)', Math.ceil(Ltot*2/3000));
+    add(LEXIQUE.ECLISSES, totalEclisses);
+    add(LEXIQUE.LISSES, Math.ceil(Ltot*2/3000));
 
     for (const [vitrage, metrageTotal] of Object.entries(totalMetrageJointsByType)) {
         if (metrageTotal > 0) {
             let epaisseurJoint = (vitrage === '44.2') ? '8mm' : (vitrage === '55.2') ? '10mm' : (vitrage === '66.2') ? '12mm' : '6mm';
-            add(`Rouleau Joint ${epaisseurJoint} (50m) pour ${vitrage}`, Math.ceil(metrageTotal / 50000));
+            add(LEXIQUE.JOINT(epaisseurJoint, vitrage), Math.ceil(metrageTotal / 50000));
         }
     }
     
     let montantsIntermediaires = (nbMontantsStandard + nbMontantsSpeciaux) - nbCapots;
     let qteEq = (nbDeparts * 4) + (montantsIntermediaires * 2) + qteEquerresTraverse; 
     if (nbAngles > 0) { qteEq += nbAngles * 4; }
-    add('Équerres (total)', qteEq);
+    add(LEXIQUE.EQUERRES, qteEq);
 
     let barresNeuvesUtilisees = 0; let nbChutesRecyclees = 0; let chutesDe2500_Montants = [];
     besoinsTraverses.sort((a, b) => b - a); chutesUtilisables.sort((a, b) => b - a);
@@ -306,8 +305,8 @@ export async function calculerInventaire() {
         if (!comble) { chutesDe2500_Montants.sort((a, b) => b - a); for(let i=0; i < chutesDe2500_Montants.length; i++) { if (chutesDe2500_Montants[i] >= largeurRequise) { chutesDe2500_Montants[i] -= largeurRequise; comble = true; break; } } }
         if (!comble) { barresNeuvesUtilisees++; let resteNeuve = 2500 - largeurRequise; if (resteNeuve > 50) chutesDe2500_Montants.push(resteNeuve); }
     });
-    if (barresNeuvesUtilisees > 0) add(nomTraverseBarre, barresNeuvesUtilisees);
-    if (nbChutesRecyclees > 0) add("Chutes de montant réutilisées (Traverses)", nbChutesRecyclees);
+    if (barresNeuvesUtilisees > 0) add(LEXIQUE.MONTANT_TRAVERSE, barresNeuvesUtilisees);
+    if (nbChutesRecyclees > 0) add(LEXIQUE.CHUTES_TRAVERSES, nbChutesRecyclees);
     
     let finalBarresCJNeuves = 0; let finalNbChutesCJRecyclees = 0; let chutesDe2500 = []; 
     besoinsCJ.sort((a, b) => b - a); chutesCJUtilisables.sort((a, b) => b - a);
@@ -319,15 +318,17 @@ export async function calculerInventaire() {
         if (!comble) { chutesDe2500.sort((a, b) => b - a); for(let i=0; i < chutesDe2500.length; i++) { if (chutesDe2500[i] >= largeurRequise) { chutesDe2500[i] -= largeurRequise; comble = true; break; } } }
         if (!comble) { finalBarresCJNeuves++; let resteNeuve = 2500 - largeurRequise; if(resteNeuve > 50) chutesDe2500.push(resteNeuve); }
     });
-    if (finalBarresCJNeuves > 0) add(nomCJ_Horizontal, finalBarresCJNeuves);
-    if (finalNbChutesCJRecyclees > 0) add("Chutes de CJ réutilisées", finalNbChutesCJRecyclees);
+    if (finalBarresCJNeuves > 0) add(LEXIQUE.CJ_HORIZ, finalBarresCJNeuves);
+    if (finalNbChutesCJRecyclees > 0) add(LEXIQUE.CHUTES_CJ, finalNbChutesCJRecyclees);
 
     GLOBAL_STATE.derniereInventaire = inv;
 
     let keys = Object.keys(inv).sort();
-    let ossatureKeys = keys.filter(k => k.includes('Lisse') || k.includes('Départ') || k.includes('Montants') || k.includes('Montant') || k.includes('Angle') || k.includes('Profilés') || k.includes('Chute') || k.includes('Capot') || k.includes('Équerre') || k.includes('éclisse') || k.includes('Clips') || k.includes('Calle'));
+    
+    // Rangement dans les tableaux
+    let ossatureKeys = keys.filter(k => k.includes('Lisse') || k.includes('Départ') || k.includes('Montants') || k.includes('Montant') || k.includes('Angle') || k.includes('Chute') || k.includes('Capot') || k.includes('Équerre') || k.includes('éclisse') || k.includes('Clips') || k.includes('Calle'));
     let parcloseKeys = keys.filter(k => k.includes('Parclose') || k.includes('Joint') || k.includes('Vitrage'));
-    let huisserieKeys = keys.filter(k => k.includes('Habillage') || k.includes('Ouverture') || k.includes('Huisserie') || k.includes('Porte') || k.includes('Vantail') || k.includes('Semi-fixe') || k.includes('Paumelles') || k.includes('Béquilles') || k.includes('Kit') || k.includes('Rail') || k.includes('Poignée') || k.includes('Plinthe'));
+    let huisserieKeys = keys.filter(k => k.includes('Habillage') || k.includes('Ouverture') || k.includes('Huisserie') || k.includes('Porte') || k.includes('Vantail') || k.includes('Paumelles') || k.includes('Béquilles') || k.includes('Kit') || k.includes('Rail') || k.includes('Poignée') || k.includes('Plinthe'));
     let accessoiresKeys = keys.filter(k => !ossatureKeys.includes(k) && !parcloseKeys.includes(k) && !huisserieKeys.includes(k));
 
     const buildTable = (title, arr) => {
@@ -384,8 +385,7 @@ export async function imprimerDevis() {
                 const sz = b.getSize(new THREE.Vector3());
                 const maxDim = Math.max(sz.x, sz.y, sz.z);
                 const dist = maxDim * 2.5; 
-                const dir = new THREE.Vector3(0.8, 0.6, 1.0).normalize(); 
-                currentScene.camera.position.copy(c).add(dir.multiplyScalar(dist));
+                currentScene.camera.position.copy(c).add(new THREE.Vector3(0.8, 0.6, 1.0).normalize().multiplyScalar(dist));
                 currentScene.camera.lookAt(c);
                 currentScene.controls.update();
             }
@@ -407,9 +407,7 @@ export async function imprimerDevis() {
 
         function getScore(nomArticle) {
             for (let i = 0; i < ordrePriorite.length; i++) {
-                if (nomArticle.toLowerCase().includes(ordrePriorite[i].toLowerCase())) {
-                    return i;
-                }
+                if (nomArticle.toLowerCase().includes(ordrePriorite[i].toLowerCase())) return i;
             }
             return 999; 
         }
@@ -442,49 +440,23 @@ export async function imprimerDevis() {
     
     let html = `
         <div class="print-header">
-            <div class="print-logo">
-                <img src="icon-512.png" alt="Logo KTY" style="height: 80px; width: auto;">
-            </div>
-            <div class="print-info">
-                <strong>Date :</strong> ${dateDuJour}<br>
-                <strong>Projet :</strong> ${nom}<br>
-                <strong>Config :</strong> ${forme.toUpperCase()} / ${ral}
-            </div>
+            <div class="print-logo"><img src="icon-512.png" alt="Logo KTY" style="height: 80px; width: auto;"></div>
+            <div class="print-info"><strong>Date :</strong> ${dateDuJour}<br><strong>Projet :</strong> ${nom}<br><strong>Config :</strong> ${forme.toUpperCase()} / ${ral}</div>
         </div>
-
         <div class="client-box">
             <h3 style="margin-top:0; border:none; color:#333; padding-bottom:10px;">Configuration Retenue</h3>
             <ul style="list-style: none; padding: 0; display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; font-size:0.95em; margin:0;">
-                <li><strong>Hauteur :</strong> ${h} mm</li>
-                <li><strong>Couleur :</strong> ${ral}</li>
-                <li><strong>Mur A :</strong> ${lA} mm</li>
-                ${dimsSup}
+                <li><strong>Hauteur :</strong> ${h} mm</li><li><strong>Couleur :</strong> ${ral}</li><li><strong>Mur A :</strong> ${lA} mm</li>${dimsSup}
             </ul>
         </div>
-
-        <h3>Détail des Modules</h3>
-        <div style="font-size: 0.9em; margin-bottom: 30px; border:1px solid #eee; padding:10px;">
-            ${document.getElementById('listePieces').innerHTML}
-        </div>
-
-        <h3>Aperçu Technique</h3>
-        <div class="print-3d-view">
-            <img src="${imgData}" alt="Vue 3D du projet" style="width:100%; max-height:600px; object-fit:contain;">
-        </div>
-
-        <h3>Inventaire Matériel Estimatif</h3>
-        ${tableauHTMLAvecCodes}
-
+        <h3>Détail des Modules</h3><div style="font-size: 0.9em; margin-bottom: 30px; border:1px solid #eee; padding:10px;">${document.getElementById('listePieces').innerHTML}</div>
+        <h3>Aperçu Technique</h3><div class="print-3d-view"><img src="${imgData}" alt="Vue 3D du projet" style="width:100%; max-height:600px; object-fit:contain;"></div>
+        <h3>Inventaire Matériel Estimatif</h3>${tableauHTMLAvecCodes}
         <div class="print-footer" style="margin-top: 100px;">
-            Document généré par le Configurateur KTY Solutions.<br>
-            Merci de transmettre ce PDF à <strong>kty.chassieu@kty.fr</strong> pour validation technique.<br>
-            KTY Solutions - Votre partenaire cloisonnement.
+            Document généré par le Configurateur KTY Solutions.<br>Merci de transmettre ce PDF à <strong>kty.chassieu@kty.fr</strong> pour validation technique.<br>KTY Solutions - Votre partenaire cloisonnement.
         </div>
     `;
     
     const z = document.getElementById('zoneImpression');
-    if(z) {
-        z.innerHTML = html;
-        setTimeout(() => window.print(), 500);
-    }
+    if(z) { z.innerHTML = html; setTimeout(() => window.print(), 500); }
 }
