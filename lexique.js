@@ -26,10 +26,11 @@ export const LEXIQUE = {
 
     // --- 4. PORTES ET ACCESSOIRES ---
     HUISSERIE_PASSAGE: "Huisserie passage",
+    HUISSERIE_PASSAGE_TTH: "Huisserie Toute Hauteur passage", // <-- NOUVEAU
     HABILLAGE_PASSAGE: "Habillage passage libre",
     CAPOT_COULISSANT: "Capots de finition (pour habillage passage)",
-    MONTANT_GACHE: "Montant Gâche (Tube de réception pour coulissant)",
     RENFORT_COULISSANT: "Montant Spécial (renfort rail coulissant)",
+    MONTANT_GACHE: "Montant Gâche (Tube de réception pour coulissant)",
     KIT_RAIL: (mat) => `Kit Rail Coulissant + Accessoires (pour porte ${mat})`,
     POIGNEE_CUVETTE: "Poignée Cuvette Alu",
     KIT_PAUMELLES: (n) => `Kit Paumelles (jeu de ${n})`,
@@ -39,7 +40,9 @@ export const LEXIQUE = {
 
     // --- 5. NOMS DES PORTES (VANTAUX) ---
     V_ALU: "Vantail Cadre Alu",
+    V_ALU_TTH: "Vantail Cadre Alu Toute Hauteur", // <-- NOUVEAU
     V_BOIS: "Vantail Bois (À FOURNIR PAR VOS SOINS)",
+    V_BOIS_TTH: "Vantail Bois Toute Hauteur (À FOURNIR PAR VOS SOINS)", // <-- NOUVEAU
     V_VERRE: "Vantail Verre Clarit",
     V_BOIS_COULISSANT: "Vantail Bois Coulissant (À FOURNIR PAR VOS SOINS)",
     V_ALU_COULISSANT: "Vantail Cadre Alu Coulissant",
