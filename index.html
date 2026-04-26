@@ -22,28 +22,12 @@
     </script>
 
     <style>
-        #splashScreen {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: linear-gradient(135deg, #2563EB 0%, #4F46E5 100%);
-            z-index: 99999; display: flex; align-items: center; justify-content: center;
-            transition: opacity 0.6s ease; margin: 0; padding: 0;
-        }
-        .splash-content {
-            background: white; padding: 40px; border-radius: 20px; text-align: center;
-            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); max-width: 400px; width: 90%;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-        }
+        #splashScreen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: linear-gradient(135deg, #2563EB 0%, #4F46E5 100%); z-index: 99999; display: flex; align-items: center; justify-content: center; transition: opacity 0.6s ease; margin: 0; padding: 0; }
+        .splash-content { background: white; padding: 40px; border-radius: 20px; text-align: center; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); max-width: 400px; width: 90%; font-family: 'Plus Jakarta Sans', sans-serif; }
         .splash-logo { width: 120px; animation: pulse 2s infinite; margin-bottom: 15px; }
-        .splash-input {
-            width: 100%; padding: 15px; margin-bottom: 20px; border: 2px solid #E2E8F0;
-            border-radius: 8px; font-size: 16px; box-sizing: border-box; text-align: center;
-            font-family: inherit; font-weight: 600;
-        }
+        .splash-input { width: 100%; padding: 15px; margin-bottom: 20px; border: 2px solid #E2E8F0; border-radius: 8px; font-size: 16px; box-sizing: border-box; text-align: center; font-family: inherit; font-weight: 600; }
         .splash-input:focus { border-color: #2563EB; outline: none; }
-        .splash-btn {
-            background: #2563EB; color: white; border: none; padding: 15px;
-            border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%;
-        }
+        .splash-btn { background: #2563EB; color: white; border: none; padding: 15px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; }
         .splash-btn:hover { background: #1D4ED8; }
         @keyframes pulse { 0% { transform: scale(0.95); } 50% { transform: scale(1.05); } 100% { transform: scale(0.95); } }
     </style>
@@ -65,9 +49,7 @@
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             const entreprise = localStorage.getItem('kty_entreprise');
-            if(entreprise) {
-                document.getElementById('nomEntrepriseInput').value = entreprise;
-            }
+            if(entreprise) { document.getElementById('nomEntrepriseInput').value = entreprise; }
         });
         function fermerSplashScreen() {
             const nom = document.getElementById('nomEntrepriseInput').value || "Non renseigné";
@@ -77,7 +59,9 @@
             setTimeout(() => { splash.style.display = 'none'; }, 600); 
         }
     </script>
-    <div style="padding: 20px;"> <header class="app-header">
+
+    <div style="padding: 20px;">
+        <header class="app-header">
             <div class="logo-area">
                 <img src="icon-512.png" alt="Logo KTY" class="header-logo">
             </div>
@@ -241,10 +225,17 @@
                                 
                                 <div class="form-group" style="margin-top: 10px; background: #eef2ff; padding: 10px; border-radius: 8px;">
                                     <label style="font-weight: bold; color: #2563EB;">
-                                        <input type="checkbox" id="isCoulissante" style="margin-right: 8px;" onchange="adapterFormulaire()">
+                                        <input type="checkbox" id="isCoulissante" style="margin-right: 8px;" onchange="document.getElementById('divMontantGache').style.display = this.checked ? 'block' : 'none'; adapterFormulaire()">
                                         🚪 Option : Porte Coulissante en applique
                                     </label>
-                                </div>
+                                    
+                                    <div id="divMontantGache" style="display:none; margin-top: 8px; padding-left: 25px;">
+                                        <label style="font-weight: normal; color: #333;">
+                                            <input type="checkbox" id="hasMontantGache" onchange="adapterFormulaire()">
+                                            Ajouter un Montant Gâche (Tube de réception)
+                                        </label>
+                                    </div>
+                                    </div>
 
                                 <div id="optionsSimplePortePleine" class="mt-5 hidden">
                                     <label>Largeur (Passage) :</label>
@@ -425,7 +416,9 @@
                 </div>
             </section>
         </main>
-    </div> <script>
+    </div>
+
+    <script>
       if (window.netlifyIdentity) {
         window.netlifyIdentity.on("init", user => {
           if (!user) {
