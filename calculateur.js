@@ -290,10 +290,17 @@ export async function calculerInventaire() {
         }
     }
     
+        // --- CALCUL EXACT DES ÉQUERRES ---
     let montantsIntermediaires = (nbMontantsStandard + nbMontantsSpeciaux) - nbCapots;
-    let qteEq = (nbDeparts * 4) + (montantsIntermediaires * 2) + qteEquerresTraverse; 
-    if (nbAngles > 0) { qteEq += nbAngles * 4; }
+    
+    // CORRECTION : Un départ prend 2 équerres (et non 4 !)
+    let qteEq = (nbDeparts * 2) + (montantsIntermediaires * 2) + qteEquerresTraverse; 
+    
+    // (L'angle reste à 4 équerres, dis-moi si c'est bon pour tes poteaux d'angle)
+    if (nbAngles > 0) { qteEq += nbAngles * 4; } 
+    
     add(LEXIQUE.EQUERRES, qteEq);
+
 
     let barresNeuvesUtilisees = 0; let nbChutesRecyclees = 0; let chutesDe2500_Montants = [];
     besoinsTraverses.sort((a, b) => b - a); chutesUtilisables.sort((a, b) => b - a);
