@@ -64,8 +64,13 @@ export async function setupScene(container) {
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
-    controls.maxPolarAngle = Math.PI / 2 - 0.05;
     
+    // --- SECURITÉ CAMÉRA ---
+    controls.maxPolarAngle = Math.PI / 2 - 0.02; // Empêche de passer sous le sol
+    controls.minDistance = 500;                  // Empêche de zoomer à l'intérieur des murs
+    controls.maxDistance = 15000;                // Empêche de se perdre dans l'espace
+    // -----------------------
+
     const forme = document.getElementById('formeCloison').value;
     if (forme === 'L' || forme === 'U') {
         controls.autoRotate = true;
@@ -87,7 +92,8 @@ export async function setupScene(container) {
     return {scene, controls};
 }
 
-function dessinerPanneauPorte3D(groupe, cx, cy, l, h, typeP, mats, sens) {
+// NOUVEAU: Ajout du paramètre zOffset pour décaler la porte coulissante
+function dessinerPanneauPorte3D(groupe, cx, cy, l, h, typeP, mats, sens, zOffset = 0) {
     let epSurf = (typeP==='cadreAlu') ? 38 : 12;
     const addMesh = (geo, mat) => {
         const m = new THREE.Mesh(geo, mat);
@@ -100,21 +106,21 @@ function dessinerPanneauPorte3D(groupe, cx, cy, l, h, typeP, mats, sens) {
         const epCadre = 80;
         const lV = l - (2 * epCadre); const hV = h - (2 * epCadre);
         const gm = new THREE.BoxGeometry(epCadre, h, epSurf);
-        const mG = addMesh(gm, mats.matProfil); mG.position.set(cx - l/2 + epCadre/2, cy, 0);
-        const mD = addMesh(gm, mats.matProfil); mD.position.set(cx + l/2 - epCadre/2, cy, 0);
+        const mG = addMesh(gm, mats.matProfil); mG.position.set(cx - l/2 + epCadre/2, cy, zOffset);
+        const mD = addMesh(gm, mats.matProfil); mD.position.set(cx + l/2 - epCadre/2, cy, zOffset);
         const gt = new THREE.BoxGeometry(lV, epCadre, epSurf);
-        const mTH = addMesh(gt, mats.matProfil); mTH.position.set(cx, cy + h/2 - epCadre/2, 0);
-        const mTB = addMesh(gt, mats.matProfil); mTB.position.set(cx, cy - h/2 + epCadre/2, 0);
-        if(lV>0 && hV>0) { const mv = addMesh(new THREE.BoxGeometry(lV, hV, 6), mats.matVitre); mv.position.set(cx, cy, 0); }
+        const mTH = addMesh(gt, mats.matProfil); mTH.position.set(cx, cy + h/2 - epCadre/2, zOffset);
+        const mTB = addMesh(gt, mats.matProfil); mTB.position.set(cx, cy - h/2 + epCadre/2, zOffset);
+        if(lV>0 && hV>0) { const mv = addMesh(new THREE.BoxGeometry(lV, hV, 6), mats.matVitre); mv.position.set(cx, cy, zOffset); }
     } else {
-        const mp = addMesh(new THREE.BoxGeometry(l, h, 40), mats.matPortePleine); mp.position.set(cx, cy, 0);
+        const mp = addMesh(new THREE.BoxGeometry(l, h, 40), mats.matPortePleine); mp.position.set(cx, cy, zOffset);
     }
     if(sens !== 'aucune') {
         const YP = 1050; const realYP = cy - h/2 + YP; 
         if(realYP > cy-h/2 && realYP < cy+h/2) {
             const xP = (sens==='gauche') ? (cx - l/2 + 60) : (cx + l/2 - 60);
             const man = addMesh(new THREE.CylinderGeometry(8,8,120,16), mats.matPoignee);
-            man.rotation.z = Math.PI/2; man.position.set(xP, realYP, epSurf/2 + 20);
+            man.rotation.z = Math.PI/2; man.position.set(xP, realYP, zOffset + epSurf/2 + 20);
         }
     }
 }
@@ -185,6 +191,12 @@ export async function dessinerSceneGlobale(murs, forme, H, configs) {
                 const typP = document.getElementById('typePorte').value;
                 const hP = document.getElementById('hauteurPorte').value;
                 const isD = document.getElementById('doublePorte').checked;
+                
+                // --- LOGIQUE PORTE COULISSANTE ---
+                const isCoul = m.isCoulissante;
+                const zOff = isCoul ? 40 : 0; // 40mm d'écart pour la mettre en applique !
+                // ---------------------------------
+
                 const centreOuverture = x + lp/2; const lRailEffective = lp + 38;
                 const mp = createMesh(new THREE.BoxGeometry(38,H,38), mats.matProfil, g); mp.position.set(x + lb - 19, H/2, 0);
                 
@@ -220,12 +232,22 @@ export async function dessinerSceneGlobale(murs, forme, H, configs) {
                     const txt = document.getElementById('huisserieDoublePorteSelect').options[document.getElementById('huisserieDoublePorteSelect').selectedIndex].text;
                     const ma = txt.match(/\((\d+)\+(\d+)\)/);
                     if(ma) { l1=parseFloat(ma[1]); l2=parseFloat(ma[2]); } else { l2 = lp - l1; }
-                    dessinerPanneauPorte3D(g, startV+l1/2, yOuv, l1, hOuv, typP, mats, sens);
-                    dessinerPanneauPorte3D(g, startV+l1+l2/2, yOuv, l2, hOuv, typP, mats, 'aucune');
-                    if(typP==='cadreAlu') { const bat = createMesh(new THREE.BoxGeometry(4,hOuv,40), mats.matProfil, g); bat.position.set(startV+l1, yOuv, 0); }
+                    dessinerPanneauPorte3D(g, startV+l1/2, yOuv, l1, hOuv, typP, mats, sens, zOff);
+                    dessinerPanneauPorte3D(g, startV+l1+l2/2, yOuv, l2, hOuv, typP, mats, 'aucune', zOff);
+                    if(typP==='cadreAlu' && !isCoul) { const bat = createMesh(new THREE.BoxGeometry(4,hOuv,40), mats.matProfil, g); bat.position.set(startV+l1, yOuv, 0); }
                 } else { 
-                    dessinerPanneauPorte3D(g, startV+lp/2, yOuv, lp, hOuv, typP, mats, sens); 
+                    dessinerPanneauPorte3D(g, startV+lp/2, yOuv, lp, hOuv, typP, mats, sens, zOff); 
                 }
+
+                // --- DESSIN DU RAIL COULISSANT EN APPLIQUE ---
+                if (isCoul) {
+                    let railWidth = lp * 2; // Le rail fait le double de la porte pour s'ouvrir
+                    let railCx = startV + lp/2;
+                    if (!isD) { railCx = (sens === 'gauche') ? startV : startV + lp; }
+                    const mRail = createMesh(new THREE.BoxGeometry(railWidth, 60, 45), mats.matProfil, g);
+                    mRail.position.set(railCx, hOuv + 30, zOff / 2);
+                }
+                // ---------------------------------------------
 
                 if(hP==='2100' && H>2100 + 38) {
                      const typI = document.getElementById('typeImposte').value;
@@ -271,16 +293,18 @@ export async function dessinerSceneGlobale(murs, forme, H, configs) {
                 });
                 x += lb;
             }
-        }); // Fin du dessin des modules pour ce mur
+        }); 
 
-        // --- C'EST ICI QU'ON APPELLE LA FONCTION DES COTES ---
-                // Largeur (Placée au-dessus du mur)
-        drawDimension(g, 0, H + 100, 50, x, H + 100, 50, `${Math.round(x)} mm`, 0, 80);
-               // Hauteur (uniquement sur le 1er mur)
+        let dimensionTotale = 0;
+        if (idx === 0) dimensionTotale = document.getElementById('longueur').value;
+        else if (idx === 1) dimensionTotale = document.getElementById('longueurB').value;
+        else if (idx === 2) dimensionTotale = document.getElementById('longueurC').value;
+
+        drawDimension(g, 0, H + 100, 50, x, H + 100, 50, `${dimensionTotale} mm`, 0, 80);
         if (idx === 0) {
             drawDimension(g, -100, 0, 50, -100, H, 50, `${Math.round(H)} mm`, -200, 0);
         }
-        
+
         fwd(x);
         if(idx < murs.length-1) {
             const ang = createMesh(new THREE.BoxGeometry(90.5,H,90.5), mats.matProfil, root); 
@@ -299,9 +323,6 @@ export async function dessinerSceneGlobale(murs, forme, H, configs) {
     }
 }
 
-// =========================================================================
-// NOUVELLE FONCTION : DESSINER LES COTES (LIGNES ET TEXTE)
-// =========================================================================
 function drawDimension(parent, x1, y1, z1, x2, y2, z2, textMsg, textOffsetX, textOffsetY) {
     const points = [];
     points.push(new THREE.Vector3(x1, y1, z1));
@@ -311,7 +332,7 @@ function drawDimension(parent, x1, y1, z1, x2, y2, z2, textMsg, textOffsetX, tex
     const line = new THREE.Line(geo, mat);
     parent.add(line);
 
-    const tickSize = 30;
+    const tickSize = 15;
     if (x1 !== x2) { 
         const pT1 = [new THREE.Vector3(x1, y1-tickSize, z1), new THREE.Vector3(x1, y1+tickSize, z1)];
         parent.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pT1), mat));
