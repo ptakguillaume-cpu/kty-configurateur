@@ -89,7 +89,6 @@ export async function setupScene(container) {
     return {scene, controls};
 }
 
-// --- ON A AJOUTE isCoul ICI POUR INVERSER LA POIGNEE ---
 function dessinerPanneauPorte3D(groupe, cx, cy, l, h, typeP, mats, sens, zOffset = 0, isCoul = false) {
     let epSurf = (typeP==='cadreAlu') ? 38 : 12;
     const addMesh = (geo, mat) => {
@@ -117,9 +116,9 @@ function dessinerPanneauPorte3D(groupe, cx, cy, l, h, typeP, mats, sens, zOffset
         const YP = 1050; const realYP = cy - h/2 + YP; 
         if(realYP > cy-h/2 && realYP < cy+h/2) {
             
-            // --- LOGIQUE INVERSION POIGNÉE COULISSANTE ---
+            // --- CORRECTION : UNIQUEMENT LA POIGNÉE EST INVERSÉE ---
             let handleOnLeft = (sens === 'gauche');
-            if (isCoul) { handleOnLeft = (sens === 'droite'); } // INVERSION EXPRESSE
+            if (isCoul) { handleOnLeft = (sens === 'droite'); } 
 
             const xP = handleOnLeft ? (cx - l/2 + 60) : (cx + l/2 - 60);
             const man = addMesh(new THREE.CylinderGeometry(8,8,120,16), mats.matPoignee);
@@ -241,25 +240,34 @@ export async function dessinerSceneGlobale(murs, forme, H, configs) {
                     dessinerPanneauPorte3D(g, startV+lp/2, yOuv, lp, hOuv, typP, mats, sens, zOff, isCoul); 
                 }
 
-                // DESSIN DU RAIL ET DU MONTANT GACHE
+                // --- DESSIN CORRIGÉ DU RAIL ET DU MONTANT GACHE ---
                 if (isCoul) {
                     let railWidth = lp * 2; 
                     let railCx = startV + lp/2;
-                    let handleOnLeft = (sens === 'droite'); // Logique inversée comme au dessus
+                    let opensRight = (sens === 'droite'); 
 
-                    if (!isD) { railCx = handleOnLeft ? startV : startV + lp; }
+                    // Le rail s'étend du bon côté de l'ouverture
+                    if (!isD) { railCx = opensRight ? startV + lp : startV; }
+                    
                     const mRail = createMesh(new THREE.BoxGeometry(railWidth, 60, 45), mats.matProfil, g);
                     mRail.position.set(railCx, hOuv + 30, zOff / 2);
 
-                    // --- NOUVEAU MONTANT GACHE (TUBE DE RECEPTION) ---
                     if (hasGache) {
-                        // Le gâche vient s'appuyer contre le montant qui reçoit la poignée
-                        let gacheX = handleOnLeft ? startV - 19 : startV + lp + 19;
-                        const mGache = createMesh(new THREE.BoxGeometry(38, hOuv, 30), mats.matProfil, g);
-                        // Z = 29 correspond à une position en applique sur le couvre joint
-                        mGache.position.set(gacheX, hOuv/2, 29); 
+                        if (!isD) {
+                            // La gâche est du côté où la porte vient taper pour fermer
+                            let gacheX = opensRight ? startV - 19 : startV + lp + 19;
+                            const mGache = createMesh(new THREE.BoxGeometry(38, hOuv, 30), mats.matProfil, g);
+                            mGache.position.set(gacheX, hOuv/2, 29); 
+                        } else {
+                            // Pour les portes doubles, on met 2 gâches sur les murs de chaque côté
+                            const mGache1 = createMesh(new THREE.BoxGeometry(38, hOuv, 30), mats.matProfil, g);
+                            mGache1.position.set(startV - 19, hOuv/2, 29); 
+                            const mGache2 = createMesh(new THREE.BoxGeometry(38, hOuv, 30), mats.matProfil, g);
+                            mGache2.position.set(startV + lp + 19, hOuv/2, 29); 
+                        }
                     }
                 }
+                // ---------------------------------------------------
 
                 if(hP==='2100' && H>2100 + 38) {
                      const typI = document.getElementById('typeImposte').value;
