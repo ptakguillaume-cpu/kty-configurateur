@@ -50,8 +50,7 @@ if not shutil.which("node"):
     problemes.append("⚠️ node introuvable : syntaxe JS NON contrôlée")
 
 fonctions = defaultdict(list)        # nom -> [(fichier, ligne)]
-js_global = []                       # codes JS globaux (pour boutons)
-modules = False
+js_classique, js_module = [], []     # codes JS (pour boutons) : script classique / module
 for f, c in fichiers.items():
     ext = os.path.splitext(f)[1].lower()
     blocs = []                       # (code, ligne_debut, module?)
@@ -70,7 +69,7 @@ for f, c in fichiers.items():
     else:
         for m in SCRIPT.finditer(c):
             a, code = m.group(1), m.group(2)
-            if "src=" in a.lower() or not code.strip() or re.search(r"json", a, re.I):
+            if "src=" in a.lower() or not code.strip() or re.search(r"json|importmap", a, re.I):
                 continue
             blocs.append((code, ligne(c, m.start(2)), "module" in a.lower()))
         html = SCRIPT.sub("", c)
@@ -80,20 +79,20 @@ for f, c in fichiers.items():
         problemes += [f'❌ {f} — id HTML "{k}" présent {v} fois' for k, v in vus.items() if v > 1]
     nb_fichiers += 1
     for code, debut, mod in blocs:
-        modules = modules or mod
         err = node_ok(code, mod)
         if err:
             problemes.append(f"❌ {f}:{debut} — erreur JS : {err}")
         for m in FUNC.finditer(code):
             fonctions[m.group(1)].append((f, debut + ligne(code, m.start()) - 1))
-        js_global.append(code)
+        (js_module if mod else js_classique).append(code)
 
 for nom, lieux in fonctions.items():
     if len(lieux) > 1:
         ou = ", ".join(f"{f}:{l}" for f, l in lieux[:4])
         problemes.append(f"❌ fonction {nom}() définie {len(lieux)} fois ({ou}) — la dernière écrase les autres")
 
-tout = "\n".join(js_global)
+tout = "\n".join(js_classique + js_module)
+defs_classique = set(DEF.findall("\n".join(js_classique)))
 defs = set(DEF.findall(tout))
 wins = set(WIN.findall(tout))
 assign = "Object.assign(window" in tout
@@ -105,7 +104,7 @@ for f, c in fichiers.items():
                 continue
             if nom not in defs:
                 problemes.append(f"❌ {f}:{ligne(c, m.start())} — bouton appelle {nom}() introuvable dans le projet")
-            elif modules and nom not in wins and not assign:
+            elif nom not in defs_classique and nom not in wins and not assign:
                 problemes.append(f"⚠️ {f}:{ligne(c, m.start())} — {nom}() sans window.{nom} alors que le projet utilise des modules")
 
 if problemes:
