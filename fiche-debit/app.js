@@ -10,6 +10,11 @@ const CLE = 'kty_fiche_debit_brouillon';
 const NOM_FINITION = { '9005 MAT': '9005 MAT', '7016 FT': '7016 FT', 'BLANC 9016': 'BLANC 9016', 'ANODISÉ': 'ANODISÉ', RAL: 'RAL (à définir ou demandé)' };
 const FINITION_CATALOGUE = { '9005 MAT': '9005 MAT', '7016 FT': 'RAL7016FT', 'BLANC 9016': 'BLANC 9016', 'ANODISÉ': 'ANODISÉ', RAL: 'RAL À DÉFINIR' };
 const DESIGNATION = new Map(CATALOGUE.map(c => [c[0], c[1]]));
+const IMAGES = {                                   // dessins de profils de la fiche (repris du XLS), par première ligne de famille
+  G4: 'lisse', G6: 'montant', G11: 'couvre-joint', G18: 'parclose-simple', G21: 'parclose-double', G22: 'meneau', G27: 'angle-carre',
+  G32: 'angle-depart-multiple', G37: 'depart-multiple-cj', G42: 'clip-lisse',
+  D4: 'depart', D9: 'omega', D12: 'jonc', D14: 'angle-90', D17: 'montant-special', D22: 'capot', D27: 'angle-libre', D32: 'angle-doublage', D34: 'huisserie', D37: 'huisserie',
+};
 const PRODUITS_VIDES_MIN = 10;                     // lignes vides affichées pour garder l'aspect de la feuille
 
 // ---------- utilitaires ----------
@@ -81,13 +86,16 @@ function construireProfils(cote, titre) {
     g.items.forEach((it, i) => {
       const tr = h('tr', { 'data-id': it.id });
       if (i === 0) {
+        const img = h('td', { class: 'img', rowspan: g.items.length });
+        if (IMAGES[it.id]) img.append(h('img', { src: `images/${IMAGES[it.id]}.png`, alt: '' }));
+        tr.append(img);
         const fam = h('td', { class: 'fam', rowspan: g.items.length }, h('span', { text: g.famille }));
         if (g.codeFamille) fam.append(h('small', { class: AVEC_CERCLE.has(it.id) ? 'cercle' : '', text: g.codeFamille }));
         if (g.famille === 'Jonc') fam.append(h('small', { id: 'couleurJonc' }));
         tr.append(fam);
       }
       const codeTd = h('td', { class: 'code' });
-      const lg = it.longueur ? String(it.longueur) : it.largeur ? 'larg. ' + it.largeur : (it.edi || '');
+      const lg = it.longueur ? String(it.longueur) : it.largeur ? String(it.largeur) : (it.edi || '');
       const qTd = h('td', { class: 'q' });
       let calc = null;
       if (it.calcule) {
@@ -108,7 +116,7 @@ function construireProfils(cote, titre) {
     });
   }
   return h('table', { class: 'profils' },
-    h('thead', {}, h('tr', {}, h('th', { text: titre }), h('th', { text: 'code KTY' }), h('th', { text: 'Longueur' }), h('th', { text: 'Quantité' }))), tbody);
+    h('thead', {}, h('tr', {}, h('th', { colspan: 2, text: titre }), h('th', { text: 'code KTY' }), h('th', { text: 'Longueur' }), h('th', { text: 'Quantité' }))), tbody);
 }
 
 // ---------- panneau de droite : en-tête, liste des produits, accessoires ----------
@@ -135,23 +143,35 @@ function construirePanneau() {
   );
 
   const corpsProduits = h('tbody', { id: 'produits' });
+  const produits = h('table', { class: 'liste' },
+    h('colgroup', {}, h('col', { class: 'c1' }), h('col', { class: 'c2' }), h('col', { class: 'c3' }), h('col', { class: 'c4' }), h('col', { style: 'width:28px', class: 'sup' })),
+    h('thead', {}, h('tr', {}, h('th', { text: 'CODE' }), h('th', { colspan: 2, text: 'Désignation' }), h('th', { text: 'Qts' }), h('th', { class: 'sup' }))),
+    corpsProduits);
+
+  // Accessoires : dessins à gauche (clip / éclisse / équerre, joints), comme dans le XLS
+  const IMG_ACC = { A36: { lignes: 3, img: 'clip-eclisse' }, A39: { lignes: 4, img: 'joint' }, A43: { lignes: 2, img: null } };
+  const SANS_IMAGE = new Set(['A34', 'A35']);
   const corpsAcc = h('tbody');
   rowLaquage = h('tr', { class: 'acc', hidden: true },
-    h('td', { class: 'code-p', text: '500', title: 'Code interne du forfait laquage' }), h('td', { colspan: 1, text: 'Forfait laquage' }), h('td', { text: 'OUI' }), h('td', { class: 'n' }, h('div', { class: 'auto', text: '1' })), h('td', { class: 'sup' }));
-  corpsAcc.append(h('tr', { class: 'separateur' }, h('td', { colspan: 5 })), rowLaquage);
+    h('td', { colspan: 2, text: 'Forfait laquage' }), h('td', { class: 'code-p', text: '500', title: 'Code interne du forfait laquage' }), h('td', { text: 'OUI' }), h('td', { class: 'n' }, h('div', { class: 'auto', text: '1' })), h('td', { class: 'sup' }));
+  corpsAcc.append(rowLaquage);
   for (const a of FICHE.accessoires) {
     const cellule = a.auto
       ? h('div', { class: 'auto' })
       : lier(h('input', { type: 'text', inputmode: 'decimal', 'aria-label': a.libelle, autocomplete: 'off' }), () => etat.accessoires[a.id], v => { if (v === '') delete etat.accessoires[a.id]; else etat.accessoires[a.id] = v; });
-    const tr = h('tr', { class: 'acc' }, h('td', { class: 'code-p', text: a.code }), h('td', { text: a.libelle, title: DESIGNATION.get(a.code) || '' }), h('td', { text: a.edi }), h('td', { class: 'n' }, cellule), h('td', { class: 'sup' }));
+    const bloc = IMG_ACC[a.id];
+    const cellules = [];
+    if (bloc) cellules.push(h('td', { class: 'img', rowspan: bloc.lignes }, bloc.img ? h('img', { src: `images/${bloc.img}.png`, alt: '' }) : null));
+    cellules.push(h('td', { colspan: SANS_IMAGE.has(a.id) ? 2 : 1, text: a.libelle, title: DESIGNATION.get(a.code) || '' }));
+    cellules.push(h('td', { class: 'code-p', text: a.code }), h('td', { text: a.edi }), h('td', { class: 'n' }, cellule), h('td', { class: 'sup' }));
+    const tr = h('tr', { class: 'acc' }, cellules);
     corpsAcc.append(tr);
     lignesAcc[a.id] = { a, tr, cellule };
   }
-  const liste = h('table', { class: 'liste' },
-    h('colgroup', {}, h('col', { class: 'c1' }), h('col', { class: 'c2' }), h('col', { class: 'c3' }), h('col', { class: 'c4' }), h('col', { style: 'width:28px', class: 'sup' })),
-    h('thead', {}, h('tr', {}, h('th', { text: 'CODE' }), h('th', { text: 'Désignation' }), h('th', { text: '' }), h('th', { text: 'Qts' }), h('th', { class: 'sup' }))),
-    corpsProduits, corpsAcc);
-  return h('div', { class: 'panneau' }, tete, liste);
+  const accessoires = h('table', { class: 'liste acc-table' },
+    h('colgroup', {}, h('col', { class: 'a1' }), h('col', { class: 'a2' }), h('col', { class: 'a3' }), h('col', { class: 'a4' }), h('col', { class: 'a5' }), h('col', { style: 'width:28px', class: 'sup' })),
+    corpsAcc);
+  return h('div', { class: 'panneau' }, tete, produits, accessoires);
 }
 
 function rendreProduits() {

@@ -40,10 +40,13 @@ main { padding: 12px 14px 40px; }
 table.profils { width: 100%; border-collapse: collapse; table-layout: fixed; }
 table.profils th, table.profils td { border: 1px solid var(--trait); padding: 0 3px; height: var(--h); vertical-align: middle; }
 table.profils th { background: var(--gris); font-size: 11px; font-weight: 600; }
-table.profils .fam { width: 34%; text-align: center; font-weight: 600; background: #fff; line-height: 1.1; font-size: 12px; }
+table.profils .fam { width: 25%; text-align: center; font-weight: 600; background: #fff; line-height: 1.1; font-size: 12px; }
 table.profils .fam small { display: block; font-weight: 700; font-size: 11px; }
-table.profils .code { width: 21%; text-align: center; font-variant-numeric: tabular-nums; font-weight: 600; }
-table.profils .lg { width: 21%; text-align: center; font-variant-numeric: tabular-nums; }
+table.profils .img { width: 12%; padding: 0; position: relative; background: #fff; }
+table.profils .img img, .acc-table .img img { position: absolute; inset: 2px; width: calc(100% - 4px); height: calc(100% - 4px); object-fit: contain; }
+.acc-table .img { position: relative; padding: 0; background: #fff; }
+table.profils .code { width: 19%; text-align: center; font-variant-numeric: tabular-nums; font-weight: 600; }
+table.profils .lg { width: 19%; text-align: center; font-variant-numeric: tabular-nums; }
 table.profils .q { width: 24%; padding: 0; position: relative; }
 .code.absent { color: var(--rouge); font-weight: 400; }
 .q input, .q .calc { width: 100%; height: calc(var(--h) - 2px); border: 0; background: transparent; text-align: center; font: inherit; font-weight: 700; padding: 0 2px; }
@@ -83,7 +86,8 @@ tr.tete-groupe td { background: var(--gris-clair); }
 .liste tr.acc td.n { background: transparent; }
 .liste tr.acc .auto { display: flex; align-items: center; justify-content: center; font-weight: 700; background: var(--gris-clair); height: calc(var(--h) - 2px); }
 .liste tr.rempli td.n input, .liste tr.rempli .auto { background: var(--saisi); }
-.liste tr.separateur td { height: 6px; background: var(--gris); border: 0; padding: 0; }
+.acc-table { margin-top: 6px; border-top: 2px solid var(--trait); }
+.acc-table .a1 { width: 17%; } .acc-table .a2 { width: 31%; } .acc-table .a3 { width: 22%; } .acc-table .a4 { width: 15%; } .acc-table .a5 { width: 15%; }
 
 .print-seulement { display: none; }
 .vide { color: #8a919b; text-align: center; font-size: 12px; height: var(--h); }
@@ -108,15 +112,18 @@ tr.tete-groupe td { background: var(--gris-clair); }
 /* ---------- impression : A4 paysage, comme la feuille du XLS ---------- */
 @page { size: A4 landscape; margin: 6mm; }
 @media print {
-    :root { --h: 4.1mm; }
+    :root { --h: 3.75mm; }
     body { background: #fff; font-size: 8pt; }
     .hors-impression { display: none !important; }
     main { padding: 0; }
     .fiche { border: 0; padding: 0; }
-    .corps { grid-template-columns: 27% 27% 1fr; gap: 2mm; }
+    .corps { grid-template-columns: 27% 27% 1fr !important; gap: 2mm; }
+    .panneau { grid-column: auto !important; }
     table.profils th { font-size: 6.5pt; }
-    table.profils .fam { font-size: 7pt; } table.profils .fam small { font-size: 6.5pt; }
-    table.profils td, table.profils th { padding: 0 1mm; }
+    table.profils .fam { font-size: 6.4pt; line-height: 1.05; } table.profils .fam small { font-size: 6pt; }
+    .liste td, .liste th { font-size: 7.5pt; }
+    table.profils td, table.profils th { padding: 0 0.8mm; }
+    table.profils .code, table.profils .lg { font-size: 7.5pt; }
     .q input, .q .calc { font-size: 8pt; }
     .q .manuel { display: none; }
     .entete-panneau input, .entete-panneau select { font-size: 9pt; min-height: 5mm; border-bottom: 0; appearance: none; -webkit-appearance: none; }
