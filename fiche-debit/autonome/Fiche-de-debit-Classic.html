@@ -176,9 +176,9 @@ tr.tete-groupe td { background: var(--gris-clair); }
 
 /* quadrillage net à l'impression, comme les traits noirs du XLS */
 @media print {
-    table.profils td, table.profils th, .liste td, .liste th { border-width: 0.25mm; border-color: #000; }
-    table.profils tr.groupe > td, table.profils tr.groupe > th { border-top-width: 0.5mm; }
-    .acc-table { border-top-width: 0.5mm; }
+    table.profils td, table.profils th, .liste td, .liste th { border-width: 0.3mm; border-color: #000; }
+    table.profils tr.groupe > td, table.profils tr.groupe > th { border-top-width: 0.55mm; }
+    .acc-table { border-top-width: 0.55mm; }
 }
 
 /* ---------- bibliothèque des codes (écran seulement) ---------- */
@@ -222,7 +222,7 @@ tr.fantome td.n { text-decoration: none; }
 @media print {
     .zero { color: transparent !important; }      /* les « 0 » calculés ne s'impriment pas (ils restent visibles à l'écran) */
     .revision { font-size: 7.5pt; padding: 0.3mm 1.5mm; margin-bottom: 1mm; border-width: 0.3mm; }
-    body.avec-suivi { --h: 3.75mm; --h-acc: 4.6mm; }          /* un peu plus compact pour garder la fiche sur une page */
+    body.avec-suivi { --h: 3.95mm; --h-acc: 5mm; }          /* un peu plus compact pour garder la fiche sur une page */
     .avant { font-size: 4.6pt; }
     td.chg-retrait .avant { font-size: 6pt; }
     * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
