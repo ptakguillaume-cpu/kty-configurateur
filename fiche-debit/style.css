@@ -4,7 +4,7 @@
     --fond: #f3f4f6;
     --gris: #dcdfe4;
     --gris-clair: #eef0f3;
-    --saisi: #fff3b0;
+    --case-vide: #b9bcc2;      /* case de quantité vide : grisée ; remplie : blanche (la fiche est surlignée au stabilo au dépôt) */
     --accent: #1d4ed8;
     --rouge: #d11a1a;
     --h: 26px;
@@ -51,10 +51,11 @@ table.profils .lg { width: 19%; text-align: center; font-variant-numeric: tabula
 table.profils .q { width: 24%; padding: 0; position: relative; }
 .code.absent { color: var(--rouge); font-weight: 400; }
 .q input, .q .calc { width: 100%; height: calc(var(--h) - 2px); border: 0; background: transparent; text-align: center; font: inherit; font-weight: 700; padding: 0 2px; }
-.q .calc { display: flex; align-items: center; justify-content: center; background: var(--gris-clair); }
+.q .calc { display: flex; align-items: center; justify-content: center; background: transparent; }
 .q input:focus { outline: 2px solid var(--accent); outline-offset: -2px; background: #fff; }
-tr.rempli .q input, tr.rempli .q .calc { background: var(--saisi); }
-tr.rempli td.code { background: var(--saisi); }
+table.profils td.q { background: var(--case-vide); }
+table.profils tr.rempli td.q { background: #fff; }
+.q input:focus { background: #fff; }
 .q .manuel { position: absolute; right: 1px; top: 1px; width: 36px; height: 14px; font-size: 10px; font-weight: 400; color: #5b6470; border: 1px dashed #aab; border-radius: 3px; background: #fff; }
 .cercle { display: inline-block !important; padding: 0 6px; line-height: 1.1; border: 1.5px solid transparent; border-radius: 50%; }
 tr.rempli .cercle { border-color: var(--rouge); }
@@ -99,8 +100,11 @@ tr.tete-groupe td { background: var(--gris-clair); }
 .liste .retirer { all: unset; cursor: pointer; width: 28px; height: 28px; text-align: center; color: var(--rouge); font-weight: 700; }
 .liste tr.acc td { background: #fafafa; }
 .liste tr.acc td.n { background: transparent; }
-.liste tr.acc .auto { display: flex; align-items: center; justify-content: center; font-weight: 700; background: var(--gris-clair); height: calc(var(--h) - 2px); }
-.liste tr.rempli td.n input, .liste tr.rempli .auto { background: var(--saisi); }
+.liste tr.acc .auto { display: flex; align-items: center; justify-content: center; font-weight: 700; background: transparent; height: calc(var(--h) - 2px); }
+.acc-table td.n { background: var(--case-vide); }
+.acc-table tr.rempli td.n { background: #fff; }
+.liste td.n input { background: transparent; }
+.liste td.n input:focus { background: #fff; }
 .acc-table { margin-top: 6px; border-top: 2px solid var(--trait); }
 .acc-table td { height: var(--h-acc); }
 .acc-table .a1 { width: 20%; } .acc-table .a2 { width: 28%; } .acc-table .a3 { width: 22%; } .acc-table .a4 { width: 15%; } .acc-table .a5 { width: 15%; }
@@ -153,6 +157,7 @@ tr.tete-groupe td { background: var(--gris-clair); }
     .ecran-seulement { display: none !important; }
     input::placeholder { color: transparent; }
     .print-seulement { display: block; text-align: center; font-weight: 700; font-size: 9pt; }
-    tr.rempli .q input, tr.rempli .q .calc, tr.rempli td.code, .liste tr.rempli td.n input, .liste tr.rempli .auto { background: #fff3b0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    table.profils td.q, .acc-table td.n { background: var(--case-vide) !important; }
+    table.profils tr.rempli td.q, .acc-table tr.rempli td.n { background: #fff !important; }
     * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
