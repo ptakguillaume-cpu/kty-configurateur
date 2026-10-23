@@ -52,8 +52,9 @@ console.log('Corrections validées : OK');
 const r1 = etatInitial(); r1.qte = { G5: 10, D2: 2, D9: 1, G18: 3, G27: 1, G31: 2, D17: 4, G23: 1, D33: 2, D36: 1 };
 const c1 = calculer(r1, { roles: ROLES_RDB1 });
 assert.equal(c1.cj[0], 2 * (10 + 2) + 2 + 2 * 1 - 0 + 0, 'couvre-joint 2,5 m RDB1 : montants + départs, + huisseries (simples + 2 × doubles)');
-assert.equal(c1.cj[2], 2 * (0 + 3 + 1 + 2 + 0 + 4) - 1, 'couvre-joint 3,05 m RDB1 : meneau, angle multiple, départ multiple, montant spécial, moins Oméga');
-assert.equal(c1.equerres, (10 + 1 + 2 + 2 + 0 + 4) * 2 + 3 * 6 + 1 * 4, 'équerres RDB1 : angle 90° 15P2D compte comme l\'angle carré (×4)');
+assert.equal(c1.cj[2], 2 * (0 + 3 + 0 + 2 + 0 + 4) - 1, 'couvre-joint 3,05 m RDB1 : meneau, départ multiple, montant spécial, moins Oméga');
+// angle multiple 00PVA (G27) : ni couvre-joint ni équerre
+assert.equal(c1.equerres, (10 + 0 + 2 + 2 + 0 + 4) * 2 + 3 * 6 + 1 * 4, 'équerres RDB1 : angle 90° 15P2D compte comme l\'angle carré (×4)');
 assert.equal(c1.qte.G10, c1.cj[0]); assert.equal(c1.qte.G12, c1.cj[2], 'couvre-joint plat RDB1 = lignes G10 à G14');
 assert.equal(c1.qte.D40, 2, 'jeu 3 paumelles = huisseries simples'); assert.equal(c1.qte.D41, 1, 'jeu 6 paumelles = huisseries doubles');
 assert.equal(c1.mousse, 10, 'mousse : 2 départs de 2,5 m, 2 côtés, arrondi à 5 m');

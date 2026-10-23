@@ -27,7 +27,7 @@ const GAMMES = {
     id: 'rdb1', nom: 'RDB1', fiche: FICHE_RDB1, cleBrouillon: 'kty_fiche_debit_brouillon_rdb1', cleBib: 'kty_fiche_bibliotheque_rdb1', calcul: true, roles: ROLES_RDB1, prefixeFichier: 'Fiche de Débit RDB1',
     images: {
       G2: 'rdb1-lisse', G5: 'rdb1-montant', G10: 'rdb1-couvre-joint', G15: 'rdb1-parclose', G18: 'rdb1-meneau', G23: 'rdb1-angle90', G27: 'rdb1-angle-multiple',
-      G31: 'rdb1-depart-multiple', G37: 'rdb1-capot-rdb1', G41: 'rdb1-clip-lisse',
+      G31: 'depart-multiple-cj', G37: 'rdb1-capot-rdb1', G41: 'rdb1-clip-lisse',
       D2: 'rdb1-depart', D7: 'rdb1-omega', D12: 'rdb1-jonc', D14: 'rdb1-mousse', D17: 'rdb1-montant-special', D21: 'rdb1-capot-classic', D26: 'rdb1-angle-libre',
       D31: 'rdb1-doublage', D33: 'rdb1-huisserie-simple', D36: 'rdb1-huisserie-double',
     },
