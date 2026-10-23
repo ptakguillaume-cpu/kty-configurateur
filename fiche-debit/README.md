@@ -21,6 +21,7 @@ Remplace le fichier Excel « Fiche de Débit Classic ». Fonctionne sans interne
 | `catalogue.json`, `*.csv` | le même catalogue, lisible ; `RAPPORT_ETAPE1.md`, `REGLES_FICHE.md` : rapports validés |
 | `app.js`, `index.html`, `style.css` | écran |
 | `xlsx.js` | export Excel sans bibliothèque |
+| `autonome/Fiche-de-debit-Classic.html` | tout en un seul fichier, s'ouvre par double-clic (voir `PASSATION.md`) |
 | `outils/generer_donnees.py` | régénère `donnees.js` et `catalogue.js` |
 | `tests/` | tests du moteur de calcul |
 
