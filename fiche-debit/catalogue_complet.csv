@@ -177,9 +177,9 @@
 007374;Angle multiple lg.3250mm - RAL7016FT;00PVA;RAL7016FT;4;;False
 000089;Angle multiple lg.5800mm - anodisé;00PVA;ANODISÉ;4;;False
 000094;Angle multiple lg.5800mm - blanc 9016;00PVA;BLANC 9016;4;lecture à vérifier;False
-660000;Angle multiple lg.5800mm - RAL;00PVA;RAL À DÉFINIR;4;;False
+000099;Angle multiple lg.5800mm - RAL;00PVA;RAL À DÉFINIR;4;référence corrigée après double lecture du PDF;False
 007375;Angle multiple lg.5800mm - RAL7016FT;00PVA;RAL7016FT;4;;False
-666666;Article divers -;;;4;;False
+999999;Article divers -;;;4;référence corrigée après double lecture du PDF;False
 000568;Bandeau horizontal systeme integral 2m50 anodisé;02BAN;ANODISÉ;4;;False
 8032;Bandeau horizontal systeme integral lg 3000mm - 9005 MAT;02BAN;9005 MAT;4;;False
 001334;Bandeau horizontal systeme integral lg 3000mm - blanc 9016;02BAN;BLANC 9016;4;;False
