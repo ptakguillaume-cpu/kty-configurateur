@@ -7,6 +7,7 @@ import {
 } from './calcul.js';
 import { creerXlsx } from './xlsx.js';
 import { creerBibliotheque } from './bibliotheque.js';
+import { instantane, comparer, clePdt, libelleType } from './revision.js';
 
 const CLE_GAMME = 'kty_fiche_gamme';
 const GAMMES = {
@@ -89,6 +90,7 @@ function fusion(brut) {
     },
     accessoires: { ...(brut.accessoires || {}) },
     produits: Array.isArray(brut.produits) ? brut.produits.map(p => ({ ref: String(p.ref ?? ''), designation: String(p.designation ?? ''), qte: p.qte ?? '' })) : [],
+    revision: brut.revision && typeof brut.revision === 'object' ? { numero: Number(brut.revision.numero) || 0, base: brut.revision.base || null, date: brut.revision.date || null } : b.revision,
   };
 }
 let etat;
@@ -157,7 +159,7 @@ function construireProfils(cote, titre) {
       }
       tr.append(codeTd, h('td', { class: 'lg', text: lg }), qTd);
       tbody.append(tr);
-      lignes[it.id] = { item: it, tr, codeTd, calc };
+      lignes[it.id] = { item: it, tr, codeTd, calc, qTd };
     });
   }
   return h('table', { class: 'profils' },
@@ -188,10 +190,11 @@ function construirePanneau() {
   );
 
   const corpsProduits = h('tbody', { id: 'produits' });
+  const corpsFantomes = h('tbody', { id: 'fantomes' });            // produits retirés depuis la version figée
   const produits = h('table', { class: 'liste' },
     h('colgroup', {}, h('col', { class: 'c1' }), h('col', { class: 'c2' }), h('col', { class: 'c3' }), h('col', { class: 'c4' }), h('col', { style: 'width:28px', class: 'sup' })),
     h('thead', {}, h('tr', {}, h('th', { text: 'CODE' }), h('th', { colspan: 2, text: 'Désignation' }), h('th', { text: 'Qts' }), h('th', { class: 'sup' }))),
-    corpsProduits);
+    corpsProduits, corpsFantomes);
 
   // Accessoires : dessins à gauche (clip / éclisse / équerre, joints), comme dans le XLS
   const IMG_ACC = { A36: { lignes: 9, img: 'accessoires' } };      // éclisse, clip, équerre, joints, cale, mousse : un seul dessin comme dans le XLS
@@ -209,10 +212,11 @@ function construirePanneau() {
     if (bloc) cellules.push(h('td', { class: 'img', rowspan: bloc.lignes }, bloc.img ? h('img', { src: `images/${bloc.img}.png`, alt: '' }) : null));
     cellules.push(h('td', { colspan: SANS_IMAGE.has(a.id) ? 2 : 1, text: a.libelle, title: DESIGNATION.get(a.code) || '' }));
     const codeTd = h('td', { class: 'code-p', text: a.code });
-    cellules.push(codeTd, h('td', { text: a.edi }), h('td', { class: 'n' }, cellule), h('td', { class: 'sup' }));
+    const nTd = h('td', { class: 'n' }, cellule);
+    cellules.push(codeTd, h('td', { text: a.edi }), nTd, h('td', { class: 'sup' }));
     const tr = h('tr', { class: 'acc' }, cellules);
     corpsAcc.append(tr);
-    lignesAcc[a.id] = { a, tr, cellule, codeTd };
+    lignesAcc[a.id] = { a, tr, cellule, codeTd, nTd };
   }
   const accessoires = h('table', { class: 'liste acc-table' },
     h('colgroup', {}, h('col', { class: 'a1' }), h('col', { class: 'a2' }), h('col', { class: 'a3' }), h('col', { class: 'a4' }), h('col', { class: 'a5' }), h('col', { style: 'width:28px', class: 'sup' })),
@@ -238,6 +242,62 @@ let message = '', minuteur;
 function annoncer(texte) { message = texte; clearTimeout(minuteur); minuteur = setTimeout(() => { message = ''; maj(); }, 3500); maj(); }
 
 const calculerFiche = () => calculer(etat, { roles: GAMME.roles });      // mêmes règles de calcul pour toutes les gammes
+function valeursAccessoires(r) {
+  return Object.fromEntries(FICHE.accessoires.map(a => [a.id, a.auto === 'clip' ? r.clips : a.auto === 'equerre' ? r.equerres : a.auto === 'mousse' ? r.mousse : nombre(etat.accessoires[a.id])]));
+}
+const instantaneCourant = r => instantane(r.qte, valeursAccessoires(r), etat.produits);
+
+// ---------- suivi des modifications (version figée) ----------
+const dateFr = iso => (iso ? new Date(iso).toLocaleDateString('fr-FR') : '');
+function marquer(td, ch) {                                // colore une case selon son changement : ajouté / modifié / retiré
+  if (!td) return;
+  td.classList.remove('chg-ajout', 'chg-modif', 'chg-retrait');
+  td.querySelectorAll(':scope > .avant').forEach(x => x.remove());
+  td.title = '';
+  if (!ch) return;
+  td.classList.add('chg-' + ch.type);
+  td.append(h('span', { class: 'avant', text: ch.type === 'ajout' ? 'ajouté' : `avant ${fmt(ch.avant)}` }));
+  td.title = ch.type === 'ajout' ? 'Ajouté depuis la version figée' : `${libelleType[ch.type]} : avant ${fmt(ch.avant)}, maintenant ${fmt(ch.apres)}`;
+}
+function majRevision(r) {
+  const rev = etat.revision, diff = rev.base ? comparer(rev.base, instantaneCourant(r)) : null;
+  for (const L of Object.values(lignes)) marquer(L.qTd, diff?.lignes[L.item.id]);
+  for (const { a, nTd } of Object.values(lignesAcc)) marquer(nTd, diff?.acc[a.id]);
+  for (const { p, tr } of lignesProduits) marquer(tr.querySelector('td.n'), diff?.produits[clePdt(p)]);
+  $('fantomes').replaceChildren(...(diff ? diff.retires.map(x => h('tr', { class: 'fantome' },
+    h('td', { text: x.ref }), h('td', { colspan: 2, text: `${x.designation || ''} (retiré)` }),
+    h('td', { class: 'n chg-retrait' }, h('span', { class: 'avant', text: `avant ${fmt(x.avant)}` })), h('td', { class: 'sup' }))) : []));
+  const b = $('revision'); b.hidden = !rev.base;
+  $('btnFiger').textContent = rev.base ? 'Valider les modifications' : 'Figer cette version';
+  $('btnSuivi').hidden = !rev.base;
+  if (!rev.base) return;
+  const modif = diff.nb > 0;
+  b.classList.toggle('hors-impression', !modif); b.classList.toggle('modifiee', modif);
+  document.body.classList.toggle('avec-suivi', modif);
+  b.querySelector('strong').textContent = modif
+    ? `MODIFICATION n°${rev.numero + 1} — par rapport à la version n°${rev.numero} du ${dateFr(rev.date)} (${diff.nb} changement${diff.nb > 1 ? 's' : ''})`
+    : `Version n°${rev.numero} figée le ${dateFr(rev.date)}. Toute modification apparaîtra en couleur.`;
+  b.querySelector('.legende').hidden = !modif;
+}
+function figer() {
+  const rev = etat.revision, courant = instantaneCourant(calculerFiche());
+  if (rev.base) {
+    const d = comparer(rev.base, courant);
+    if (!d.nb) { annoncer('Aucune modification depuis la version figée.'); return; }
+    if (!confirm(`Valider les ${d.nb} modification(s) et figer la version n°${rev.numero + 1} ?\nLes couleurs repartiront de cette nouvelle version.`)) return;
+    rev.numero++;
+  }
+  rev.base = courant; rev.date = new Date().toISOString(); maj();
+  annoncer(rev.numero ? `Version n°${rev.numero} figée.` : 'Version figée : les prochaines modifications apparaîtront en couleur.');
+}
+function arreterSuivi() {
+  if (!confirm('Arrêter le suivi des modifications ? Les couleurs disparaissent et la version figée est oubliée.')) return;
+  etat.revision = { numero: 0, base: null, date: null }; maj();
+}
+function construireRevision() {                           // bandeau imprimé en haut de la fiche quand elle a été modifiée
+  return h('div', { class: 'revision', id: 'revision', hidden: true }, h('strong'),
+    h('span', { class: 'legende' }, h('i', { class: 'chg-ajout', text: 'ajouté' }), h('i', { class: 'chg-modif', text: 'modifié' }), h('i', { class: 'chg-retrait', text: 'retiré' })));
+}
 
 function maj() {
   const r = calculerFiche();
@@ -262,15 +322,15 @@ function maj() {
   $('champRal').hidden = fin !== 'RAL';
   document.querySelectorAll('.devis button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === e.mode)));
   rowLaquage.hidden = fin !== 'RAL';
+  const accVals = valeursAccessoires(r);
   for (const { a, tr, cellule, codeTd } of Object.values(lignesAcc)) {
     codeTd.textContent = a.code;
-    let q;
-    if (a.auto === 'clip') q = r.clips; else if (a.auto === 'equerre') q = r.equerres; else if (a.auto === 'mousse') q = r.mousse;
-    else q = nombre(etat.accessoires[a.id]);
+    const q = accVals[a.id];
     if (a.auto) cellule.textContent = q ? fmt(q) : '0';
     tr.classList.toggle('rempli', q > 0);
   }
   for (const { p, tr } of lignesProduits) tr.classList.toggle('rempli', nombre(p.qte) !== 0);
+  majRevision(r);
   if (fin === 'RAL' && !e.ral) alertes.push({ t: 'Finition RAL : indiquez le RAL demandé dans l\'en-tête (sinon « RAL À DÉFINIR » est imprimé).', info: true });
   if (!e.societe || !e.chantier) alertes.push({ t: 'Société et référence chantier non renseignées (elles servent au nom du fichier).', info: true });
   if (message) alertes.push({ t: message, info: true });
@@ -357,6 +417,21 @@ function exporterExcel() {
     const q = a.auto === 'clip' ? r.clips : a.auto === 'equerre' ? r.equerres : a.auto === 'mousse' ? r.mousse : nombre(etat.accessoires[a.id]);
     L.push([{ v: a.code, texte: true }, a.libelle, a.edi, q || '']);
   }
+  if (etat.revision.base) {
+    const diff = comparer(etat.revision.base, instantaneCourant(r));
+    L.push([]); L.push([{ v: `MODIFICATION n°${etat.revision.numero + 1} par rapport à la version n°${etat.revision.numero} du ${dateFr(etat.revision.date)}`, gras: true }]);
+    if (!diff.nb) L.push(['Aucune modification.']);
+    else {
+      L.push(['Ligne', 'Code', 'Changement', 'Avant', 'Maintenant'].map(v => ({ v, gras: true })));
+      const items = Object.fromEntries([...FICHE.gauche, ...FICHE.droite].map(i => [i.id, i]));
+      for (const [id, ch] of Object.entries(diff.lignes)) {
+        const it = items[id]; L.push([`${it.libelle || it.famille} ${it.longueur || it.largeur || ''}`.trim(), { v: it.codes[e.finition] || '—', texte: true }, libelleType[ch.type], ch.avant, ch.apres]);
+      }
+      for (const [id, ch] of Object.entries(diff.acc)) { const a = FICHE.accessoires.find(x => x.id === id); L.push([a.libelle, { v: a.code, texte: true }, libelleType[ch.type], ch.avant, ch.apres]); }
+      for (const [k, ch] of Object.entries(diff.produits)) { const p = etat.produits.find(x => clePdt(x) === k); L.push([p.designation, { v: p.ref, texte: true }, libelleType[ch.type], ch.avant, ch.apres]); }
+      for (const x of diff.retires) L.push([x.designation, { v: x.ref, texte: true }, libelleType.retrait, x.avant, 0]);
+    }
+  }
   telecharger(creerXlsx({ nom: 'Fiche de débit', lignes: L, largeurs: [34, 14, 16, 10, 3, 34, 14, 18, 10] }), nomFichier() + '.xlsx');
 }
 function enregistrer() {
@@ -392,7 +467,7 @@ function construireInfo() {                       // cadre « INFO : » en haut 
   return h('div', { class: 'info' }, h('label', { text: 'INFO :' }),
     lier(h('textarea', { rows: 2, 'aria-label': 'Info', placeholder: 'Information libre pour la fabrication…' }), () => etat.entete.remarque, v => { etat.entete.remarque = v; }));
 }
-fiche.append(construireInfo(), h('div', { class: 'corps' }, construireProfils('gauche', 'PROFILS'), construireProfils('droite', ''), construirePanneau()));
+fiche.append(construireRevision(), construireInfo(), h('div', { class: 'corps' }, construireProfils('gauche', 'PROFILS'), construireProfils('droite', ''), construirePanneau()));
 construireOptions();
 rendreProduits();
 remplir();
@@ -414,6 +489,8 @@ $('btnEnregistrer').addEventListener('click', enregistrer);
 $('btnExcel').addEventListener('click', exporterExcel);
 $('btnImprimer').addEventListener('click', imprimer);
 $('btnBibliotheque').addEventListener('click', () => bibliotheque.ouvrir());
+$('btnFiger').addEventListener('click', figer);
+$('btnSuivi').addEventListener('click', arreterSuivi);
 $('recherche').addEventListener('input', chercher);
 $('rechercheFinition').addEventListener('change', chercher);
 $('btnLigneLibre').addEventListener('click', () => {

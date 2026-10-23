@@ -18,6 +18,15 @@ Bon à savoir :
 - Une fiche ouverte plus tard affiche les codes de la bibliothèque **du moment** (une fiche enregistrée avant un changement de code montrera le nouveau code).
 - On ne peut pas créer une nouvelle *ligne* de fiche (nouvelle longueur, nouvelle famille) : pour un produit en plus, utiliser « + Ligne libre » sur la fiche, ou demander une évolution.
 
+## Suivi des modifications (pour le dépôt)
+- **« Figer cette version »** (haut de la fiche) : à faire quand la fiche est envoyée. Elle devient la version n°0.
+- Ensuite, chaque changement apparaît en **couleur** (saisies et lignes calculées : couvre-joint, clips, équerres, mousse…) : **vert** = ajouté, **orange** = modifié (avec « avant 17 »), **rouge** = retiré. Un bandeau « MODIFICATION n°1 » s'imprime en haut de la fiche ; les produits retirés de la liste restent visibles, barrés.
+- **« Valider les modifications »** : fige la fiche corrigée comme nouvelle version (n°1, n°2…), les couleurs repartent de zéro. **« Arrêter le suivi »** : supprime le suivi.
+- Le suivi est enregistré avec la fiche (fichier « Enregistrer sous… ») et la liste des changements est ajoutée à l'export Excel.
+
+## Adresse principale du site
+`_redirects` (Netlify) envoie l'adresse principale vers la fiche ; l'outil fait de même pour ceux qui l'ont déjà en mémoire. Le configurateur de cloisons n'est plus mis en avant mais reste dans le dépôt et sur `/index.html`. Pour le remettre en page d'accueil : supprimer le fichier `_redirects` et retirer le bloc « adresse principale » de `sw.js`.
+
 ## Qui détient quoi
 - **Aucune donnée n'est envoyée nulle part** : l'outil n'a aucun serveur ni compte.
 - Le code est dans le dépôt GitHub `kty-configurateur` (dossier `fiche-debit/`). Pour le donner à l'entreprise : GitHub, *Settings*, *Transfer ownership* vers l'organisation, ou ajouter un collègue comme propriétaire.

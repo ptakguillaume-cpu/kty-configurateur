@@ -1,0 +1,2 @@
+# L adresse principale ouvre directement la fiche de debit (le configurateur reste accessible sur /index.html).
+/    /fiche-debit/    302!

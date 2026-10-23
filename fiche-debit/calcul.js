@@ -24,6 +24,7 @@ export function etatInitial() {
     },
     accessoires: {},                            // quantités saisies des accessoires (A34, A35, A36, A39…A43)
     produits: [],                               // lignes ajoutées : { ref, designation, qte }
+    revision: { numero: 0, base: null, date: null },   // suivi des modifications : version figée (voir revision.js)
   };
 }
 
