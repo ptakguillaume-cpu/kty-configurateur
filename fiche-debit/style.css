@@ -144,8 +144,11 @@ tr.tete-groupe td { background: var(--gris-clair); }
     table.profils td.fam.large { font-size: 6.4pt; } table.profils td.fam.long { font-size: 5.6pt; letter-spacing: -0.1px; }
     table.profils tr.groupe > td, table.profils tr.groupe > th { border-top: 0.45mm solid var(--trait); }
     .corps { grid-template-columns: 27% 27% 1fr !important; gap: 2mm; }
-    .panneau { grid-column: auto !important; }
-    table.profils th { font-size: 6.5pt; }
+    .corps { align-items: stretch !important; }
+    .panneau { grid-column: auto !important; display: flex; flex-direction: column; }
+    .panneau > table.liste:not(.acc-table) { flex: 1 1 auto; height: 100%; }
+    .panneau .acc-table { flex: 0 0 auto; }
+    table.profils th { font-size: 6pt; white-space: nowrap; padding: 0 0.3mm; }
     table.profils .fam { font-size: 6.4pt; line-height: 1.05; } table.profils .fam small { font-size: 6pt; }
     .liste td, .liste th { font-size: 7.5pt; }
     table.profils td, table.profils th { padding: 0 0.8mm; }

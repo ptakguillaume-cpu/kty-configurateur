@@ -18,7 +18,7 @@ const IMAGES = {                                   // dessins de profils de la f
 const IMAGE_SPAN = { D32: 2 };                      // un même dessin pour « Angle de doublage » et « Plat de doublage »
 const SANS_IMAGE_PROPRE = new Set(['D33']);
 const LIBELLE_LARGE = new Set(['D41', 'D42', 'D43', 'D44']);   // paumelles et serrure : libellé sur les 2 colonnes, sans dessin (comme le XLS)
-const PRODUITS_VIDES_MIN = 10;                     // lignes vides affichées pour garder l'aspect de la feuille
+const PRODUITS_VIDES_MIN = 18;                     // lignes vides affichées pour garder l'aspect de la feuille
 
 // ---------- utilitaires ----------
 function h(tag, props = {}, ...enfants) {
@@ -127,7 +127,7 @@ function construireProfils(cote, titre) {
     });
   }
   return h('table', { class: 'profils' },
-    h('colgroup', {}, ['17%', '22%', '17%', '17%', '27%'].map(w => h('col', { style: `width:${w}` }))),
+    h('colgroup', {}, ['21%', '22%', '16%', '16%', '25%'].map(w => h('col', { style: `width:${w}` }))),
     h('thead', {}, h('tr', {}, h('th', { colspan: 2, text: titre }), h('th', { text: 'code KTY' }), h('th', { text: 'Longueur' }), h('th', { text: 'Quantité' }))), tbody);
 }
 
