@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kty-app-v15'; // Augmentez le chiffre à chaque mise à jour pour forcer le refresh
+const CACHE_NAME = 'kty-app-v16'; // Augmentez le chiffre à chaque mise à jour pour forcer le refresh
 const urlsToCache = [
   './',
   './index.html',
@@ -10,6 +10,7 @@ const urlsToCache = [
   './fiche-debit/',
   './fiche-debit/index.html',
   './fiche-debit/style.css',
+  './fiche-debit/manifest.json',
   './fiche-debit/app.js',
   './fiche-debit/calcul.js',
   './fiche-debit/xlsx.js',
