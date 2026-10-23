@@ -1,5 +1,5 @@
 ﻿ref;designation;edi;finition;page_pdf;a_verifier
-005651;;;;1;désignation illisible
+005651;;;;1;désignation vide sur le PDF
 000070;Angle 90° lg. 2550mm - anodise;OOP2D;ANODISÉ;1;lecture à vérifier
 000080;Angle 90° lg. 2550mm - RAL;O0P2D;RAL À DÉFINIR;1;lecture à vérifier
 000076;Angle 90° lg. 2700mm - 9016;0OP2D;BLANC 9016;1;lecture à vérifier
@@ -23,7 +23,7 @@
 8002;Angle 90° lg 3050mm - 9005 MAT;OOP2D;9005 MAT;2;lecture à vérifier
 8003;Angle 90°lg 3250mm - 9005 MAT;O0P2D;9005 MAT;2;lecture à vérifier
 8004;Angle 90°lg 5800mm - 9005 MAT;O0P2D;9005 MAT;2;lecture à vérifier
-000797;;11AND;;2;désignation illisible
+000797;Angle de doublage 38 x 38 lg 3000mm - anodisé;11AND;;2;désignation relue visuellement
 8016;Angle de doublage 38 × 38 lg 3000mm - 9005 MAT;11AND;9005 MAT;3;lecture à vérifier
 006507;Angle depart multiple lg 2700mm, blanc 9016;O0ADM;BLANC 9016;3;lecture à vérifier
 006512;Angle depart multiple lg 2700mm, RAL;00ADM;RAL À DÉFINIR;3;lecture à vérifier
@@ -135,7 +135,7 @@
 000593;Montant gache porte coulissante,dim 50x30mm,lg 3000mm - anodisé;50MG;ANODISÉ;27;lecture à vérifier
 005052;Montant gache porte coulissante,dim 50x30mm,lg 3000mm - RAL;50MG;RAL À DÉFINIR;27;lecture à vérifier
 8212;Montant gauche d'huisserie classic fdf 2050mm - 9005 MAT;;9005 MAT;27;lecture à vérifier
-8214;;;;28;désignation illisible
+8214;Montant huisserie RDB1 carré fdf 2600mm PD coté gâche - 9005 MAT;;;28;désignation relue visuellement
 001176;Montant RDB1, lg 3050mm - brut;15MON;BRUT;28;lecture à vérifier
 001452;Montant RF lg 3700mm, brut;03CLI;BRUT;28;lecture à vérifier
 000937;Parclose double vitrage lg 3000mm - anodisé;O0PAD;ANODISÉ;29;lecture à vérifier
@@ -150,8 +150,8 @@
 8226;Parclose simple vitrage lg 3000mm - 9005 MAT;OOPAS;9005 MAT;29;lecture à vérifier
 000922;Parclose simple vitrage lg 3000mm - blanc 9016 OOPAS;;BLANC 9016;29;lecture à vérifier
 007474;Parclose simple vitrage lg 3000mm - RAL7016FT;00PAS;RAL7016FT;30;lecture à vérifier
-007113;;O0PASJP;;30;désignation illisible
-007110;;OOPASJP;;30;désignation illisible
+007113;Parclose SV lg 2m50 avec JOINT POSE pour vitrage 6à8.8mm,anodisé;00PASJP;;30;désignation relue visuellement
+007110;Parclose SV lg 3m00 avec JOINT POSE pour vitrage 6à8.8mm,anodisé;00PASJP;;30;désignation relue visuellement
 8227;Plat de doublage 38 x 2.8 lg 3000mm - 9005 MAT;11PLA;9005 MAT;30;lecture à vérifier
 000994;Porte coulissante SV type A,dim.SP × - RAL;37COA;RAL À DÉFINIR;31;lecture à vérifier
 8238;Porte coulissante DV type A dim 2036 x 828mm - 9005 MAT;38COA;9005 MAT;31;lecture à vérifier
@@ -160,7 +160,7 @@
 8230;Porte coulissante SV type A dim 2036 x 828mm - 9005 MAT;37COA;9005 MAT;32;lecture à vérifier
 8232;Porte coulissante SV type A dim. speciales × mm - 9005 MAT;37COA;9005 MAT;32;lecture à vérifier
 8247;Profil cimaise lg 4000mm - 9005 MAT;60CIP;9005 MAT;32;lecture à vérifier
-005038;;02FIN;;33;désignation illisible
+005038;Profil de finition vertical système intégral lg 3000mm - blanc 9016;02FIN;;33;désignation relue visuellement
 8249;Profil huisserie carré lg 6320mm - 9005 MAT;;9005 MAT;33;lecture à vérifier
 8245;Profil U 15x15x15 ép 2mm lg 3000mm - 9005 MAT;;9005 MAT;33;lecture à vérifier
 8246;Profil U 20 × 40 × 20mm ép 2mm lg 3000mm - 9005 MAT;50COU204020;9005 MAT;33;lecture à vérifier
@@ -174,7 +174,7 @@
 8254;Rail lg 3m pour 2 portes coulissantes TH larg max 2x730mm - 9005 MAT;60RA2VTH;9005 MAT;33;lecture à vérifier
 007504;Rail lg 3m pour 2 portes coulissantes TH larg maxi 2x730mm,RAL7016FT;Rail Coulissant;RAL7016FT;33;code EDI repris du XLS
 005036;Rosace aveugle OVAL inox, la paire;60RA;;34;lecture à vérifier
-000782;;40DFT6;;34;désignation illisible
+000782;Ruban adhésif 7058 6x2mm pour vitrage ep 10mm- (le rouleau de 18 ml);40DFT6;;34;désignation relue visuellement
 007512;Semi-fixe SV,dim 2036x728,poussant gauche - RAL7016FT;7512;RAL7016FT;34;lecture à vérifier
 007514;Semi-fixe SV,dim 2036x828,poussant gauche - RAL7016FT;35VAB;RAL7016FT;34;lecture à vérifier
 8271;Semi-fixe DV dim 2036 x 528mm poussant gauche - 9005 MAT;36VAB;9005 MAT;35;lecture à vérifier
@@ -200,8 +200,8 @@
 000576;Tole pliee en U dim int mm,longueur mm - anodise;46U;ANODISÉ;38;lecture à vérifier
 000577;Tole pliee en U dim int mm,longueur mm - blanc 9016;46U;BLANC 9016;38;lecture à vérifier
 000594;Tole pliee en U dim int mm,longueur mm - RAL;46U;RAL À DÉFINIR;38;lecture à vérifier
-005616;;;;38;désignation illisible
-005451;;;;38;désignation illisible
+005616;"Traverse huis classic ""carrée"" DV,avec traverse brut fdf mm";;;38;désignation relue visuellement
+005451;Traverse intermédiaire allège tôle perforée suivant plan P1608-807A;;;38;désignation relue visuellement
 8298;Tube 0 100mm lg 6000mm - 9005 MAT;50TUC100;9005 MAT;38;lecture à vérifier
 000256;Vantail serrure SV dim.SP ,poussant droit - RAL;35VA5;RAL À DÉFINIR;39;lecture à vérifier
 000113;Vantail serrure SV,dim 2036x728mm,poussant gauche - blanc 9016;35VAS;BLANC 9016;39;lecture à vérifier

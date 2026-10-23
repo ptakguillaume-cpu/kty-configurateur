@@ -5,7 +5,7 @@
   "edi": "",
   "finition": "",
   "page_pdf": 1,
-  "a_verifier": "désignation illisible"
+  "a_verifier": "désignation vide sur le PDF"
  },
  {
   "ref": "005492",
@@ -721,11 +721,11 @@
  },
  {
   "ref": "000797",
-  "designation": "",
+  "designation": "Angle de doublage 38 x 38 lg 3000mm - anodisé",
   "edi": "11AND",
   "finition": "",
   "page_pdf": 2,
-  "a_verifier": "désignation illisible"
+  "a_verifier": "désignation relue visuellement"
  },
  {
   "ref": "000795",
@@ -10065,11 +10065,11 @@
  },
  {
   "ref": "8214",
-  "designation": "",
+  "designation": "Montant huisserie RDB1 carré fdf 2600mm PD coté gâche - 9005 MAT",
   "edi": "",
   "finition": "",
   "page_pdf": 28,
-  "a_verifier": "désignation illisible"
+  "a_verifier": "désignation relue visuellement"
  },
  {
   "ref": "8215",
@@ -10841,11 +10841,11 @@
  },
  {
   "ref": "007113",
-  "designation": "",
-  "edi": "O0PASJP",
+  "designation": "Parclose SV lg 2m50 avec JOINT POSE pour vitrage 6à8.8mm,anodisé",
+  "edi": "00PASJP",
   "finition": "",
   "page_pdf": 30,
-  "a_verifier": "désignation illisible"
+  "a_verifier": "désignation relue visuellement"
  },
  {
   "ref": "007112",
@@ -10873,11 +10873,11 @@
  },
  {
   "ref": "007110",
-  "designation": "",
-  "edi": "OOPASJP",
+  "designation": "Parclose SV lg 3m00 avec JOINT POSE pour vitrage 6à8.8mm,anodisé",
+  "edi": "00PASJP",
   "finition": "",
   "page_pdf": 30,
-  "a_verifier": "désignation illisible"
+  "a_verifier": "désignation relue visuellement"
  },
  {
   "ref": "007109",
@@ -11969,11 +11969,11 @@
  },
  {
   "ref": "005038",
-  "designation": "",
+  "designation": "Profil de finition vertical système intégral lg 3000mm - blanc 9016",
   "edi": "02FIN",
   "finition": "",
   "page_pdf": 33,
-  "a_verifier": "désignation illisible"
+  "a_verifier": "désignation relue visuellement"
  },
  {
   "ref": "000612",
@@ -12377,11 +12377,11 @@
  },
  {
   "ref": "000782",
-  "designation": "",
+  "designation": "Ruban adhésif 7058 6x2mm pour vitrage ep 10mm- (le rouleau de 18 ml)",
   "edi": "40DFT6",
   "finition": "",
   "page_pdf": 34,
-  "a_verifier": "désignation illisible"
+  "a_verifier": "désignation relue visuellement"
  },
  {
   "ref": "005755",
@@ -13961,11 +13961,11 @@
  },
  {
   "ref": "005616",
-  "designation": "",
+  "designation": "Traverse huis classic \"carrée\" DV,avec traverse brut fdf mm",
   "edi": "",
   "finition": "",
   "page_pdf": 38,
-  "a_verifier": "désignation illisible"
+  "a_verifier": "désignation relue visuellement"
  },
  {
   "ref": "8292",
@@ -14025,11 +14025,11 @@
  },
  {
   "ref": "005451",
-  "designation": "",
+  "designation": "Traverse intermédiaire allège tôle perforée suivant plan P1608-807A",
   "edi": "",
   "finition": "",
   "page_pdf": 38,
-  "a_verifier": "désignation illisible"
+  "a_verifier": "désignation relue visuellement"
  },
  {
   "ref": "005665",

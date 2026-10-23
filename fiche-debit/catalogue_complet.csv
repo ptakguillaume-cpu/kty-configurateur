@@ -1,5 +1,5 @@
 ﻿ref;designation;edi;finition;page_pdf;a_verifier
-005651;;;;1;désignation illisible
+005651;;;;1;désignation vide sur le PDF
 005492;Accessoires pour kit guichet;;;1;
 005434;Accessoires pour kit intergral type A;;;1;
 005446;Accessoires pour porte coulissante avec butee;;;1;
@@ -89,7 +89,7 @@
 001329;Angle 90° RDB1 lg 5800mm - RAL;15P2D-02;RAL À DÉFINIR;2;
 007358;Angle 90°RDB1lg 5800mm - RAL7016FT;15P2D02;RAL7016FT;2;
 007643;Angle 90° RDB1, lg 3700mm, blanc 9016;15P2D;BLANC 9016;2;
-000797;;11AND;;2;désignation illisible
+000797;Angle de doublage 38 x 38 lg 3000mm - anodisé;11AND;;2;désignation relue visuellement
 000795;Angle de doublage 38 x 38 lg 3000mm - blanc 9016;11AND;BLANC 9016;2;
 000798;Angle de doublage 38 × 38 lg 3000mm - RAL;11AND;RAL À DÉFINIR;3;
 007359;Angle de doublage 38 x 38 lg 3000mm - RAL7016FT;11AND;RAL7016FT;3;
@@ -1257,7 +1257,7 @@
 005670;Montant gauche d'huisserie classic fdf 2050mm,blanc;9016;;27;
 005741;Montant GH lg 5750mm,brut;01MGH;BRUT;27;
 001244;Montant huis RDB1 carree fdf 2600mm PD cote gache, blanc;9016;;28;
-8214;;;;28;désignation illisible
+8214;Montant huisserie RDB1 carré fdf 2600mm PD coté gâche - 9005 MAT;;;28;désignation relue visuellement
 8215;Montant polyvalent 38 lg 3250mm - 9005 MAT;38MONPOL;9005 MAT;28;
 007123;Montant polyvalent 38 lg 3250mm, anodisé;38MP;ANODISÉ;28;
 001538;Montant polyvalent 38 lg 3250mm, blanc 9016;38MONPOL;BLANC 9016;28;
@@ -1354,11 +1354,11 @@
 007474;Parclose simple vitrage lg 3000mm - RAL7016FT;00PAS;RAL7016FT;30;lecture à vérifier
 8219;Parclose SV lg 2500mm avec JOINT POSE pour vitrage 6a8.8mm - 9005 MAT;00PASJP;9005 MAT;30;
 007114;Parclose SV lg 2m50 avec JOINT POSE pour vitrage 6a8.8mm,7016FT;0OPASJP;RAL7016FT;30;
-007113;;O0PASJP;;30;désignation illisible
+007113;Parclose SV lg 2m50 avec JOINT POSE pour vitrage 6à8.8mm,anodisé;00PASJP;;30;désignation relue visuellement
 007112;Parclose SV lg 2m50 avec JOINT POSE pour vitrage 6a8.8mm,blanc 9016;OOPASJP;BLANC 9016;30;
 8220;Parclose SV lg 3000mm avec JOINT POSE pour vitrage 6a8.8mm - 9005 MAT;O0PASJP;9005 MAT;30;
 007111;Parclose SV lg 3m00 avec JOINT POSE pour vitrage 6a8.8mm,7016FT;O0PASJP;RAL7016FT;30;
-007110;;OOPASJP;;30;désignation illisible
+007110;Parclose SV lg 3m00 avec JOINT POSE pour vitrage 6à8.8mm,anodisé;00PASJP;;30;désignation relue visuellement
 007109;Parclose SV lg 3m00 avec JOINT POSE pour vitrage 6a8.8mm,blanc 9016;00PASJP;BLANC 9016;30;
 000749;Paumelle ARGENTA 102x94x14 RAL 9010;40EMB38;RAL À DÉFINIR;30;
 001251;Paumelle coudee acier a laguer et realeser;;;30;
@@ -1495,7 +1495,7 @@
 000776;Profil cimaise lg 4000mm - RAL;60CIP;RAL À DÉFINIR;33;
 8248;Profil de finition vertical systeme integral lg 3000mm - 9005 MAT;02FIN;9005 MAT;33;
 005037;Profil de finition vertical systeme integral lg 3000mm - anodise;02FIN;ANODISÉ;33;
-005038;;02FIN;;33;désignation illisible
+005038;Profil de finition vertical système intégral lg 3000mm - blanc 9016;02FIN;;33;désignation relue visuellement
 000612;Profil de finition vertical systeme integral lg 3000mm - RAL;02CJT;RAL À DÉFINIR;33;
 007500;Profil de finition vertical systeme integral lg 3000mm - RAL7016F;02CJT;RAL7016FT;33;
 001554;Profil detancheite translucide pour porte clarit;;;33;
@@ -1546,7 +1546,7 @@
 000502;Rosace cylindre aluminium (la paire)- blanc 9016;45ROSCYL;BLANC 9016;34;
 000551;Rosace cylindre aluminium (la paire),facon inox;;;34;
 005617;Rosace cylindre inox,la paire;;;34;
-000782;;40DFT6;;34;désignation illisible
+000782;Ruban adhésif 7058 6x2mm pour vitrage ep 10mm- (le rouleau de 18 ml);40DFT6;;34;désignation relue visuellement
 005755;Ruban adhesif 7058 9x2mm pour vitrage ep 12mm (le rouleau de 18ml);40DFT9;;34;
 000632;Sablage dégressif 1 face-plus value;;;34;
 000584;Sablage partiel (bandes sablees et claires alternees) - plus value;56SABP;;34;
@@ -1744,7 +1744,7 @@
 000622;Traverse et allege vitree stadip 33/2;35TRAV;;38;
 000575;Traverse et pose remplissage fourni par vos soins;35TRAPFC;;38;
 001453;Traverse G lg 2500 mm,brut;;BRUT;38;
-005616;;;;38;désignation illisible
+005616;"Traverse huis classic ""carrée"" DV,avec traverse brut fdf mm";;;38;désignation relue visuellement
 8292;Traverse huis RDB1 SV fdf mmsanstraversebrut-9005MAT;;9005 MAT;38;
 001323;Traverse huis RDB1 SV fdf. mm,sans traverse brut,blanc;9016;BRUT;38;
 005476;Traverse huis. carree classic SV fdf x mm,et traverse brut;;BRUT;38;
@@ -1752,7 +1752,7 @@
 000378;Traverse huisserie porte simple dim fdf mm et traverse brut;;BRUT;38;
 005474;Traverse intemédiare;;;38;
 001430;Traverse intermediaire allege panneau pvc 10mm;;;38;
-005451;;;;38;désignation illisible
+005451;Traverse intermédiaire allège tôle perforée suivant plan P1608-807A;;;38;désignation relue visuellement
 005665;Traverse intermediaire et barre antipanique ISEO 3 points;;;38;
 005033;Traverse porte SV 928mm, RAL 9005 mat;;9005 MAT;38;
 000897;Tresse de masse pour goulotte eélectrique -;05TRE;;38;

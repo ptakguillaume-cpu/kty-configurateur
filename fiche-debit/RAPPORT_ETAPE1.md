@@ -27,8 +27,8 @@ Le XLS ne contient donc que **26 %** des codes : c'est la cause principale des c
 - Dans le XLS, la colonne « Code EDI » contient **souvent un mot à la place du code** (« SV », « DV », « Rail Coulissant »…) sur 286 lignes. Le code EDI du PDF est retenu.
 
 ## 3. À revérifier sur le PDF (lecture du scan)
-- **Désignation illisible** (9) : 005651 (p1), 000797 (p2), 8214 (p28), 007113 et 007110 (p30), 005038 (p33), 000782 (p34), 005616 et 005451 (p38).
-- **Références avec suffixe** (9), à confirmer : 000987.1 (p2), 006505.1 (p3), 005462.1 à .4 (p6-7), 007785.1 (p14), 005079.1 et .2 (p38-39).
+- **Désignations illisibles** : 8 sur 9 relues à l'œil sur le PDF et corrigées dans le catalogue. Il reste **005651** (p1) : la case désignation est **vide sur le PDF lui-même**.
+- **Références avec suffixe** (000987.1, 006505.1, 005462.1 à .4, 007785.1, 005079.1 et .2) : vérifiées sur le PDF, ce sont de vraies références.
 - 212 lignes au total sont dans `catalogue_a_verifier.csv`, avec la raison.
 - Remarque : le scan a été lu automatiquement (OCR). Les accents sont parfois perdus (« carre » au lieu de « carré »), sans effet sur les codes.
 
