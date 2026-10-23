@@ -22,4 +22,3 @@
 1. **Désignation abrégée** : voulez-vous aussi couper à la virgule comme le XLS ? Exemple avec le PDF : « Porte coulissante SV type A,dim 2036x728mm - anodisé » deviendrait « Porte coulissante SV type A » (dimension perdue). Je l'ai gardée ; la désignation reste modifiable ligne par ligne.
 2. **Forfait laquage** (en RAL) : repris tel quel (« 500 / OUI / 1 »). Que représente le 500 ?
 3. **Jeu 2 paumelles clarit** et **serrure clarit** : saisis à la main comme dans le XLS (pas de calcul).
-4. **Largeur des parcloses** : « sans joint », « avec joint », « sans joints », « avec joints » : libellés repris du XLS.
