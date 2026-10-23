@@ -21,6 +21,7 @@ Remplace le fichier Excel « Fiche de Débit Classic ». Fonctionne sans interne
 | `catalogue.json`, `*.csv` | le même catalogue, lisible ; `RAPPORT_ETAPE1.md`, `REGLES_FICHE.md` : rapports validés |
 | `app.js`, `index.html`, `style.css` | écran |
 | `xlsx.js` | lecture et écriture Excel sans bibliothèque |
+| `revision.js` | suivi des modifications (version figée, couleurs ajouté / modifié / retiré) |
 | `bibliotheque.js` | bibliothèque des codes (modifier, ajouter, importer, exporter) |
 | `autonome/Fiche-de-debit-Classic.html` | tout en un seul fichier, s'ouvre par double-clic (voir `PASSATION.md`) |
 | `outils/generer_donnees.py` | régénère `donnees.js` et `catalogue.js` |
@@ -29,6 +30,8 @@ Remplace le fichier Excel « Fiche de Débit Classic ». Fonctionne sans interne
 ## Tests
 ```
 node fiche-debit/tests/calcul.test.mjs fiche-debit/tests/cas_xls.json
+node fiche-debit/tests/bibliotheque.test.mjs
+node fiche-debit/tests/revision.test.mjs
 ```
 Compare le moteur (en mode « formules d'origine ») au XLS recalculé sur 25 saisies aléatoires, puis vérifie les corrections validées.
 

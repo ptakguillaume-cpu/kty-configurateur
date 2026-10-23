@@ -102,6 +102,8 @@ tr.tete-groupe td { background: var(--gris-clair); }
 .liste tr.acc td.n { background: transparent; }
 .liste tr.acc .auto { display: flex; align-items: center; justify-content: center; font-weight: 700; background: transparent; height: calc(var(--h) - 2px); }
 .acc-table td.n { background: var(--case-vide); }
+.liste tr.acc td.repere-orange { background: #f59e0b; font-weight: 700; }
+.liste tr.acc td.repere-vert { background: #22c55e; font-weight: 700; }
 .acc-table tr.rempli td.n { background: #fff; }
 .liste td.n input { background: transparent; }
 .liste td.n input:focus { background: #fff; }
@@ -194,3 +196,28 @@ tr.tete-groupe td { background: var(--gris-clair); }
 .bib-bloc { margin: 12px 0; padding: 12px 14px; border: 1px solid var(--gris); border-radius: 10px; }
 .bib-bloc h3 { margin: 0 0 4px; }
 .fenetre h3 { margin: 16px 0 4px; font-size: 15px; }
+
+/* ---------- suivi des modifications : ajouté = vert, modifié = orange, retiré = rouge ---------- */
+:root { --chg-ajout: #9be59a; --chg-modif: #ffc266; --chg-retrait: #ff8f8f; }
+.revision { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: center; margin-bottom: 6px; padding: 5px 10px; border: 1px solid var(--trait); background: var(--gris-clair); font-size: 13px; }
+.revision[hidden] { display: none; }
+.revision.modifiee { background: #fff3dc; border: 2px solid #e08a00; }
+.revision .legende { display: flex; gap: 6px; margin-left: auto; }
+.revision .legende[hidden] { display: none; }
+.revision .legende i { font-style: normal; font-weight: 700; padding: 1px 10px; border: 1px solid var(--trait); }
+table.profils tr td.q.chg-ajout, table.profils tr.rempli td.q.chg-ajout, .liste td.n.chg-ajout, .acc-table tr td.n.chg-ajout, .acc-table tr.rempli td.n.chg-ajout, .revision i.chg-ajout { background: var(--chg-ajout) !important; }
+table.profils tr td.q.chg-modif, table.profils tr.rempli td.q.chg-modif, .liste td.n.chg-modif, .acc-table tr td.n.chg-modif, .acc-table tr.rempli td.n.chg-modif, .revision i.chg-modif { background: var(--chg-modif) !important; }
+table.profils tr td.q.chg-retrait, table.profils tr.rempli td.q.chg-retrait, .liste td.n.chg-retrait, .acc-table tr td.n.chg-retrait, .acc-table tr.rempli td.n.chg-retrait, .revision i.chg-retrait { background: var(--chg-retrait) !important; }
+.avant { position: absolute; left: 2px; top: 0; font-size: 8px; line-height: 1.1; color: #5a2a00; pointer-events: none; white-space: nowrap; }
+td.chg-retrait .avant { left: 0; right: 0; top: 50%; transform: translateY(-50%); text-align: center; font-size: 11px; font-weight: 700; color: #7a0000; }
+.liste td.n { position: relative; }
+tr.fantome td { background: #fff0f0; color: #7a0000; text-decoration: line-through; }
+tr.fantome td.n { text-decoration: none; }
+@media print {
+    .revision { font-size: 7.5pt; padding: 0.3mm 1.5mm; margin-bottom: 1mm; border-width: 0.3mm; }
+    body.avec-suivi { --h: 3.75mm; --h-acc: 4.6mm; }          /* un peu plus compact pour garder la fiche sur une page */
+    .avant { font-size: 4.6pt; }
+    td.chg-retrait .avant { font-size: 6pt; }
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+td.chg-retrait .auto, td.chg-retrait .calc { color: transparent; }          /* le « 0 » ne se superpose pas à « avant 35 » */

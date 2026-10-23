@@ -24,6 +24,7 @@ export function etatInitial() {
     },
     accessoires: {},                            // quantités saisies des accessoires (A34, A35, A36, A39…A43)
     produits: [],                               // lignes ajoutées : { ref, designation, qte }
+    revision: { numero: 0, base: null, date: null },   // suivi des modifications : version figée (voir revision.js)
   };
 }
 
@@ -49,7 +50,7 @@ export const ROLES_CLASSIC = {
 // RDB1 : mêmes règles que la Classic, chaque ligne étant rattachée à son équivalent selon sa place sur la fiche
 // (montant 15MON = montant, angle 90° 15P2D = angle carré, angle multiple 00PVA = angle départ multiple, départ multiple RDB1 = départ multiple à couvre-joint…).
 export const ROLES_RDB1 = {
-  montants: ['G5', 'G6', 'G7', null, 'G9'], meneaux: [null, null, 'G18', null, 'G20'], angleDepartMultiple: [null, null, 'G27', null, 'G29'],
+  montants: ['G5', 'G6', 'G7', null, 'G9'], meneaux: [null, null, 'G18', null, 'G20'], angleDepartMultiple: [null, null, null, null, null],
   departMultipleCJ: [null, null, 'G31', null, 'G33'], departs: ['D2', 'D3', 'D4', null, 'D6'], montantsSpeciaux: [null, null, 'D17', null, 'D19'],
   omega: ['D7', null, 'D9', null, 'D11'], omegaOrigine: ['D7', null, 'D9', null, 'D11'], huisSimples: ['D33', 'D34', 'D35'], huisDV: ['D36', 'D37', 'D38', 'D39'],
   angle90: [], angleCarre: ['G23', 'G25'], couvreJoint: plage('G', 10, 14), paumelles: ['D40', 'D41'],

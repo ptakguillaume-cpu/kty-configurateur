@@ -1,6 +1,5 @@
-const CACHE_NAME = 'kty-app-v19'; // Augmentez le chiffre à chaque mise à jour pour forcer le refresh
+const CACHE_NAME = 'kty-app-v23'; // Augmentez le chiffre à chaque mise à jour pour forcer le refresh
 const urlsToCache = [
-  './',
   './index.html',
   './style.css',
   './script.js',
@@ -14,6 +13,7 @@ const urlsToCache = [
   './fiche-debit/app.js',
   './fiche-debit/calcul.js',
   './fiche-debit/xlsx.js',
+  './fiche-debit/revision.js',
   './fiche-debit/bibliotheque.js',
   './fiche-debit/donnees.js',
   './fiche-debit/donnees-rdb1.js',
@@ -67,8 +67,14 @@ self.addEventListener('install', event => {
 });
 
 self.addEventListener('fetch', event => {
+  const requete = event.request, url = new URL(requete.url), racine = new URL('./', self.registration.scope);
+  // L'adresse principale ouvre directement la fiche de débit (le configurateur reste sur /index.html mais n'est plus mis en avant).
+  if (requete.mode === 'navigate' && url.origin === racine.origin && url.pathname === racine.pathname) {
+    event.respondWith(Response.redirect(new URL('fiche-debit/', racine).href, 302));
+    return;
+  }
   event.respondWith(
-    caches.match(event.request).then(response => response || fetch(event.request))
+    caches.match(requete).then(response => response || fetch(requete))
   );
 });
 

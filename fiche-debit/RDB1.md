@@ -18,7 +18,7 @@ Chaque ligne RDB1 est rattachée à son équivalent Classic **selon sa place sur
 |---|---|
 | Montant 15MON | montant : 2 couvre-joints plats, 2 équerres |
 | Meneau | meneau : 2 couvre-joints plats, 6 équerres |
-| Angle multiple 00PVA | angle départ multiple : 2 couvre-joints plats, 2 équerres |
+| Angle multiple 00PVA | aucun couvre-joint ni équerre (confirmé) |
 | Départ multiple à C. joint RDB1 | départ multiple à couvre-joint : 2 couvre-joints plats, 2 équerres |
 | Départ 15DEP | départ : 2 couvre-joints plats, 2 équerres, mousse de départ |
 | Montant spécial RDB1 | montant spécial renforcé : 2 couvre-joints plats, 2 équerres |
