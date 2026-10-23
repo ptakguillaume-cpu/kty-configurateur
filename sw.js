@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kty-app-v27'; // Augmentez le chiffre à chaque mise à jour pour forcer le refresh
+const CACHE_NAME = 'kty-app-v28'; // Augmentez le chiffre à chaque mise à jour pour forcer le refresh
 const urlsToCache = [
   './index.html',
   './style.css',
@@ -62,7 +62,7 @@ const urlsToCache = [
 
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))
+    caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache)).then(() => self.skipWaiting())   // la nouvelle version s'applique sans attendre la fermeture de toutes les fenêtres
   );
 });
 
@@ -89,6 +89,6 @@ self.addEventListener('activate', event => {
           }
         })
       );
-    })
+    }).then(() => self.clients.claim())
   );
 });
