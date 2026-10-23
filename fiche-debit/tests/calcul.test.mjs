@@ -48,4 +48,8 @@ assert.equal(abreger('Vantail serrure DV,dim 2036x828,poussant gauche - RAL7016F
 assert.equal(abreger('Huisserie Classic AB,type A,dim fdf 2050x1456mm,anodisé'), 'Huis. Clas. type A fdf 2050x1456mm');
 assert.equal(abreger('Jeu 3 paumelles aluminium pour huis.fdf 2050mm - RAL'), 'Jeu 3 pau. alu pour huis.fdf 2050mm');
 console.log('Corrections validées : OK');
+const vide = calculer(etatInitial());
+assert.deepEqual([vide.clips, vide.equerres, vide.mousse, vide.J41, vide.J42, ...vide.cj], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'une fiche vide ne doit rien calculer');
+assert.deepEqual(vide.alertes, []);
+console.log('Fiche vide : tout à zéro : OK');
 if (ko) process.exit(1);

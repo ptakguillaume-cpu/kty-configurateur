@@ -17,7 +17,7 @@ export function etatInitial() {
     options: {
       doublage: [{ nb: '', lg: 2.5 }, { nb: '', lg: 2.5 }],   // « D et M et MS de doublage »
       renfort: [{ nb: '', lg: 2.7 }, { nb: '', lg: 5.75 }],   // « M et MS renforcer »
-      traverses: 6,                                           // « Nb de montants pour traverse / DL »
+      traverses: '',                                          // « Nb de montants pour traverse / DL » (vide, comme après « effacer »)
       caSimple: { nb: '', largeur: 930 },
       caDouble: { nb: '', largeur: 1856 },
       departsLisse: '',                                       // point I (R44)
