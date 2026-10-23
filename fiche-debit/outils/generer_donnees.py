@@ -34,8 +34,8 @@ CODE_COL = {'gauche': 3, 'droite': 8}; LONG_COL = {'gauche': 4, 'droite': 9}
 
 # (premiere ligne, derniere ligne, famille, code famille, type)
 G = [(4,5,'Lisse','00LIS'),(6,10,'Montant','00MON'),(11,15,'Couvre-joint plat','60CJP'),
-     (16,16,'Parclose simple vitrage sans joint',''),(18,18,'Parclose simple vitrage avec joint',''),
-     (19,19,'Parclose double vitrage sans joints',''),(21,21,'Parclose double vitrage avec joints',''),
+     (16,16,'Parclose simple vitrage','sans joint'),(18,18,'Parclose simple vitrage','avec joint'),
+     (19,19,'Parclose double vitrage','sans joints'),(21,21,'Parclose double vitrage','avec joints'),
      (22,26,'Meneau','00P3D'),(27,31,'Angle 90° carré','00P2DC'),(32,36,'Angle départ multiple','00ADM'),
      (37,41,'Départ multiple à couvre-joint','00DMCJ'),(42,44,'Clip de lisse','60ECA')]
 D = [(4,8,'Départ','00DEP'),(9,11,'Couvre-joint Oméga',''),(12,12,'Jonc',''),(14,16,'Angle 90°','00P2D'),
@@ -56,7 +56,10 @@ for side, groups in (('gauche', G), ('droite', D)):
             for f in FIN:
                 c = code(ws[f'{COLS[side][f]}{tr}'].value, f'{side} ligne {r} {f}')
                 if c: codes[f] = c
-            if not codes: continue                      # ligne sans aucun code (ex. capot 2700)
+            if not codes:                               # code tapé directement dans la cellule (ex. clip de lisse 25)
+                c = code(cell, f'{side} ligne {r} (cellule)')
+                if c: codes = {f: c for f in FIN}
+            if not codes: continue
             if len(set(codes.values())) == 1 and len(codes) == 5: pass
             lg_xls = ws.cell(r, LONG_COL[side]).value
             lg = int(lg_xls) if isinstance(lg_xls, (int, float)) else None

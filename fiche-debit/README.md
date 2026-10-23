@@ -1,0 +1,39 @@
+# Fiche de débit Classic
+
+Remplace le fichier Excel « Fiche de Débit Classic ». Fonctionne sans internet, sur PC et tablette : ouvrir `fiche-debit/` (bouton « Fiche de débit Classic » sur l'écran d'accueil du configurateur).
+
+## Utilisation
+- **Saisir** les quantités dans les deux tableaux. Le code de chaque ligne suit la **finition** choisie dans l'en-tête.
+- **Couvre-joint plat** (calculé) : la petite case « ± » permet un ajout manuel.
+- **Options de calcul** (sous la fiche) : montants de doublage, montants renforcés, traverses, départs en lisse, portes CA.
+- **Ajouter un produit** : recherche par nom ou par code, puis « Ajouter » ; « + Ligne libre » pour un code hors catalogue.
+- **Enregistrer sous…** : fichier `Fiche de Débit [chantier] [niveau].json` à rouvrir avec « Ouvrir… ».
+- **Excel** : fichier `.xlsx` (codes en texte, zéros conservés).
+- **PDF / Imprimer** : A4 paysage, une page ; choisir « Enregistrer au format PDF » dans la fenêtre d'impression.
+- Un brouillon est gardé automatiquement sur l'appareil.
+
+## Fichiers
+| Fichier | Rôle |
+|---|---|
+| `calcul.js` | règles de calcul (formules du XLS + corrections validées) |
+| `donnees.js` | lignes de la fiche et codes par finition (généré) |
+| `catalogue.js` | 1 929 codes produit du PDF « nouveau Code Produit » (généré) |
+| `catalogue.json`, `*.csv` | le même catalogue, lisible ; `RAPPORT_ETAPE1.md`, `REGLES_FICHE.md` : rapports validés |
+| `app.js`, `index.html`, `style.css` | écran |
+| `xlsx.js` | export Excel sans bibliothèque |
+| `outils/generer_donnees.py` | régénère `donnees.js` et `catalogue.js` |
+| `tests/` | tests du moteur de calcul |
+
+## Tests
+```
+node fiche-debit/tests/calcul.test.mjs fiche-debit/tests/cas_xls.json
+```
+Compare le moteur (en mode « formules d'origine ») au XLS recalculé sur 25 saisies aléatoires, puis vérifie les corrections validées.
+
+## Mise à jour du catalogue
+Modifier `catalogue.json`, puis :
+```
+python3 fiche-debit/outils/generer_donnees.py fiche.xlsx fiche-debit/catalogue.json fiche-debit
+```
+(`fiche.xlsx` = le XLS d'origine converti en .xlsx.) Les codes sont des **textes exacts** : `007280`, `8001` et `7346` sont trois codes différents.
+Après toute modification, augmenter le numéro de version dans `sw.js` pour que les tablettes rechargent les fichiers.

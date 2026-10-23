@@ -1,5 +1,5 @@
 // Test du moteur : comparaison avec le XLS recalculé par LibreOffice (formules d'origine = legacy),
-// puis vérification des corrections validées.  Usage : node tests/calcul.test.mjs cas.json
+// puis vérification des corrections validées.  Usage : node tests/calcul.test.mjs tests/cas_xls.json
 import { readFileSync } from 'node:fs';
 import { etatInitial, calculer, abreger } from '../calcul.js';
 import assert from 'node:assert/strict';

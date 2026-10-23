@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Fiche de débit Classic</title>
+    <link rel="icon" type="image/png" href="../icon-192.png">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="barre hors-impression">
+    <a class="bouton discret" href="../index.html" title="Retour au configurateur">← Configurateur</a>
+    <h1>Fiche de débit <span>gamme Classic</span></h1>
+    <div class="actions">
+        <button class="bouton" id="btnNouvelle" type="button">Nouvelle fiche</button>
+        <button class="bouton" id="btnOuvrir" type="button">Ouvrir…</button>
+        <button class="bouton" id="btnEnregistrer" type="button">Enregistrer sous…</button>
+        <button class="bouton" id="btnExcel" type="button">Excel</button>
+        <button class="bouton principal" id="btnImprimer" type="button">PDF / Imprimer</button>
+    </div>
+</header>
+
+<div id="alertes" class="alertes hors-impression" role="status" aria-live="polite"></div>
+
+<main>
+    <div id="fiche" class="fiche"></div>
+
+    <section class="hors-impression bloc" id="blocOptions">
+        <h2>Options de calcul</h2>
+        <p class="aide">Ces réglages ne s'impriment pas : ils servent aux calculs automatiques (couvre-joint plat, clips, équerres, mousse, paumelles).</p>
+        <div id="options" class="options"></div>
+    </section>
+
+    <section class="hors-impression bloc" id="blocRecherche">
+        <h2>Ajouter un produit à la liste</h2>
+        <p class="aide">Cherchez par nom ou par code (ex. « goulotte 3000 », « huisserie AB 837 », « Z-DIV »). Le produit est ajouté à la liste CODE / Désignation / Qts, avec une désignation abrégée que vous pouvez modifier.</p>
+        <div class="recherche">
+            <input id="recherche" type="search" placeholder="Nom ou code du produit…" autocomplete="off">
+            <label class="case"><input id="rechercheFinition" type="checkbox" checked> Seulement la finition de la fiche</label>
+            <button class="bouton" id="btnLigneLibre" type="button">+ Ligne libre</button>
+        </div>
+        <ul id="resultats" class="resultats"></ul>
+    </section>
+</main>
+
+<input type="file" id="fichierOuvrir" accept=".json,application/json" hidden>
+<script type="module" src="app.js"></script>
+</body>
+</html>

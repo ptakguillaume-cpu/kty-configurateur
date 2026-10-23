@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kty-app-v3'; // Augmentez le chiffre à chaque mise à jour pour forcer le refresh
+const CACHE_NAME = 'kty-app-v4'; // Augmentez le chiffre à chaque mise à jour pour forcer le refresh
 const urlsToCache = [
   './',
   './index.html',
@@ -6,7 +6,15 @@ const urlsToCache = [
   './script.js',
   './data.json',
   './manifest.json',
-  './icon-512.png'
+  './icon-512.png',
+  './fiche-debit/',
+  './fiche-debit/index.html',
+  './fiche-debit/style.css',
+  './fiche-debit/app.js',
+  './fiche-debit/calcul.js',
+  './fiche-debit/xlsx.js',
+  './fiche-debit/donnees.js',
+  './fiche-debit/catalogue.js'
 ];
 
 self.addEventListener('install', event => {
