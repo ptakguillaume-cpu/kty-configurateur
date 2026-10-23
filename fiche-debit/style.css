@@ -1,6 +1,6 @@
 :root {
     --encre: #1b1f24;
-    --trait: #2b2f36;
+    --trait: #000;
     --fond: #f3f4f6;
     --gris: #dcdfe4;
     --gris-clair: #eef0f3;
@@ -89,8 +89,8 @@ tr.tete-groupe td { background: var(--gris-clair); }
 .devis button[aria-pressed="true"] { border-color: var(--rouge); }
 .devis span { align-self: center; }
 .liste { width: 100%; border-collapse: collapse; table-layout: fixed; }
-.liste th { background: var(--gris); font-size: 12px; border-bottom: 1px solid var(--trait); height: 22px; }
-.liste td { border-bottom: 1px solid #c8ccd3; height: var(--h); padding: 0 3px; }
+.liste th { background: var(--gris); font-size: 12px; border: 1px solid var(--trait); height: 22px; }
+.liste td { border: 1px solid var(--trait); height: var(--h); padding: 0 3px; }
 .liste .c1 { width: 24%; } .liste .c2 { width: 46%; } .liste .c3 { width: 15%; } .liste .c4 { width: 15%; }
 .liste input { width: 100%; height: calc(var(--h) - 2px); border: 0; background: transparent; font: inherit; padding: 0 2px; }
 .liste input:focus { outline: 2px solid var(--accent); outline-offset: -2px; background: #fff; }
@@ -163,4 +163,11 @@ tr.tete-groupe td { background: var(--gris-clair); }
     table.profils td.q, .acc-table td.n { background: var(--case-vide) !important; }
     table.profils tr.rempli td.q, .acc-table tr.rempli td.n { background: #fff !important; }
     * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+
+/* quadrillage net à l'impression, comme les traits noirs du XLS */
+@media print {
+    table.profils td, table.profils th, .liste td, .liste th { border-width: 0.25mm; border-color: #000; }
+    table.profils tr.groupe > td, table.profils tr.groupe > th { border-top-width: 0.5mm; }
+    .acc-table { border-top-width: 0.5mm; }
 }

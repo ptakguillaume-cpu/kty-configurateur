@@ -195,7 +195,7 @@ function rendreProduits() {
       h('td', { class: 'sup' }, h('button', { type: 'button', class: 'retirer', title: 'Retirer cette ligne', 'aria-label': 'Retirer', text: '×', onclick: () => { etat.produits.splice(i, 1); rendreProduits(); maj(); } })));
     corps.append(tr); lignesProduits.push({ p, tr });
   });
-  for (let i = etat.produits.length; i < PRODUITS_VIDES_MIN; i++) corps.append(h('tr', {}, h('td', { colspan: 5, class: 'vide' })));
+  for (let i = etat.produits.length; i < PRODUITS_VIDES_MIN; i++) corps.append(h('tr', {}, h('td'), h('td', { colspan: 2 }), h('td', { class: 'n' }), h('td', { class: 'sup' })));
 }
 
 // ---------- mise à jour ----------
