@@ -20,7 +20,7 @@ Le XLS ne contient donc que **26 %** des codes : c'est la cause principale des c
 | 000574 | 24 | Kit intégral type **H** | Kit Intégral Type **G** | inversé |
 | 005655 | 25 | Kit intégral DV spécial | Kit Intégral Type **J** | à confirmer |
 | 83010 | (XLS) | n'existe pas | Vantail serrure DV 828 PG – 9005 MAT | faute de frappe : c'est le **8310** du PDF (p40) |
-| Z-DIV | (XLS) | n'existe pas | « Dessus Traverse à ??? » | ligne parasite |
+| Z-DIV | (XLS) | n'existe pas | « Dessus Traverse à ??? Du Bas de la Porte » | **gardé** : option non référencée mais utilisée (marquée « hors catalogue ») |
 
 ## 2. Autres différences (sans gravité, libellés différents)
 - 33 références ont un libellé écrit autrement (ex. « Vantail serrure SV 2036 x 728 mm PG - 7016FT » dans le XLS contre « …poussant gauche - RAL7016FT » dans le PDF). Même produit, libellé du PDF retenu.
