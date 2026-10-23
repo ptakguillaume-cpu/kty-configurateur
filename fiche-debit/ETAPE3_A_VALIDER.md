@@ -18,7 +18,7 @@
 | Ligne sans code pour la finition | « RAL ??? » | « — » en rouge et alerte |
 | Désignation abrégée | coupe au premier « - », donc « Couvre-joint » devient « Couvre » ; coupe aussi à la virgule | retire seulement la **finition en fin de texte** et garde les dimensions |
 
-## À confirmer
-1. **Désignation abrégée** : voulez-vous aussi couper à la virgule comme le XLS ? Exemple avec le PDF : « Porte coulissante SV type A,dim 2036x728mm - anodisé » deviendrait « Porte coulissante SV type A » (dimension perdue). Je l'ai gardée ; la désignation reste modifiable ligne par ligne.
-2. **Forfait laquage** (en RAL) : repris tel quel (« 500 / OUI / 1 »). Que représente le 500 ?
+## Décisions prises
+1. **Désignation abrégée** : « la plus propre » : finition retirée, abréviations du XLS, virgules remplacées par des espaces, dimensions conservées. Exemple : « Porte coulissante SV type A,dim 2036x728mm - anodisé » devient « Porte coulissante SV type A 2036x728mm ». Chaque désignation reste modifiable.
+2. **Forfait laquage** (finition RAL) : le **500** est le code interne ; la ligne est conservée telle quelle.
 3. **Jeu 2 paumelles clarit** et **serrure clarit** : saisis à la main comme dans le XLS (pas de calcul).

@@ -44,8 +44,8 @@ const e4 = etatInitial(); e4.qte = { G6: 5, D4: 4 }; e4.options.departsLisse = 1
 assert.equal(calculer(e4).equerres, (5 + 4) * 2 - 2, 'point I : départs en lisse'); assert.equal(calculer(e4).mousse, 20 - 5);
 
 assert.equal(abreger('Couvre-joint plat lg 2550mm - 9005 MAT'), 'Couvre-joint plat lg 2550mm');
-assert.equal(abreger('Vantail serrure DV,dim 2036x828,poussant gauche - RAL7016FT'), 'Vantail serrure DV,2036x828,PG');
-assert.equal(abreger('Huisserie Classic AB,type A,dim fdf 2050x1456mm,anodisé'), 'Huis. Clas.,type A,fdf 2050x1456mm');
+assert.equal(abreger('Vantail serrure DV,dim 2036x828,poussant gauche - RAL7016FT'), 'Vantail serrure DV 2036x828 PG');
+assert.equal(abreger('Huisserie Classic AB,type A,dim fdf 2050x1456mm,anodisé'), 'Huis. Clas. type A fdf 2050x1456mm');
 assert.equal(abreger('Jeu 3 paumelles aluminium pour huis.fdf 2050mm - RAL'), 'Jeu 3 pau. alu pour huis.fdf 2050mm');
 console.log('Corrections validées : OK');
 if (ko) process.exit(1);

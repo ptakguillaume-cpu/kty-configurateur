@@ -137,7 +137,7 @@ function construirePanneau() {
   const corpsProduits = h('tbody', { id: 'produits' });
   const corpsAcc = h('tbody');
   rowLaquage = h('tr', { class: 'acc', hidden: true },
-    h('td', { class: 'code-p', text: '500' }), h('td', { colspan: 1, text: 'Forfait laquage' }), h('td', { text: 'OUI' }), h('td', { class: 'n' }, h('div', { class: 'auto', text: '1' })), h('td', { class: 'sup' }));
+    h('td', { class: 'code-p', text: '500', title: 'Code interne du forfait laquage' }), h('td', { colspan: 1, text: 'Forfait laquage' }), h('td', { text: 'OUI' }), h('td', { class: 'n' }, h('div', { class: 'auto', text: '1' })), h('td', { class: 'sup' }));
   corpsAcc.append(h('tr', { class: 'separateur' }, h('td', { colspan: 5 })), rowLaquage);
   for (const a of FICHE.accessoires) {
     const cellule = a.auto

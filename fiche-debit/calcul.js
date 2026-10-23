@@ -105,7 +105,7 @@ export function calculer(etat, { legacy = false } = {}) {
 
 // Abréviation des désignations pour la liste CODE / Désignation / Qts (reprend la macro AjouterProduit).
 // Différence voulue : la finition est retirée seulement en fin de texte (le XLS coupait au premier « - »,
-// ce qui tronquait « Couvre-joint » en « Couvre »), et la virgule n'est plus un point de coupe.
+// ce qui tronquait « Couvre-joint » en « Couvre »), et les virgules deviennent des espaces (texte net, dimensions conservées).
 const FINITION_FIN = /\s*[-,]\s*(?:-\s*)?(?:9005\s*MAT|RAL\s*7016\s*FT|7016\s*FT|blanc(?:\s*9016)?|anodis[ée]e?|brut|laqu[ée]e?\s*RAL|RAL(?:\s*à\s*définir)?)\s*$/i;
 const ABREVIATIONS = [
   ['Couvercle', 'Couv.'], ['Goulotte', 'Goul.'], ['électrique', 'élec.'], ['huisserie', 'Huis.'], ['paumelles', 'pau.'],
@@ -118,7 +118,7 @@ export function abreger(texte) {
   for (let i = 0; i < 3; i++) t = t.replace(FINITION_FIN, '');
   for (const [a, b] of ABREVIATIONS) t = t.split(a).join(b);
   t = t.replace(/\bdim\b\.?/g, '').replace(/\bAB\b/g, '');
-  return t.replace(/\s+/g, ' ').replace(/\s*,\s*/g, ',').trim();
+  return t.replace(/\s*,\s*/g, ' ').replace(/\s+/g, ' ').trim();   // virgules remplacées par des espaces : texte net
 }
 
 // Libellé du jonc selon la finition (cellule G12 du XLS). Point J : « RAL à définir » au lieu d'un code.
