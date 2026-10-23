@@ -210,7 +210,8 @@ function construirePanneau() {
     const bloc = IMG_ACC[a.id];
     const cellules = [];
     if (bloc) cellules.push(h('td', { class: 'img', rowspan: bloc.lignes }, bloc.img ? h('img', { src: `images/${bloc.img}.png`, alt: '' }) : null));
-    cellules.push(h('td', { colspan: SANS_IMAGE.has(a.id) ? 2 : 1, text: a.libelle, title: DESIGNATION.get(a.code) || '' }));
+    const repere = /^Joint 6 mm/.test(a.libelle) ? 'orange' : /^Joint 8 mm/.test(a.libelle) ? 'vert' : '';      // repères de couleur des joints (10 et 12 mm : aucun)
+    cellules.push(h('td', { colspan: SANS_IMAGE.has(a.id) ? 2 : 1, class: repere ? 'repere-' + repere : '', text: a.libelle, title: DESIGNATION.get(a.code) || '' }));
     const codeTd = h('td', { class: 'code-p', text: a.code });
     const nTd = h('td', { class: 'n' }, cellule);
     cellules.push(codeTd, h('td', { text: a.edi }), nTd, h('td', { class: 'sup' }));

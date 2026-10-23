@@ -109,6 +109,8 @@ tr.tete-groupe td { background: var(--gris-clair); }
 .liste tr.acc td.n { background: transparent; }
 .liste tr.acc .auto { display: flex; align-items: center; justify-content: center; font-weight: 700; background: transparent; height: calc(var(--h) - 2px); }
 .acc-table td.n { background: var(--case-vide); }
+.liste tr.acc td.repere-orange { background: #f59e0b; font-weight: 700; }
+.liste tr.acc td.repere-vert { background: #22c55e; font-weight: 700; }
 .acc-table tr.rempli td.n { background: #fff; }
 .liste td.n input { background: transparent; }
 .liste td.n input:focus { background: #fff; }
@@ -1073,7 +1075,8 @@ function construirePanneau() {
     const bloc = IMG_ACC[a.id];
     const cellules = [];
     if (bloc) cellules.push(h('td', { class: 'img', rowspan: bloc.lignes }, bloc.img ? h('img', { src: __IMG[bloc.img], alt: '' }) : null));
-    cellules.push(h('td', { colspan: SANS_IMAGE.has(a.id) ? 2 : 1, text: a.libelle, title: DESIGNATION.get(a.code) || '' }));
+    const repere = /^Joint 6 mm/.test(a.libelle) ? 'orange' : /^Joint 8 mm/.test(a.libelle) ? 'vert' : '';      // repères de couleur des joints (10 et 12 mm : aucun)
+    cellules.push(h('td', { colspan: SANS_IMAGE.has(a.id) ? 2 : 1, class: repere ? 'repere-' + repere : '', text: a.libelle, title: DESIGNATION.get(a.code) || '' }));
     const codeTd = h('td', { class: 'code-p', text: a.code });
     const nTd = h('td', { class: 'n' }, cellule);
     cellules.push(codeTd, h('td', { text: a.edi }), nTd, h('td', { class: 'sup' }));
