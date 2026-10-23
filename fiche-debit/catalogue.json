@@ -13736,46 +13736,46 @@
  {
   "ref": "8253",
   "designation": "Rail lg 3m pour 2 portes coulissantes STD larg max 2x730mm - 9005 MAT",
-  "edi": "Rail Coulissant",
+  "edi": "",
   "finition": "9005 MAT",
   "page_pdf": 33,
-  "a_verifier": "code EDI repris du XLS",
+  "a_verifier": "code EDI repris du XLS; code EDI absent du PDF (texte du XLS retiré)",
   "hors_catalogue": false
  },
  {
   "ref": "005735",
   "designation": "Rail lg 3m pour 2 portes coulissantes STD larg maxi 2x730mm,anodisé",
-  "edi": "Rail Coulissant",
+  "edi": "",
   "finition": "ANODISÉ",
   "page_pdf": 33,
-  "a_verifier": "code EDI repris du XLS",
+  "a_verifier": "code EDI repris du XLS; code EDI absent du PDF (texte du XLS retiré)",
   "hors_catalogue": false
  },
  {
   "ref": "005736",
   "designation": "Rail lg 3m pour 2 portes coulissantes STD larg maxi 2x730mm,blanc9016",
-  "edi": "Rail Coulissant",
+  "edi": "",
   "finition": "BLANC 9016",
   "page_pdf": 33,
-  "a_verifier": "code EDI repris du XLS",
+  "a_verifier": "code EDI repris du XLS; code EDI absent du PDF (texte du XLS retiré)",
   "hors_catalogue": false
  },
  {
   "ref": "005737",
   "designation": "Rail lg 3m pour 2 portes coulissantes STD [arg maxi 2x730mm,RAL",
-  "edi": "Rail Coulissant",
+  "edi": "",
   "finition": "RAL À DÉFINIR",
   "page_pdf": 33,
-  "a_verifier": "code EDI repris du XLS",
+  "a_verifier": "code EDI repris du XLS; code EDI absent du PDF (texte du XLS retiré)",
   "hors_catalogue": false
  },
  {
   "ref": "007503",
   "designation": "Rail lg 3m pour 2 portes coulissantes STD larg maxi 2x730mm,RAL7016FT",
-  "edi": "Rail Coulissant",
+  "edi": "",
   "finition": "RAL7016FT",
   "page_pdf": 33,
-  "a_verifier": "code EDI repris du XLS",
+  "a_verifier": "code EDI repris du XLS; code EDI absent du PDF (texte du XLS retiré)",
   "hors_catalogue": false
  },
  {
@@ -13817,10 +13817,10 @@
  {
   "ref": "007504",
   "designation": "Rail lg 3m pour 2 portes coulissantes TH larg maxi 2x730mm,RAL7016FT",
-  "edi": "Rail Coulissant",
+  "edi": "",
   "finition": "RAL7016FT",
   "page_pdf": 33,
-  "a_verifier": "code EDI repris du XLS",
+  "a_verifier": "code EDI repris du XLS; code EDI absent du PDF (texte du XLS retiré)",
   "hors_catalogue": false
  },
  {
@@ -15104,19 +15104,19 @@
  {
   "ref": "005744",
   "designation": "Serreur GH lg 5750mm,anodisé",
-  "edi": "01sgh",
+  "edi": "",
   "finition": "ANODISÉ",
   "page_pdf": 36,
-  "a_verifier": "",
+  "a_verifier": "code EDI absent du PDF (texte du XLS retiré)",
   "hors_catalogue": false
  },
  {
   "ref": "007801",
   "designation": "Serreur GH lg 5750mm,BRUT",
-  "edi": "01sgh",
+  "edi": "",
   "finition": "BRUT",
   "page_pdf": 36,
-  "a_verifier": "",
+  "a_verifier": "code EDI absent du PDF (texte du XLS retiré)",
   "hors_catalogue": false
  },
  {
@@ -17066,10 +17066,10 @@
  {
   "ref": "001532",
   "designation": "Vitrage feuillete 33/2 pour porte dimensions standard",
-  "edi": "vitrage",
+  "edi": "",
   "finition": "",
   "page_pdf": 41,
-  "a_verifier": "lecture à vérifier",
+  "a_verifier": "lecture à vérifier; code EDI absent du PDF (texte du XLS retiré)",
   "hors_catalogue": false
  },
  {

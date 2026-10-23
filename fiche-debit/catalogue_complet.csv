@@ -1525,16 +1525,16 @@
 005701;Rail lg 3m pour 1 porte coulissante TH larg maxi 1200mm,blanc 9016;60RA1VTH;BLANC 9016;33;;False
 005702;Rail lg 3m pour 1 porte coulissante TH larg maxi 1200mm,RAL;60RA1VTH;RAL À DÉFINIR;33;;False
 007502;Rail lg 3m pour 1 porte coulissante TH larg maxi 1200mm,RAL7016FT;60RA1VTH;RAL7016FT;33;;False
-8253;Rail lg 3m pour 2 portes coulissantes STD larg max 2x730mm - 9005 MAT;Rail Coulissant;9005 MAT;33;code EDI repris du XLS;False
-005735;Rail lg 3m pour 2 portes coulissantes STD larg maxi 2x730mm,anodisé;Rail Coulissant;ANODISÉ;33;code EDI repris du XLS;False
-005736;Rail lg 3m pour 2 portes coulissantes STD larg maxi 2x730mm,blanc9016;Rail Coulissant;BLANC 9016;33;code EDI repris du XLS;False
-005737;Rail lg 3m pour 2 portes coulissantes STD [arg maxi 2x730mm,RAL;Rail Coulissant;RAL À DÉFINIR;33;code EDI repris du XLS;False
-007503;Rail lg 3m pour 2 portes coulissantes STD larg maxi 2x730mm,RAL7016FT;Rail Coulissant;RAL7016FT;33;code EDI repris du XLS;False
+8253;Rail lg 3m pour 2 portes coulissantes STD larg max 2x730mm - 9005 MAT;;9005 MAT;33;"code EDI repris du XLS; code EDI absent du PDF (texte du XLS retiré)";False
+005735;Rail lg 3m pour 2 portes coulissantes STD larg maxi 2x730mm,anodisé;;ANODISÉ;33;"code EDI repris du XLS; code EDI absent du PDF (texte du XLS retiré)";False
+005736;Rail lg 3m pour 2 portes coulissantes STD larg maxi 2x730mm,blanc9016;;BLANC 9016;33;"code EDI repris du XLS; code EDI absent du PDF (texte du XLS retiré)";False
+005737;Rail lg 3m pour 2 portes coulissantes STD [arg maxi 2x730mm,RAL;;RAL À DÉFINIR;33;"code EDI repris du XLS; code EDI absent du PDF (texte du XLS retiré)";False
+007503;Rail lg 3m pour 2 portes coulissantes STD larg maxi 2x730mm,RAL7016FT;;RAL7016FT;33;"code EDI repris du XLS; code EDI absent du PDF (texte du XLS retiré)";False
 8254;Rail lg 3m pour 2 portes coulissantes TH larg max 2x730mm - 9005 MAT;60RA2VTH;9005 MAT;33;lecture à vérifier;False
 005703;Rail lg 3m pour 2 portes coulissantes TH larg maxi 2x730mm,anodise;60RA2VTH;ANODISÉ;33;;False
 005704;Rail lg 3m pour 2 portes coulissantes TH larg maxi 2x730mm,blanc 9016;60RA2VTH;BLANC 9016;33;;False
 005705;Rail lg 3m pour 2 portes coulissantes TH larg maxi 2x730mm,RAL;60RA2VTH;RAL À DÉFINIR;33;;False
-007504;Rail lg 3m pour 2 portes coulissantes TH larg maxi 2x730mm,RAL7016FT;Rail Coulissant;RAL7016FT;33;code EDI repris du XLS;False
+007504;Rail lg 3m pour 2 portes coulissantes TH larg maxi 2x730mm,RAL7016FT;;RAL7016FT;33;"code EDI repris du XLS; code EDI absent du PDF (texte du XLS retiré)";False
 000948;Remplacement traverse intermediaire 828mm, blanc;;;33;;False
 001062;Remplissage melamine toute hauteur;;;33;;False
 005402;Remplissage tole 2 faces toute hauteur;;;33;;False
@@ -1677,8 +1677,8 @@
 005745;Serreur GH lg 5750 mm,blanc 9016;01SGH;BLANC 9016;36;;False
 005746;Serreur GH lg 5750 mm,RAL;01SGH;RAL À DÉFINIR;36;;False
 007531;Serreur GH lg 5750 mm,RAL7016FT;01SGH;RAL7016FT;36;;False
-005744;Serreur GH lg 5750mm,anodisé;01sgh;ANODISÉ;36;;False
-007801;Serreur GH lg 5750mm,BRUT;01sgh;BRUT;36;;False
+005744;Serreur GH lg 5750mm,anodisé;;ANODISÉ;36;code EDI absent du PDF (texte du XLS retiré);False
+007801;Serreur GH lg 5750mm,BRUT;;BRUT;36;code EDI absent du PDF (texte du XLS retiré);False
 007779;Serrure 1 point axe 35 EA 92;;;37;;False
 001112;Serrure 1 point haut,avec cylindre & paire de rosace cylindre -;4151PHC;;37;;False
 000781;Serrure a crochet JPM pour porte bois coulissante + gache;45SEC;;37;;False
@@ -1895,7 +1895,7 @@
 005757;Vis autoforeuse 3.5x19;;;41;;False
 001434;Vis autoforeuse 4.8x50;;;41;;False
 001534;Vitrage feuillete 33/2 pour porte dimensions hors standar;1534;;41;lecture à vérifier;False
-001532;Vitrage feuillete 33/2 pour porte dimensions standard;vitrage;;41;lecture à vérifier;False
+001532;Vitrage feuillete 33/2 pour porte dimensions standard;;;41;"lecture à vérifier; code EDI absent du PDF (texte du XLS retiré)";False
 005623;Vitrage isolant 33/2-6-55/2 plus vale;;;41;;False
 005505;Vitrage isolant 33/2silence-8-44/2silence plus value;;;41;;False
 000894;Vitrage isolant ep 24mm 33/2-10-33/2, plus value;;;41;;False

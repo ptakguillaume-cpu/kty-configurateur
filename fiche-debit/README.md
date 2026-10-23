@@ -20,10 +20,11 @@ Remplace le fichier Excel « Fiche de Débit Classic ». Fonctionne sans interne
 | `catalogue.js` | 1 929 codes produit du PDF « nouveau Code Produit » (généré) |
 | `catalogue.json`, `*.csv` | le même catalogue, lisible ; `RAPPORT_ETAPE1.md`, `REGLES_FICHE.md` : rapports validés |
 | `app.js`, `index.html`, `style.css` | écran |
-| `xlsx.js` | export Excel sans bibliothèque |
+| `xlsx.js` | lecture et écriture Excel sans bibliothèque |
+| `bibliotheque.js` | bibliothèque des codes (modifier, ajouter, importer, exporter) |
 | `autonome/Fiche-de-debit-Classic.html` | tout en un seul fichier, s'ouvre par double-clic (voir `PASSATION.md`) |
 | `outils/generer_donnees.py` | régénère `donnees.js` et `catalogue.js` |
-| `tests/` | tests du moteur de calcul |
+| `tests/` | tests du moteur de calcul et de l'import de la bibliothèque |
 
 ## Tests
 ```

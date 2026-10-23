@@ -50,3 +50,48 @@ export function creerXlsx(feuille) {
     ['xl/worksheets/sheet1.xml', X + `<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><cols>${cols}</cols><sheetData>${lignes}</sheetData></worksheet>`],
   ]);
 }
+
+// ---------- Lecture d'un .xlsx (Excel, LibreOffice ou fichier produit par cet outil) ----------
+const decodeXml = s => s.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&apos;/g, "'")
+  .replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(+n)).replace(/&#x([0-9a-f]+);/gi, (_, n) => String.fromCodePoint(parseInt(n, 16))).replace(/&amp;/g, '&');
+const indexColonne = ref => { let n = 0; for (const c of ref.replace(/\d+/g, '')) n = n * 26 + c.charCodeAt(0) - 64; return n - 1; };
+
+// Renvoie la première feuille sous forme de lignes (tableaux de textes). Les nombres sont renvoyés tels qu'écrits dans le fichier.
+export async function lireXlsx(buffer) {
+  const oct = new Uint8Array(buffer), dv = new DataView(buffer), dec = new TextDecoder();
+  let e = oct.length - 22;
+  while (e >= 0 && dv.getUint32(e, true) !== 0x06054b50) e--;
+  if (e < 0) throw new Error('Ce fichier n\'est pas un classeur Excel (.xlsx).');
+  const n = dv.getUint16(e + 10, true); let p = dv.getUint32(e + 16, true);
+  const fichiers = {};
+  for (let i = 0; i < n; i++) {
+    const nl = dv.getUint16(p + 28, true), ne = dv.getUint16(p + 30, true), nc = dv.getUint16(p + 32, true);
+    fichiers[dec.decode(oct.subarray(p + 46, p + 46 + nl))] = { methode: dv.getUint16(p + 10, true), taille: dv.getUint32(p + 20, true), off: dv.getUint32(p + 42, true) };
+    p += 46 + nl + ne + nc;
+  }
+  const lire = async nom => {
+    const f = fichiers[nom]; if (!f) return null;
+    const debut = f.off + 30 + dv.getUint16(f.off + 26, true) + dv.getUint16(f.off + 28, true), brut = oct.subarray(debut, debut + f.taille);
+    if (f.methode === 0) return dec.decode(brut);
+    return dec.decode(await new Response(new Blob([brut]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer());
+  };
+  const partages = [], ss = await lire('xl/sharedStrings.xml');
+  if (ss) for (const m of ss.matchAll(/<si>([\s\S]*?)<\/si>/g)) partages.push(decodeXml([...m[1].matchAll(/<t[^>]*>([\s\S]*?)<\/t>/g)].map(x => x[1]).join('')));
+  let feuille = 'xl/worksheets/sheet1.xml';
+  const classeur = await lire('xl/workbook.xml'), rels = await lire('xl/_rels/workbook.xml.rels');
+  const rid = classeur && classeur.match(/<sheet\b[^>]*r:id="([^"]+)"/);
+  if (rid && rels) { const t = rels.match(new RegExp(`<Relationship\\b[^>]*Id="${rid[1]}"[^>]*Target="([^"]+)"`)) || rels.match(new RegExp(`<Relationship\\b[^>]*Target="([^"]+)"[^>]*Id="${rid[1]}"`)); if (t) feuille = 'xl/' + t[1].replace(/^\/?(xl\/)?/, ''); }
+  const xml = await lire(feuille);
+  if (!xml) throw new Error('Feuille introuvable dans le classeur.');
+  const lignes = [];
+  for (const m of xml.matchAll(/<c\b([^>]*?)(?:\/>|>([\s\S]*?)<\/c>)/g)) {
+    const attrs = m[1], ref = (attrs.match(/\br="([A-Z]+\d+)"/) || [])[1]; if (!ref) continue;
+    const type = (attrs.match(/\bt="([^"]+)"/) || [])[1], corps = m[2] || '';
+    let v = '';
+    if (type === 'inlineStr') v = decodeXml([...corps.matchAll(/<t[^>]*>([\s\S]*?)<\/t>/g)].map(x => x[1]).join(''));
+    else { const x = corps.match(/<v>([\s\S]*?)<\/v>/); if (x) v = type === 's' ? (partages[+x[1]] ?? '') : decodeXml(x[1]); }
+    const r = +ref.replace(/\D+/g, '') - 1, c = indexColonne(ref);
+    (lignes[r] ||= [])[c] = v;
+  }
+  return Array.from(lignes, l => Array.from(l || [], v => v ?? ''));
+}

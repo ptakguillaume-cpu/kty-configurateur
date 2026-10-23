@@ -6,15 +6,21 @@ import base64, os, re, sys
 D = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
 lire = lambda n: open(os.path.join(D, n), encoding='utf-8').read()
 
-def module_vers_script(js):
-    js = re.sub(r"^import\s[\s\S]*?from\s+['\"][^'\"]+['\"];?[ \t]*$", '', js, flags=re.M)   # imports (même sur plusieurs lignes)
-    return re.sub(r"^export\s+(const|let|function|class)\b", r"\1", js, flags=re.M)
+def module_vers_script(nom, js):
+    """Chaque module devient un bloc isolé (ses noms n'entrent pas en conflit avec ceux des autres)."""
+    exports = re.findall(r"^export\s+(?:async\s+)?(?:const|let|function|class)\s+([A-Za-z_$][\w$]*)", js, flags=re.M)
+    def importe(m):
+        noms = ', '.join(re.sub(r'\s+as\s+', ': ', n.strip()) for n in m.group(1).split(',') if n.strip())
+        return f"const {{ {noms} }} = __m_{m.group(2).replace('-', '_')};"
+    js = re.sub(r"^import\s*\{([\s\S]*?)\}\s*from\s*['\"]\./([\w-]+)\.js['\"];?", importe, js, flags=re.M)
+    js = re.sub(r"^export\s+(?=(?:async\s+)?(?:const|let|function|class)\b)", '', js, flags=re.M)
+    return f"const __m_{nom} = (() => {{\n{js}\nreturn {{ {', '.join(exports)} }};\n}})();"
 
 images = {}
 for f in sorted(os.listdir(os.path.join(D, 'images'))):
     if f.endswith('.png'):
         images[f[:-4]] = 'data:image/png;base64,' + base64.b64encode(open(os.path.join(D, 'images', f), 'rb').read()).decode()
-code = '\n'.join(module_vers_script(lire(n)) for n in ('calcul.js', 'xlsx.js', 'donnees.js', 'catalogue.js', 'app.js'))
+code = '\n'.join(module_vers_script(n[:-3], lire(n)) for n in ('calcul.js', 'xlsx.js', 'bibliotheque.js', 'donnees.js', 'catalogue.js', 'app.js'))
 code = re.sub(r"`images/\$\{([^}]+)\}\.png`", r"__IMG[\1]", code)
 if 'images/' in code.replace('__IMG', ''): print('Attention : un chemin d\'image reste dans le code', file=sys.stderr)
 import json

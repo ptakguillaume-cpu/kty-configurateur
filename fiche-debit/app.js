@@ -5,11 +5,12 @@ import {
   LG_COUVRE_JOINT, LARGEURS_CA_SIMPLE, LARGEURS_CA_DOUBLE, FINITIONS,
 } from './calcul.js';
 import { creerXlsx } from './xlsx.js';
+import { creerBibliotheque } from './bibliotheque.js';
 
 const CLE = 'kty_fiche_debit_brouillon';
 const NOM_FINITION = { '9005 MAT': '9005 MAT', '7016 FT': '7016 FT', 'BLANC 9016': 'BLANC 9016', 'ANODISÉ': 'ANODISÉ', RAL: 'RAL (à définir ou demandé)' };
 const FINITION_CATALOGUE = { '9005 MAT': '9005 MAT', '7016 FT': 'RAL7016FT', 'BLANC 9016': 'BLANC 9016', 'ANODISÉ': 'ANODISÉ', RAL: 'RAL À DÉFINIR' };
-const DESIGNATION = new Map(CATALOGUE.map(c => [c[0], c[1]]));
+let DESIGNATION = new Map();                          // référence -> désignation (reconstruit depuis la bibliothèque)
 const IMAGES = {                                   // dessins de profils de la fiche (repris du XLS), par première ligne de famille
   G4: 'lisse', G6: 'montant', G11: 'couvre-joint', G18: 'parclose-simple', G21: 'parclose-double', G22: 'meneau', G27: 'angle-carre',
   G32: 'angle-depart-multiple', G37: 'depart-multiple-cj', G42: 'clip-lisse',
@@ -38,6 +39,17 @@ const nombre = v => { const x = Number(String(v ?? '').replace(',', '.')); retur
 const fmt = x => String(Math.round(x * 100) / 100).replace('.', ',');
 const fmtLg = lg => lg.toFixed(2).replace('.', ',') + ' m';
 const sansAccent = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+let INDEX = [];                                       // index de recherche des produits
+function reconstruireCatalogue(liste) {
+  DESIGNATION = new Map(liste.map(c => [c[0], c[1]]));
+  INDEX = liste.map(c => ({ ref: c[0], des: c[1], edi: c[2], fin: c[3], hors: c[4], texte: sansAccent(`${c[0]} ${c[1]} ${c[2]}`) }));
+}
+let pret = false;
+const bibliotheque = creerBibliotheque({
+  FICHE, CATALOGUE, h, telecharger,
+  surChangement: bib => { reconstruireCatalogue(bib.catalogue); if (pret) { maj(); chercher(); } },
+});
+reconstruireCatalogue(bibliotheque.catalogue());
 
 // ---------- état et brouillon ----------
 function fusion(brut) {
@@ -174,10 +186,11 @@ function construirePanneau() {
     const cellules = [];
     if (bloc) cellules.push(h('td', { class: 'img', rowspan: bloc.lignes }, bloc.img ? h('img', { src: `images/${bloc.img}.png`, alt: '' }) : null));
     cellules.push(h('td', { colspan: SANS_IMAGE.has(a.id) ? 2 : 1, text: a.libelle, title: DESIGNATION.get(a.code) || '' }));
-    cellules.push(h('td', { class: 'code-p', text: a.code }), h('td', { text: a.edi }), h('td', { class: 'n' }, cellule), h('td', { class: 'sup' }));
+    const codeTd = h('td', { class: 'code-p', text: a.code });
+    cellules.push(codeTd, h('td', { text: a.edi }), h('td', { class: 'n' }, cellule), h('td', { class: 'sup' }));
     const tr = h('tr', { class: 'acc' }, cellules);
     corpsAcc.append(tr);
-    lignesAcc[a.id] = { a, tr, cellule };
+    lignesAcc[a.id] = { a, tr, cellule, codeTd };
   }
   const accessoires = h('table', { class: 'liste acc-table' },
     h('colgroup', {}, h('col', { class: 'a1' }), h('col', { class: 'a2' }), h('col', { class: 'a3' }), h('col', { class: 'a4' }), h('col', { class: 'a5' }), h('col', { style: 'width:28px', class: 'sup' })),
@@ -225,7 +238,8 @@ function maj() {
   $('champRal').hidden = fin !== 'RAL';
   document.querySelectorAll('.devis button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === e.mode)));
   rowLaquage.hidden = fin !== 'RAL';
-  for (const { a, tr, cellule } of Object.values(lignesAcc)) {
+  for (const { a, tr, cellule, codeTd } of Object.values(lignesAcc)) {
+    codeTd.textContent = a.code;
     let q;
     if (a.auto === 'clip') q = r.clips; else if (a.auto === 'equerre') q = r.equerres; else if (a.auto === 'mousse') q = r.mousse;
     else q = nombre(etat.accessoires[a.id]);
@@ -271,7 +285,6 @@ function construireOptions() {
 }
 
 // ---------- recherche de produit ----------
-const INDEX = CATALOGUE.map(c => ({ ref: c[0], des: c[1], edi: c[2], fin: c[3], hors: c[4], texte: sansAccent(`${c[0]} ${c[1]} ${c[2]}`) }));
 function chercher() {
   const q = sansAccent($('recherche').value).trim(), zone = $('resultats');
   zone.replaceChildren();
@@ -359,6 +372,7 @@ construireOptions();
 rendreProduits();
 remplir();
 maj();
+pret = true;
 
 $('btnNouvelle').addEventListener('click', nouvelle);
 $('btnOuvrir').addEventListener('click', () => $('fichierOuvrir').click());
@@ -366,6 +380,7 @@ $('fichierOuvrir').addEventListener('change', ev => { if (ev.target.files[0]) ou
 $('btnEnregistrer').addEventListener('click', enregistrer);
 $('btnExcel').addEventListener('click', exporterExcel);
 $('btnImprimer').addEventListener('click', imprimer);
+$('btnBibliotheque').addEventListener('click', () => bibliotheque.ouvrir());
 $('recherche').addEventListener('input', chercher);
 $('rechercheFinition').addEventListener('change', chercher);
 $('btnLigneLibre').addEventListener('click', () => {

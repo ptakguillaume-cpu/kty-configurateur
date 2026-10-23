@@ -166,13 +166,13 @@
 8246;Profil U 20 × 40 × 20mm ép 2mm lg 3000mm - 9005 MAT;50COU204020;9005 MAT;33;lecture à vérifier;False
 8251;Rail lg 3m pour 1 porte coulissante STD larg maxi 1200mm - 9005 MAT;60RA1V;9005 MAT;33;lecture à vérifier;False
 005711;Rail lg 3m pour 1 porte coulissante STD larg maxi 1200mm, RAL;60RA1V;RAL À DÉFINIR;33;désignation reprise du XLS (illisible sur le PDF);False
-8253;Rail lg 3m pour 2 portes coulissantes STD larg max 2x730mm - 9005 MAT;Rail Coulissant;9005 MAT;33;code EDI repris du XLS;False
-005735;Rail lg 3m pour 2 portes coulissantes STD larg maxi 2x730mm,anodisé;Rail Coulissant;ANODISÉ;33;code EDI repris du XLS;False
-005736;Rail lg 3m pour 2 portes coulissantes STD larg maxi 2x730mm,blanc9016;Rail Coulissant;BLANC 9016;33;code EDI repris du XLS;False
-005737;Rail lg 3m pour 2 portes coulissantes STD [arg maxi 2x730mm,RAL;Rail Coulissant;RAL À DÉFINIR;33;code EDI repris du XLS;False
-007503;Rail lg 3m pour 2 portes coulissantes STD larg maxi 2x730mm,RAL7016FT;Rail Coulissant;RAL7016FT;33;code EDI repris du XLS;False
+8253;Rail lg 3m pour 2 portes coulissantes STD larg max 2x730mm - 9005 MAT;;9005 MAT;33;"code EDI repris du XLS; code EDI absent du PDF (texte du XLS retiré)";False
+005735;Rail lg 3m pour 2 portes coulissantes STD larg maxi 2x730mm,anodisé;;ANODISÉ;33;"code EDI repris du XLS; code EDI absent du PDF (texte du XLS retiré)";False
+005736;Rail lg 3m pour 2 portes coulissantes STD larg maxi 2x730mm,blanc9016;;BLANC 9016;33;"code EDI repris du XLS; code EDI absent du PDF (texte du XLS retiré)";False
+005737;Rail lg 3m pour 2 portes coulissantes STD [arg maxi 2x730mm,RAL;;RAL À DÉFINIR;33;"code EDI repris du XLS; code EDI absent du PDF (texte du XLS retiré)";False
+007503;Rail lg 3m pour 2 portes coulissantes STD larg maxi 2x730mm,RAL7016FT;;RAL7016FT;33;"code EDI repris du XLS; code EDI absent du PDF (texte du XLS retiré)";False
 8254;Rail lg 3m pour 2 portes coulissantes TH larg max 2x730mm - 9005 MAT;60RA2VTH;9005 MAT;33;lecture à vérifier;False
-007504;Rail lg 3m pour 2 portes coulissantes TH larg maxi 2x730mm,RAL7016FT;Rail Coulissant;RAL7016FT;33;code EDI repris du XLS;False
+007504;Rail lg 3m pour 2 portes coulissantes TH larg maxi 2x730mm,RAL7016FT;;RAL7016FT;33;"code EDI repris du XLS; code EDI absent du PDF (texte du XLS retiré)";False
 005036;Rosace aveugle OVAL inox, la paire;60RA;;34;lecture à vérifier;False
 000782;Ruban adhésif 7058 6x2mm pour vitrage ep 10mm- (le rouleau de 18 ml);40DFT6;;34;désignation relue visuellement;False
 007512;Semi-fixe SV,dim 2036x728,poussant gauche - RAL7016FT;7512;RAL7016FT;34;lecture à vérifier;False
@@ -190,6 +190,8 @@
 8262;Semi-fixe SV dim 2036 x 828mm poussant droit - 9005 MAT;35VAB;9005 MAT;36;lecture à vérifier;False
 8263;Semi-fixe SV dim 2036 x 828mm poussant gauche - 9005 MAT;35VAB;9005 MAT;36;lecture à vérifier;False
 8264;Semi-fixe SV dim 2036 x 928mm poussant droit - - 9005 MAT;35VAB;9005 MAT;36;désignation reprise du XLS (illisible sur le PDF);False
+005744;Serreur GH lg 5750mm,anodisé;;ANODISÉ;36;code EDI absent du PDF (texte du XLS retiré);False
+007801;Serreur GH lg 5750mm,BRUT;;BRUT;36;code EDI absent du PDF (texte du XLS retiré);False
 8282;Serrure de milieu porte clarit STREMLER 4360 - 9005 MAT;45SVS;9005 MAT;37;lecture à vérifier;False
 8283;Serrure et gache a repetition + loqueteaux STREMLER 4300 - 9005 MAT;45SVD;9005 MAT;37;lecture à vérifier;False
 8286;Support huisserie 38 usine lg 3000mm - 9005 MAT;;9005 MAT;37;lecture à vérifier;False
@@ -210,7 +212,7 @@
 8304;Vantail serrure SV dim 2036 x 828mm poussant gauche - 9005 MAT;35VAS;9005 MAT;41;lecture à vérifier;False
 8299;Vantail serrure SV dim spe × mm poussant droit - 9005 MAT;35VAS;9005 MAT;41;lecture à vérifier;False
 001534;Vitrage feuillete 33/2 pour porte dimensions hors standar;1534;;41;lecture à vérifier;False
-001532;Vitrage feuillete 33/2 pour porte dimensions standard;vitrage;;41;lecture à vérifier;False
+001532;Vitrage feuillete 33/2 pour porte dimensions standard;;;41;"lecture à vérifier; code EDI absent du PDF (texte du XLS retiré)";False
 7349;Couvre joint Plat usine DOUBLE,lg 300Omm,Anodisé;60CJPUD;ANODISÉ;8;lecture à vérifier;False
 7351;Couvre joint Plat usine DOUBLE,lg 3000mm,RAL;60CJPUD;RAL À DÉFINIR;8;lecture à vérifier;False
 7348;Couvre joint Plat usine SIMPLE,lg 3000mm,RAL;60CJPUS;RAL À DÉFINIR;8;lecture à vérifier;False
