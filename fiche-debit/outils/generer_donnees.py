@@ -34,8 +34,8 @@ CODE_COL = {'gauche': 3, 'droite': 8}; LONG_COL = {'gauche': 4, 'droite': 9}
 
 # (premiere ligne, derniere ligne, famille, code famille, type)
 G = [(4,5,'Lisse','00LIS'),(6,10,'Montant','00MON'),(11,15,'Couvre-joint plat','60CJP'),
-     (16,16,'Parclose simple vitrage','sans joint'),(18,18,'Parclose simple vitrage','avec joint'),
-     (19,19,'Parclose double vitrage','sans joints'),(21,21,'Parclose double vitrage','avec joints'),
+     (16,16,'Sans joint',''),(18,18,'Avec joint',''),
+     (19,19,'Sans joints',''),(21,21,'Avec joints',''),
      (22,26,'Meneau','00P3D'),(27,31,'Angle 90° carré','00P2DC'),(32,36,'Angle départ multiple','00ADM'),
      (37,41,'Départ multiple à couvre-joint','00DMCJ'),(42,44,'Clip de lisse','60ECA')]
 D = [(4,8,'Départ','00DEP'),(9,11,'Couvre-joint Oméga',''),(12,13,'Jonc',''),(14,16,'Angle 90°','00P2D'),
@@ -80,6 +80,19 @@ for side, groups in (('gauche', G), ('droite', D)):
                 item['edi'] = str(ws.cell(r, 9).value or '')
             res[side].append(item)
 
+
+# --- Parcloses : 6 lignes comme dans le XLS (lignes 17 et 20 = titres « Simple / Double vitrage ») ---
+LIB = {16: 'Parclose simple vitrage sans joint', 18: 'Parclose simple vitrage avec joint', 19: 'Parclose double vitrage sans joints', 21: 'Parclose double vitrage avec joints'}
+nouv = []
+for it in res['gauche']:
+    if it['ligne'] in LIB:
+        it['libelle'] = LIB[it['ligne']]
+        if it['ligne'] in (16, 19): it['imgTexte'] = 'Parclose'
+    nouv.append(it)
+    if it['ligne'] in (16, 19):
+        t = 'Simple vitrage' if it['ligne'] == 16 else 'Double vitrage'
+        nouv.append(dict(id='G%d' % (it['ligne'] + 1), ligne=it['ligne'] + 1, famille=t, codeFamille='', longueur=None, codes={}, calcule=False, vide=True, titre=t))
+res['gauche'] = nouv
 
 # --- Suggestions seulement : codes présents dans le PDF mais absents des tableaux du XLS (même EDI, même longueur, même finition).
 # NON appliquées : une référence peut ne plus exister dans une finition (ex. capot 2700 / 3250, angle libre 2550 / 2700 / 3250 : anodisé seulement). ---

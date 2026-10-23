@@ -87,14 +87,17 @@ function construireProfils(cote, titre) {
   for (const g of groupes(FICHE[cote])) {
     g.items.forEach((it, i) => {
       const tr = h('tr', { 'data-id': it.id });
-      if (i === 0) {
+      if (i === 0 && it.vide && it.titre) {
+        tr.append(h('td', { class: 'titre', colspan: 2, text: it.titre }));          // ex. « Simple vitrage » (ligne 17 du XLS)
+      } else if (i === 0) {
         if (!SANS_IMAGE_PROPRE.has(it.id)) {
           const img = h('td', { class: 'img', rowspan: IMAGE_SPAN[it.id] || g.items.length });
           if (IMAGES[it.id]) img.append(h('img', { src: `images/${IMAGES[it.id]}.png`, alt: '' }));
+          if (it.imgTexte) img.append(h('span', { class: 'img-texte', text: it.imgTexte }));
           tr.append(img);
         }
-        const fam = h('td', { class: 'fam', rowspan: g.items.length }, h('span', { text: g.famille }));
-        if (g.codeFamille) fam.append(h('small', { class: AVEC_CERCLE.has(it.id) ? 'cercle' : '', text: g.codeFamille }));
+        const fam = h('td', { class: 'fam', rowspan: g.items.length }, h('span', { class: AVEC_CERCLE.has(it.id) ? 'cercle' : '', text: g.famille }));
+        if (g.codeFamille) fam.append(h('small', { text: g.codeFamille }));
         if (g.famille === 'Jonc') fam.append(h('small', { id: 'couleurJonc' }));
         tr.append(fam);
       }
@@ -112,7 +115,7 @@ function construireProfils(cote, titre) {
             () => (etat.manuel[k] || ''), v => { etat.manuel[k] = nombre(v); }));
         }
       } else {
-        qTd.append(lier(h('input', { type: 'text', inputmode: 'decimal', 'aria-label': `${it.famille} ${lg}`, autocomplete: 'off' }),
+        qTd.append(lier(h('input', { type: 'text', inputmode: 'decimal', 'aria-label': `${it.libelle || it.famille} ${lg}`, autocomplete: 'off' }),
           () => etat.qte[it.id], v => { if (v === '') delete etat.qte[it.id]; else etat.qte[it.id] = v; }));
       }
       tr.append(codeTd, h('td', { class: 'lg', text: lg }), qTd);
@@ -144,7 +147,6 @@ function construirePanneau() {
     champEntete('Niveau :', lier(h('input', { type: 'text', autocomplete: 'off', placeholder: 'ex. R+1' }), () => e().niveau, v => { e().niveau = v; })),
     champEntete('FINITION :', h('div', {}, selectFin, ral, h('div', { class: 'print-seulement', id: 'finTxt' }))),
     devis,
-    champEntete('Remarque :', lier(h('input', { type: 'text', autocomplete: 'off' }), () => e().remarque, v => { e().remarque = v; })),
   );
 
   const corpsProduits = h('tbody', { id: 'produits' });
@@ -210,7 +212,7 @@ function maj() {
     L.tr.classList.toggle('rempli', q !== 0);
     if (q > 0 && !code) {
       const dispo = Object.keys(L.item.codes).map(f => NOM_FINITION[f] === 'RAL (à définir ou demandé)' ? 'RAL' : f);
-      const nom = `« ${L.item.famille} ${L.item.longueur || L.item.largeur || ''} »`;
+      const nom = `« ${L.item.libelle || L.item.famille} ${L.item.longueur || L.item.largeur || ''} »`;
       alertes.push({ t: dispo.length ? `${nom} n'existe plus qu'en ${dispo.join(', ')} : pas de code en ${nomFin}.` : `Pas de code pour ${nom} : ajoutez-le avec « + Ligne libre ».` });
     }
   }
@@ -291,7 +293,7 @@ function telecharger(blob, nom) {
 function exporterExcel() {
   const r = calculer(etat), e = etat.entete, L = [];
   L.push([{ v: 'KTY — Fiche de débit gamme Classic', gras: true }]);
-  [['Société', e.societe], ['Réf chantier', e.chantier], ['Niveau', e.niveau], ['Finition', libelleFinition(e)], ['Devis ou commande', e.mode], ['Page', e.page], ['Remarque', e.remarque]]
+  [['Société', e.societe], ['Réf chantier', e.chantier], ['Niveau', e.niveau], ['Finition', libelleFinition(e)], ['Devis ou commande', e.mode], ['Page', e.page], ['INFO', e.remarque]]
     .forEach(([k, v]) => L.push([{ v: k, gras: true }, v]));
   L.push([]);
   L.push(['PROFILS', 'Code KTY', 'Longueur', 'Quantité', '', '', 'Code KTY', 'Longueur / largeur', 'Quantité'].map(v => (v ? { v, gras: true } : v)));
@@ -300,7 +302,7 @@ function exporterExcel() {
   const cell = (it, id) => {
     if (!it) return ['', '', '', ''];
     const q = r.qte[id + it.ligne] || 0, code = it.codes[e.finition];
-    return [`${it.famille} ${it.codeFamille}`.trim(), { v: code || '—', texte: true }, it.longueur || (it.largeur ? 'larg. ' + it.largeur : it.edi || ''), q || ''];
+    return [`${it.libelle || it.famille} ${it.codeFamille}`.trim(), { v: code || '—', texte: true }, it.longueur || (it.largeur ? 'larg. ' + it.largeur : it.edi || ''), q || ''];
   };
   for (let n = 4; n <= 44; n++) {
     if (!g[n] && !d[n]) continue;
@@ -344,7 +346,11 @@ function imprimer() {
 
 // ---------- démarrage ----------
 const fiche = $('fiche');
-fiche.append(h('div', { class: 'corps' }, construireProfils('gauche', 'PROFILS'), construireProfils('droite', ''), construirePanneau()));
+function construireInfo() {                       // cadre « INFO : » en haut de la fiche (cellules F1:M2 du XLS)
+  return h('div', { class: 'info' }, h('label', { text: 'INFO :' }),
+    lier(h('textarea', { rows: 2, 'aria-label': 'Info', placeholder: 'Information libre pour la fabrication…' }), () => etat.entete.remarque, v => { etat.entete.remarque = v; }));
+}
+fiche.append(construireInfo(), h('div', { class: 'corps' }, construireProfils('gauche', 'PROFILS'), construireProfils('droite', ''), construirePanneau()));
 construireOptions();
 rendreProduits();
 remplir();
