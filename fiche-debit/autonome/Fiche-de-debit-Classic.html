@@ -220,6 +220,7 @@ td.chg-retrait .avant { left: 0; right: 0; top: 50%; transform: translateY(-50%)
 tr.fantome td { color: var(--chg); text-decoration: line-through; }
 tr.fantome td.n { text-decoration: none; }
 @media print {
+    .zero { color: transparent !important; }      /* les « 0 » calculés ne s'impriment pas (ils restent visibles à l'écran) */
     .revision { font-size: 7.5pt; padding: 0.3mm 1.5mm; margin-bottom: 1mm; border-width: 0.3mm; }
     body.avec-suivi { --h: 3.75mm; --h-acc: 4.6mm; }          /* un peu plus compact pour garder la fiche sur une page */
     .avant { font-size: 4.6pt; }
@@ -1174,7 +1175,7 @@ function maj() {
     L.codeTd.classList.toggle('absent', !code);
     L.codeTd.title = code ? (DESIGNATION.get(code) || '') : `Pas de code en ${nomFin} pour cette ligne`;
     const q = r.qte[id] || 0;
-    if (L.calc) L.calc.textContent = fmt(q);
+    if (L.calc) { L.calc.textContent = fmt(q); L.calc.classList.toggle('zero', !q); }
     L.tr.classList.toggle('rempli', q !== 0);
     if (q > 0 && !code) {
       const dispo = Object.keys(L.item.codes).map(f => NOM_FINITION[f] === 'RAL (à définir ou demandé)' ? 'RAL' : f);
@@ -1191,7 +1192,7 @@ function maj() {
   for (const { a, tr, cellule, codeTd } of Object.values(lignesAcc)) {
     codeTd.textContent = a.code;
     const q = accVals[a.id];
-    if (a.auto) cellule.textContent = q ? fmt(q) : '0';
+    if (a.auto) { cellule.textContent = q ? fmt(q) : '0'; cellule.classList.toggle('zero', !q); }
     tr.classList.toggle('rempli', q > 0);
   }
   for (const { p, tr } of lignesProduits) tr.classList.toggle('rempli', nombre(p.qte) !== 0);

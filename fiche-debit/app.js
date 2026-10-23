@@ -310,7 +310,7 @@ function maj() {
     L.codeTd.classList.toggle('absent', !code);
     L.codeTd.title = code ? (DESIGNATION.get(code) || '') : `Pas de code en ${nomFin} pour cette ligne`;
     const q = r.qte[id] || 0;
-    if (L.calc) L.calc.textContent = fmt(q);
+    if (L.calc) { L.calc.textContent = fmt(q); L.calc.classList.toggle('zero', !q); }
     L.tr.classList.toggle('rempli', q !== 0);
     if (q > 0 && !code) {
       const dispo = Object.keys(L.item.codes).map(f => NOM_FINITION[f] === 'RAL (à définir ou demandé)' ? 'RAL' : f);
@@ -327,7 +327,7 @@ function maj() {
   for (const { a, tr, cellule, codeTd } of Object.values(lignesAcc)) {
     codeTd.textContent = a.code;
     const q = accVals[a.id];
-    if (a.auto) cellule.textContent = q ? fmt(q) : '0';
+    if (a.auto) { cellule.textContent = q ? fmt(q) : '0'; cellule.classList.toggle('zero', !q); }
     tr.classList.toggle('rempli', q > 0);
   }
   for (const { p, tr } of lignesProduits) tr.classList.toggle('rempli', nombre(p.qte) !== 0);

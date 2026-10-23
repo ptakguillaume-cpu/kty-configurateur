@@ -213,6 +213,7 @@ td.chg-retrait .avant { left: 0; right: 0; top: 50%; transform: translateY(-50%)
 tr.fantome td { color: var(--chg); text-decoration: line-through; }
 tr.fantome td.n { text-decoration: none; }
 @media print {
+    .zero { color: transparent !important; }      /* les « 0 » calculés ne s'impriment pas (ils restent visibles à l'écran) */
     .revision { font-size: 7.5pt; padding: 0.3mm 1.5mm; margin-bottom: 1mm; border-width: 0.3mm; }
     body.avec-suivi { --h: 3.75mm; --h-acc: 4.6mm; }          /* un peu plus compact pour garder la fiche sur une page */
     .avant { font-size: 4.6pt; }
