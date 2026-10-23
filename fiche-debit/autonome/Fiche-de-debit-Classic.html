@@ -929,7 +929,7 @@ const sansAccent = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
 let INDEX = [];                                       // index de recherche des produits
 function reconstruireCatalogue(liste) {
   DESIGNATION = new Map(liste.map(c => [c[0], c[1]]));
-  INDEX = liste.map(c => ({ ref: c[0], des: c[1], edi: c[2], fin: c[3], hors: c[4], texte: sansAccent(`${c[0]} ${c[1]} ${c[2]}`) }));
+  INDEX = liste.map(c => ({ ref: c[0], des: c[1], edi: c[2], fin: c[3], hors: c[4], texte: sansAccent(`${c[0]} ${c[1]} ${c[2]}`), mots: sansAccent(`${c[0]} ${c[1]} ${c[2]}`).split(/[^a-z0-9]+/).filter(Boolean), des0: sansAccent(c[1]).split(/[^a-z0-9]+/).filter(Boolean).join(' ') }));
 }
 let pret = false;
 const bibliotheque = creerBibliotheque({
@@ -1238,9 +1238,14 @@ function chercher() {
   const q = sansAccent($('recherche').value).trim(), zone = $('resultats');
   zone.replaceChildren();
   if (q.length < 2) return;
-  const mots = q.split(/\s+/);
+  const mots = q.split(/[^a-z0-9]+/).filter(Boolean);
+  if (!mots.length) return;
+  // « jeu 4 » : chaque mot cherché doit commencer un mot de la désignation (un petit nombre = nombre exact, pas « 2400 » ni « 2050 »)
+  const correspond = (c, m) => /^\d+$/.test(m) ? (m.length <= 2 ? c.mots.includes(m) : c.mots.some(x => x.startsWith(m)) || c.texte.includes(m)) : c.mots.some(x => x.startsWith(m));
+  const phrase = mots.join(' ');
   const finOk = !$('rechercheFinition').checked ? null : FINITION_CATALOGUE[etat.entete.finition];
-  const trouves = INDEX.filter(c => mots.every(m => c.texte.includes(m)) && (!finOk || c.fin === finOk || c.fin === '' || c.fin === 'BRUT'));
+  const trouves = INDEX.filter(c => mots.every(m => correspond(c, m)) && (!finOk || c.fin === finOk || c.fin === '' || c.fin === 'BRUT'))
+    .map(c => [c.des0.startsWith(phrase) ? 0 : c.des0.includes(phrase) ? 1 : 2, c]).sort((a, b) => a[0] - b[0] || a[1].des.length - b[1].des.length).map(x => x[1]);   // les désignations qui commencent par la recherche d'abord
   if (!trouves.length) { zone.append(h('li', { text: 'Aucun produit trouvé.' })); return; }
   for (const c of trouves.slice(0, 40)) {
     zone.append(h('li', {}, h('b', { text: c.ref }), h('span', { text: c.des + (c.hors ? ' (hors catalogue)' : '') }), h('span', { class: 'edi', text: c.edi }),
