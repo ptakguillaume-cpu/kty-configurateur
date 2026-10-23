@@ -36,23 +36,42 @@ const arrondi = x => Math.round(x * 1e6) / 1e6;
 const plafond = (x, pas) => (x <= 0 ? 0 : Math.ceil(arrondi(x) / pas) * pas);
 const egal = (a, b) => Math.abs(num(a) - b) < 1e-9;
 
-export function calculer(etat, { legacy = false } = {}) {
-  const q = id => num(etat.qte[id]);
-  const o = etat.options;
-  const somme = (prefixe, de, a) => { let s = 0; for (let r = de; r <= a; r++) s += q(prefixe + r); return s; };
+const plage = (p, a, b) => Array.from({ length: b - a + 1 }, (_, i) => p + (a + i));
 
-  // --- Couvre-joint plat (G11…G15) ---
-  const huisSimples = somme('D', 34, 36);
-  const huisDV = somme('D', 37, 40);
-  const omega = [q('D9'), 0, q('D10'), 0, q('D11')];            // lignes 2,5 / 3,05 / 5,75 uniquement (points A, B)
-  const omegaOrigine = [q('D9'), q('D10'), q('D10'), q('D10'), q('D11')]; // XLS : E12 et E14 retirent J10 à tort
+// Rôle de chaque ligne de la fiche dans les calculs. Les listes à 5 emplacements correspondent aux longueurs
+// 2,5 / 2,7 / 3,05 / 3,25 / 5,75 m (null = pas de ligne pour cette longueur sur la fiche).
+export const ROLES_CLASSIC = {
+  montants: plage('G', 6, 10), meneaux: plage('G', 22, 26), angleDepartMultiple: plage('G', 32, 36), departMultipleCJ: plage('G', 37, 41),
+  departs: plage('D', 4, 8), montantsSpeciaux: plage('D', 17, 21), omega: ['D9', null, 'D10', null, 'D11'], omegaOrigine: ['D9', 'D10', 'D10', 'D10', 'D11'],
+  huisSimples: plage('D', 34, 36), huisDV: plage('D', 37, 40), angle90: plage('D', 14, 16), angleCarre: plage('G', 27, 31),
+  couvreJoint: plage('G', 11, 15), paumelles: ['D41', 'D42'],
+};
+// RDB1 : mêmes règles que la Classic, chaque ligne étant rattachée à son équivalent selon sa place sur la fiche
+// (montant 15MON = montant, angle 90° 15P2D = angle carré, angle multiple 00PVA = angle départ multiple, départ multiple RDB1 = départ multiple à couvre-joint…).
+export const ROLES_RDB1 = {
+  montants: ['G5', 'G6', 'G7', null, 'G9'], meneaux: [null, null, 'G18', null, 'G20'], angleDepartMultiple: [null, null, 'G27', null, 'G29'],
+  departMultipleCJ: [null, null, 'G31', null, 'G33'], departs: ['D2', 'D3', 'D4', null, 'D6'], montantsSpeciaux: [null, null, 'D17', null, 'D19'],
+  omega: ['D7', null, 'D9', null, 'D11'], omegaOrigine: ['D7', null, 'D9', null, 'D11'], huisSimples: ['D33', 'D34', 'D35'], huisDV: ['D36', 'D37', 'D38', 'D39'],
+  angle90: [], angleCarre: ['G23', 'G25'], couvreJoint: plage('G', 10, 14), paumelles: ['D40', 'D41'],
+};
+
+export function calculer(etat, { legacy = false, roles = ROLES_CLASSIC } = {}) {
+  const q = id => (id ? num(etat.qte[id]) : 0);
+  const o = etat.options;
+  const somme = ids => ids.reduce((s, id) => s + q(id), 0);
+
+  // --- Couvre-joint plat ---
+  const huisSimples = somme(roles.huisSimples);
+  const huisDV = somme(roles.huisDV);
+  const omega = roles.omega.map(q);                              // lignes 2,5 / 3,05 / 5,75 uniquement (points A, B)
+  const omegaOrigine = roles.omegaOrigine.map(q);                // XLS : E12 et E14 retirent J10 à tort
   const doublage = legacy ? o.doublage.slice(0, 1) : o.doublage;
   const renfort = legacy ? o.renfort.slice(0, 1) : o.renfort;
   const nbRenfort = renfort.reduce((s, l) => s + num(l.nb), 0);
   const U9 = nbRenfort * 2;
 
   const cj = LG_COUVRE_JOINT.map((lg, k) => {
-    let t = 2 * (q('G' + (6 + k)) + q('G' + (22 + k)) + q('G' + (32 + k)) + q('G' + (37 + k)) + q('D' + (4 + k)) + q('D' + (17 + k)));
+    let t = 2 * (q(roles.montants[k]) + q(roles.meneaux[k]) + q(roles.angleDepartMultiple[k]) + q(roles.departMultipleCJ[k]) + q(roles.departs[k]) + q(roles.montantsSpeciaux[k]));
     for (const l of doublage) if (egal(l.lg, lg)) t -= num(l.nb);
     for (const l of renfort) {
       // XLS : la ligne 5,75 testait « 3,25 » (point C)
@@ -71,11 +90,11 @@ export function calculer(etat, { legacy = false } = {}) {
 
   // --- Équerres ---
   const departsLisse = num(o.departsLisse);
-  const baseEquerres = somme('G', 6, 10) + somme('G', 32, 41) + somme('D', 4, 8) + somme('D', 14, 21);
-  const equerres = baseEquerres * 2 + num(o.traverses) * 2 + somme('G', 22, 26) * 6 + somme('G', 27, 31) * 4 + U9 - departsLisse * 2;
+  const baseEquerres = somme(roles.montants) + somme(roles.angleDepartMultiple) + somme(roles.departMultipleCJ) + somme(roles.departs) + somme(roles.angle90) + somme(roles.montantsSpeciaux);
+  const equerres = baseEquerres * 2 + num(o.traverses) * 2 + somme(roles.meneaux) * 6 + somme(roles.angleCarre) * 4 + U9 - departsLisse * 2;
 
   // --- Mousse de départ (mètres, arrondis à 5 m par longueur) ---
-  const mousseParLg = LG_COUVRE_JOINT.map((lg, k) => plafond(lg * 2 * q('D' + (4 + k)), 5));
+  const mousseParLg = LG_COUVRE_JOINT.map((lg, k) => plafond(lg * 2 * q(roles.departs[k]), 5));
   const mousse = mousseParLg.reduce((s, v) => s + v, 0) - 5 * departsLisse;
 
   // --- Jeux de paumelles ---
@@ -87,8 +106,8 @@ export function calculer(etat, { legacy = false } = {}) {
   // --- Quantités finales par ligne ---
   const qte = {};
   for (const id of Object.keys(etat.qte)) if (num(etat.qte[id])) qte[id] = num(etat.qte[id]);
-  cj.forEach((v, k) => { qte['G' + (11 + k)] = v; });
-  qte.D41 = J41; qte.D42 = J42;
+  roles.couvreJoint.forEach((id, k) => { qte[id] = cj[k]; });
+  qte[roles.paumelles[0]] = J41; qte[roles.paumelles[1]] = J42;
 
   const alertes = [];
   cj.forEach((v, k) => { if (v < 0) alertes.push(`Couvre-joint plat ${LG_COUVRE_JOINT[k]} m : quantité négative (${v}). Vérifiez les options de doublage et les Oméga.`); });

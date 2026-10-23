@@ -1,7 +1,7 @@
 // Test du moteur : comparaison avec le XLS recalculé par LibreOffice (formules d'origine = legacy),
 // puis vérification des corrections validées.  Usage : node tests/calcul.test.mjs tests/cas_xls.json
 import { readFileSync } from 'node:fs';
-import { etatInitial, calculer, abreger } from '../calcul.js';
+import { etatInitial, calculer, abreger, ROLES_RDB1 } from '../calcul.js';
 import assert from 'node:assert/strict';
 
 const cas = JSON.parse(readFileSync(process.argv[2], 'utf8'));
@@ -48,6 +48,15 @@ assert.equal(abreger('Vantail serrure DV,dim 2036x828,poussant gauche - RAL7016F
 assert.equal(abreger('Huisserie Classic AB,type A,dim fdf 2050x1456mm,anodisé'), 'Huis. Clas. type A fdf 2050x1456mm');
 assert.equal(abreger('Jeu 3 paumelles aluminium pour huis.fdf 2050mm - RAL'), 'Jeu 3 pau. alu pour huis.fdf 2050mm');
 console.log('Corrections validées : OK');
+// --- RDB1 : mêmes règles, lignes rattachées par leur place sur la fiche ---
+const r1 = etatInitial(); r1.qte = { G5: 10, D2: 2, D9: 1, G18: 3, G27: 1, G31: 2, D17: 4, G23: 1, D33: 2, D36: 1 };
+const c1 = calculer(r1, { roles: ROLES_RDB1 });
+assert.equal(c1.cj[0], 2 * (10 + 2) + 2 + 2 * 1 - 0 + 0, 'couvre-joint 2,5 m RDB1 : montants + départs, + huisseries (simples + 2 × doubles)');
+assert.equal(c1.cj[2], 2 * (0 + 3 + 1 + 2 + 0 + 4) - 1, 'couvre-joint 3,05 m RDB1 : meneau, angle multiple, départ multiple, montant spécial, moins Oméga');
+assert.equal(c1.equerres, (10 + 1 + 2 + 2 + 0 + 4) * 2 + 3 * 6 + 1 * 4, 'équerres RDB1 : angle 90° 15P2D compte comme l\'angle carré (×4)');
+assert.equal(c1.qte.G10, c1.cj[0]); assert.equal(c1.qte.G12, c1.cj[2], 'couvre-joint plat RDB1 = lignes G10 à G14');
+assert.equal(c1.qte.D40, 2, 'jeu 3 paumelles = huisseries simples'); assert.equal(c1.qte.D41, 1, 'jeu 6 paumelles = huisseries doubles');
+assert.equal(c1.mousse, 10, 'mousse : 2 départs de 2,5 m, 2 côtés, arrondi à 5 m');
 const vide = calculer(etatInitial());
 assert.deepEqual([vide.clips, vide.equerres, vide.mousse, vide.J41, vide.J42, ...vide.cj], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'une fiche vide ne doit rien calculer');
 assert.deepEqual(vide.alertes, []);

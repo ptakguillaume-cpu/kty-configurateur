@@ -17359,5 +17359,23 @@
   "page_pdf": 0,
   "a_verifier": "confirmé par l'utilisateur, absent du PDF",
   "hors_catalogue": true
+ },
+ {
+  "ref": "001239",
+  "designation": "Meneau RDB1 lg 5820mm, blanc 9016",
+  "edi": "15P3D",
+  "finition": "BLANC 9016",
+  "page_pdf": 0,
+  "a_verifier": "code issu de l'Excel RDB1 (mai 2026), absent du PDF",
+  "hors_catalogue": true
+ },
+ {
+  "ref": "000126",
+  "designation": "Meneau RDB1 lg 5820mm, anodisé",
+  "edi": "15P3D",
+  "finition": "ANODISÉ",
+  "page_pdf": 0,
+  "a_verifier": "code issu de l'Excel RDB1 (mai 2026), absent du PDF",
+  "hors_catalogue": true
  }
 ]

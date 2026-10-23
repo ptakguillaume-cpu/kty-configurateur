@@ -16,7 +16,7 @@ Remplace le fichier Excel « Fiche de Débit Classic ». Fonctionne sans interne
 | Fichier | Rôle |
 |---|---|
 | `calcul.js` | règles de calcul (formules du XLS + corrections validées) |
-| `donnees.js` | lignes de la fiche et codes par finition (généré) |
+| `donnees.js`, `donnees-rdb1.js` | lignes de la fiche et codes par finition, gammes Classic et RDB1 (générés) |
 | `catalogue.js` | 1 929 codes produit du PDF « nouveau Code Produit » (généré) |
 | `catalogue.json`, `*.csv` | le même catalogue, lisible ; `RAPPORT_ETAPE1.md`, `REGLES_FICHE.md` : rapports validés |
 | `app.js`, `index.html`, `style.css` | écran |
