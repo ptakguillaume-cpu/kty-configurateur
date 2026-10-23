@@ -1,7 +1,7 @@
 # Passation : fiche de débit Classic
 
 ## Utiliser sans rien installer
-Le fichier **`autonome/Fiche-de-debit-Classic.html`** contient tout : calculs, 1 929 codes produit, dessins, impression, export Excel.
+Le fichier **`autonome/Fiche-de-debit-Classic.html`** contient tout (gammes Classic et RDB1, choix en haut de la fiche) : calculs, 1 931 codes produit, dessins, impression, export Excel.
 - Double-clic pour l'ouvrir (Chrome ou Edge conseillés). **Pas d'internet, pas de compte, pas de serveur.**
 - Il peut être copié sur un PC, un partage réseau, une clé USB ou envoyé par mail.
 - **PDF / Imprimer** : A4 paysage, une page. **Excel** et **Enregistrer sous…** : fichiers à classer comme n'importe quel document.
@@ -30,4 +30,5 @@ Bon à savoir :
 3. Régénérer le fichier autonome : `python3 fiche-debit/outils/construire_autonome.py`
 4. Vérifier : `node fiche-debit/tests/calcul.test.mjs fiche-debit/tests/cas_xls.json` et `node fiche-debit/tests/bibliotheque.test.mjs`
 
+Gamme RDB1 : `RDB1.md` ; régénérer ses données : `python3 fiche-debit/outils/generer_rdb1.py base.xlsx a7016.xlsx a9005.xlsx fiche-debit/catalogue.json fiche-debit` (Excel RDB1 convertis en .xlsx).
 Règles de calcul : `REGLES_FICHE.md`. Différences avec l'ancien XLS : `ETAPE3_A_VALIDER.md`. Catalogue lu dans le PDF : `RAPPORT_ETAPE1.md`.

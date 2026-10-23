@@ -1602,12 +1602,12 @@
   "hors_catalogue": false
  },
  {
-  "ref": "660000",
+  "ref": "000099",
   "designation": "Angle multiple lg.5800mm - RAL",
   "edi": "00PVA",
   "finition": "RAL À DÉFINIR",
   "page_pdf": 4,
-  "a_verifier": "",
+  "a_verifier": "référence corrigée après double lecture du PDF",
   "hors_catalogue": false
  },
  {
@@ -1620,12 +1620,12 @@
   "hors_catalogue": false
  },
  {
-  "ref": "666666",
+  "ref": "999999",
   "designation": "Article divers -",
   "edi": "",
   "finition": "",
   "page_pdf": 4,
-  "a_verifier": "",
+  "a_verifier": "référence corrigée après double lecture du PDF",
   "hors_catalogue": false
  },
  {
@@ -17358,6 +17358,24 @@
   "finition": "",
   "page_pdf": 0,
   "a_verifier": "confirmé par l'utilisateur, absent du PDF",
+  "hors_catalogue": true
+ },
+ {
+  "ref": "001239",
+  "designation": "Meneau RDB1 lg 5820mm, blanc 9016",
+  "edi": "15P3D",
+  "finition": "BLANC 9016",
+  "page_pdf": 0,
+  "a_verifier": "code issu de l'Excel RDB1 (mai 2026), absent du PDF",
+  "hors_catalogue": true
+ },
+ {
+  "ref": "000126",
+  "designation": "Meneau RDB1 lg 5820mm, anodisé",
+  "edi": "15P3D",
+  "finition": "ANODISÉ",
+  "page_pdf": 0,
+  "a_verifier": "code issu de l'Excel RDB1 (mai 2026), absent du PDF",
   "hors_catalogue": true
  }
 ]

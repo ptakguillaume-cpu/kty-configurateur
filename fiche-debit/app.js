@@ -1,24 +1,46 @@
-import { FICHE } from './donnees.js';
+import { FICHE as FICHE_CLASSIC } from './donnees.js';
+import { FICHE_RDB1 } from './donnees-rdb1.js';
 import { CATALOGUE } from './catalogue.js';
 import {
-  etatInitial, calculer, abreger, couleurJonc, libelleFinition,
+  etatInitial, calculer, ROLES_CLASSIC, ROLES_RDB1, abreger, couleurJonc, libelleFinition,
   LG_COUVRE_JOINT, LARGEURS_CA_SIMPLE, LARGEURS_CA_DOUBLE, FINITIONS,
 } from './calcul.js';
 import { creerXlsx } from './xlsx.js';
 import { creerBibliotheque } from './bibliotheque.js';
 
-const CLE = 'kty_fiche_debit_brouillon';
+const CLE_GAMME = 'kty_fiche_gamme';
+const GAMMES = {
+  classic: {
+    id: 'classic', nom: 'Classic', fiche: FICHE_CLASSIC, cleBrouillon: 'kty_fiche_debit_brouillon', cleBib: 'kty_fiche_bibliotheque', calcul: true, roles: ROLES_CLASSIC, prefixeFichier: 'Fiche de Débit',
+    images: {                                         // dessins de profils de la fiche (repris du XLS), par première ligne de famille
+      G4: 'lisse', G6: 'montant', G11: 'couvre-joint', G18: 'parclose-simple', G21: 'parclose-double', G22: 'meneau', G27: 'angle-carre',
+      G32: 'angle-depart-multiple', G37: 'depart-multiple-cj', G42: 'clip-lisse',
+      D4: 'depart', D9: 'omega', D12: 'jonc', D14: 'angle-90', D17: 'montant-special', D22: 'capot', D27: 'angle-libre', D32: 'angle-doublage', D34: 'huisserie', D37: 'huisserie',
+    },
+    imageSpan: { D32: 2 },                            // un même dessin pour « Angle de doublage » et « Plat de doublage »
+    sansImagePropre: ['D33'],
+    libelleLarge: ['D41', 'D42', 'D43', 'D44'],       // paumelles et serrure : libellé sur les 2 colonnes, sans dessin (comme le XLS)
+    cercle: ['G16', 'G18', 'G19', 'G21'],             // macro « cercle rouge » du XLS
+  },
+  rdb1: {
+    id: 'rdb1', nom: 'RDB1', fiche: FICHE_RDB1, cleBrouillon: 'kty_fiche_debit_brouillon_rdb1', cleBib: 'kty_fiche_bibliotheque_rdb1', calcul: true, roles: ROLES_RDB1, prefixeFichier: 'Fiche de Débit RDB1',
+    images: {
+      G2: 'rdb1-lisse', G5: 'rdb1-montant', G10: 'rdb1-couvre-joint', G15: 'rdb1-parclose', G18: 'rdb1-meneau', G23: 'rdb1-angle90', G27: 'rdb1-angle-multiple',
+      G31: 'rdb1-depart-multiple', G37: 'rdb1-capot-rdb1', G41: 'rdb1-clip-lisse',
+      D2: 'rdb1-depart', D7: 'rdb1-omega', D12: 'rdb1-jonc', D14: 'rdb1-mousse', D17: 'rdb1-montant-special', D21: 'rdb1-capot-classic', D26: 'rdb1-angle-libre',
+      D31: 'rdb1-doublage', D33: 'rdb1-huisserie-simple', D36: 'rdb1-huisserie-double',
+    },
+    imageSpan: { D31: 2 }, sansImagePropre: ['D32'], libelleLarge: ['D40', 'D41', 'D42', 'D43'], cercle: [],
+  },
+};
+let gammeId = 'classic';
+try { const h0 = (location.hash || '').replace('#', ''), s = GAMMES[h0] ? h0 : localStorage.getItem(CLE_GAMME); if (GAMMES[s]) gammeId = s; } catch { /* stockage indisponible : gamme Classic */ }
+const GAMME = GAMMES[gammeId], FICHE = GAMME.fiche;
+const CLE = GAMME.cleBrouillon, IMAGES = GAMME.images, IMAGE_SPAN = GAMME.imageSpan;
+const SANS_IMAGE_PROPRE = new Set(GAMME.sansImagePropre), LIBELLE_LARGE = new Set(GAMME.libelleLarge), AVEC_CERCLE = new Set(GAMME.cercle);
 const NOM_FINITION = { '9005 MAT': '9005 MAT', '7016 FT': '7016 FT', 'BLANC 9016': 'BLANC 9016', 'ANODISÉ': 'ANODISÉ', RAL: 'RAL (à définir ou demandé)' };
 const FINITION_CATALOGUE = { '9005 MAT': '9005 MAT', '7016 FT': 'RAL7016FT', 'BLANC 9016': 'BLANC 9016', 'ANODISÉ': 'ANODISÉ', RAL: 'RAL À DÉFINIR' };
 let DESIGNATION = new Map();                          // référence -> désignation (reconstruit depuis la bibliothèque)
-const IMAGES = {                                   // dessins de profils de la fiche (repris du XLS), par première ligne de famille
-  G4: 'lisse', G6: 'montant', G11: 'couvre-joint', G18: 'parclose-simple', G21: 'parclose-double', G22: 'meneau', G27: 'angle-carre',
-  G32: 'angle-depart-multiple', G37: 'depart-multiple-cj', G42: 'clip-lisse',
-  D4: 'depart', D9: 'omega', D12: 'jonc', D14: 'angle-90', D17: 'montant-special', D22: 'capot', D27: 'angle-libre', D32: 'angle-doublage', D34: 'huisserie', D37: 'huisserie',
-};
-const IMAGE_SPAN = { D32: 2 };                      // un même dessin pour « Angle de doublage » et « Plat de doublage »
-const SANS_IMAGE_PROPRE = new Set(['D33']);
-const LIBELLE_LARGE = new Set(['D41', 'D42', 'D43', 'D44']);   // paumelles et serrure : libellé sur les 2 colonnes, sans dessin (comme le XLS)
 const PRODUITS_VIDES_MIN = 18;                     // lignes vides affichées pour garder l'aspect de la feuille
 
 // ---------- utilitaires ----------
@@ -46,7 +68,7 @@ function reconstruireCatalogue(liste) {
 }
 let pret = false;
 const bibliotheque = creerBibliotheque({
-  FICHE, CATALOGUE, h, telecharger,
+  FICHE, CATALOGUE, h, telecharger, cle: GAMME.cleBib,
   surChangement: bib => { reconstruireCatalogue(bib.catalogue); if (pret) { maj(); chercher(); } },
 });
 reconstruireCatalogue(bibliotheque.catalogue());
@@ -93,7 +115,6 @@ function groupes(items) {
   }
   return g;
 }
-const AVEC_CERCLE = new Set(['G16', 'G18', 'G19', 'G21']);       // macro « cercle rouge » du XLS
 
 function construireProfils(cote, titre) {
   const tbody = h('tbody');
@@ -103,6 +124,7 @@ function construireProfils(cote, titre) {
       if (i === 0 && LIBELLE_LARGE.has(it.id)) {
         tr.append(h('td', { class: 'fam large' + (g.famille.length > 22 ? ' long' : ''), colspan: 2, rowspan: g.items.length, text: g.famille }));
       } else if (i === 0 && it.vide && it.titre) {
+        if (it.titreLarge) { tr.append(h('td', { class: 'titre', colspan: 5, text: it.titre })); tbody.append(tr); return; }   // ex. « GAMME CLASSIC » sur toute la largeur
         tr.append(h('td', { class: 'titre', colspan: 2, text: it.titre }));          // ex. « Simple vitrage » (ligne 17 du XLS)
       } else if (i === 0) {
         if (!SANS_IMAGE_PROPRE.has(it.id)) {
@@ -116,17 +138,17 @@ function construireProfils(cote, titre) {
         if (g.famille === 'Jonc') fam.append(h('small', { id: 'couleurJonc' }));
         tr.append(fam);
       }
-      if (it.vide) { tr.append(h('td', { class: 'code' }), h('td', { class: 'lg' }), h('td', { class: 'q' })); tbody.append(tr); return; }
+      if (it.vide) { tr.append(h('td', { class: 'code', text: it.texteCode || '' }), h('td', { class: 'lg' }), h('td', { class: 'q' })); tbody.append(tr); return; }
       const codeTd = h('td', { class: 'code' });
-      const lg = it.longueur ? String(it.longueur) : it.largeur ? String(it.largeur) : (it.edi || '');
+      const lg = it.longueur ? String(it.longueur) : it.largeur ? String(it.largeur) : (it.texteLong || it.edi || '');
       const qTd = h('td', { class: 'q' });
       let calc = null;
       if (it.calcule) {
         calc = h('span', { class: 'calc' });
         qTd.append(calc);
-        if (it.id.startsWith('G')) {
-          const k = it.ligne - 11;
-          qTd.append(lier(h('input', { class: 'manuel', type: 'text', inputmode: 'numeric', title: 'Ajout manuel (+ ou −)', 'aria-label': 'Ajout manuel ' + lg, autocomplete: 'off', placeholder: '±' }),
+        if (it.id.startsWith('G')) {      // ajout manuel (point D) sur chaque longueur de couvre-joint plat
+          const k = GAMME.roles.couvreJoint.indexOf(it.id);
+          if (k >= 0) qTd.append(lier(h('input', { class: 'manuel', type: 'text', inputmode: 'numeric', title: 'Ajout manuel (+ ou −)', 'aria-label': 'Ajout manuel ' + lg, autocomplete: 'off', placeholder: '±' }),
             () => (etat.manuel[k] || ''), v => { etat.manuel[k] = nombre(v); }));
         }
       } else {
@@ -157,7 +179,7 @@ function construirePanneau() {
   const bouton = mode => h('button', { type: 'button', 'aria-pressed': 'false', 'data-mode': mode, text: mode, onclick: () => { e().mode = mode; maj(); } });
   const devis = h('div', { class: 'devis' }, bouton('DEVIS'), h('span', { text: 'OU' }), bouton('COMMANDE'));
   const tete = h('div', { class: 'entete-panneau' },
-    h('div', { class: 'gamme' }, h('b', { text: 'KTY' }), h('span', { text: 'GAMME CLASSIC   FAX : 04 78 67 02 73' }), lier(h('input', { type: 'text', 'aria-label': 'Page', placeholder: 'Page', style: 'width:60px' }), () => e().page, v => { e().page = v; })),
+    h('div', { class: 'gamme' }, h('b', { text: 'KTY' }), h('span', { text: `GAMME ${GAMME.nom.toUpperCase()}   FAX : 04 78 67 02 73` }), lier(h('input', { type: 'text', 'aria-label': 'Page', placeholder: 'Page', style: 'width:60px' }), () => e().page, v => { e().page = v; })),
     champEntete('Société :', lier(h('input', { type: 'text', autocomplete: 'off' }), () => e().societe, v => { e().societe = v; })),
     champEntete('Réf chantier :', lier(h('input', { type: 'text', autocomplete: 'off' }), () => e().chantier, v => { e().chantier = v; })),
     champEntete('Niveau :', lier(h('input', { type: 'text', autocomplete: 'off', placeholder: 'ex. R+1' }), () => e().niveau, v => { e().niveau = v; })),
@@ -215,8 +237,10 @@ function rendreProduits() {
 let message = '', minuteur;
 function annoncer(texte) { message = texte; clearTimeout(minuteur); minuteur = setTimeout(() => { message = ''; maj(); }, 3500); maj(); }
 
+const calculerFiche = () => calculer(etat, { roles: GAMME.roles });      // mêmes règles de calcul pour toutes les gammes
+
 function maj() {
-  const r = calculer(etat);
+  const r = calculerFiche();
   const e = etat.entete, fin = e.finition, alertes = [...r.alertes.map(t => ({ t }))];
   const nomFin = libelleFinition(e);
   for (const [id, L] of Object.entries(lignes)) {
@@ -301,15 +325,15 @@ function chercher() {
 }
 
 // ---------- fichiers : enregistrer, ouvrir, Excel, imprimer ----------
-const nomFichier = () => `Fiche de Débit ${etat.entete.chantier} ${etat.entete.niveau}`.replace(/\s+/g, ' ').trim().replace(/[\\/:*?"<>|]/g, '-');
+const nomFichier = () => `${GAMME.prefixeFichier} ${etat.entete.chantier} ${etat.entete.niveau}`.replace(/\s+/g, ' ').trim().replace(/[\\/:*?"<>|]/g, '-');
 function telecharger(blob, nom) {
   const a = h('a', { href: URL.createObjectURL(blob), download: nom });
   document.body.append(a); a.click();
   setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
 }
 function exporterExcel() {
-  const r = calculer(etat), e = etat.entete, L = [];
-  L.push([{ v: 'KTY — Fiche de débit gamme Classic', gras: true }]);
+  const r = calculerFiche(), e = etat.entete, L = [];
+  L.push([{ v: `KTY — Fiche de débit gamme ${GAMME.nom}`, gras: true }]);
   [['Société', e.societe], ['Réf chantier', e.chantier], ['Niveau', e.niveau], ['Finition', libelleFinition(e)], ['Devis ou commande', e.mode], ['Page', e.page], ['INFO', e.remarque]]
     .forEach(([k, v]) => L.push([{ v: k, gras: true }, v]));
   L.push([]);
@@ -317,12 +341,12 @@ function exporterExcel() {
   const parLigne = cote => Object.fromEntries(FICHE[cote].map(i => [i.ligne, i]));
   const g = parLigne('gauche'), d = parLigne('droite');
   const cell = (it, id) => {
-    if (!it) return ['', '', '', ''];
+    if (!it || it.vide) return ['', '', '', ''];
     const q = r.qte[id + it.ligne] || 0, code = it.codes[e.finition];
-    return [`${it.libelle || it.famille} ${it.codeFamille}`.trim(), { v: code || '—', texte: true }, it.longueur || (it.largeur ? 'larg. ' + it.largeur : it.edi || ''), q || ''];
+    return [`${it.libelle || it.famille} ${it.codeFamille}`.trim(), { v: code || '—', texte: true }, it.longueur || (it.largeur ? 'larg. ' + it.largeur : it.texteLong || it.edi || ''), q || ''];
   };
-  for (let n = 4; n <= 44; n++) {
-    if (!g[n] && !d[n]) continue;
+  for (const n of [...new Set([...FICHE.gauche, ...FICHE.droite].map(i => i.ligne))].sort((p, q) => p - q)) {
+    if ((!g[n] || g[n].vide) && (!d[n] || d[n].vide)) continue;
     const a = cell(g[n], 'G'), b = cell(d[n], 'D');
     L.push([a[0], a[1], a[2], a[3], '', b[0], b[1], b[2], b[3]]);
   }
@@ -336,7 +360,7 @@ function exporterExcel() {
   telecharger(creerXlsx({ nom: 'Fiche de débit', lignes: L, largeurs: [34, 14, 16, 10, 3, 34, 14, 18, 10] }), nomFichier() + '.xlsx');
 }
 function enregistrer() {
-  const contenu = JSON.stringify({ format: 'kty-fiche-debit', version: 1, enregistre: new Date().toISOString(), etat }, null, 1);
+  const contenu = JSON.stringify({ format: 'kty-fiche-debit', version: 1, gamme: gammeId, enregistre: new Date().toISOString(), etat }, null, 1);
   telecharger(new Blob([contenu], { type: 'application/json' }), nomFichier() + '.json');
 }
 function ouvrir(fichier) {
@@ -345,6 +369,7 @@ function ouvrir(fichier) {
     try {
       const d = JSON.parse(String(lecteur.result));
       if (d.format !== 'kty-fiche-debit' || !d.etat) throw new Error('format');
+      if ((d.gamme || 'classic') !== gammeId) { alert(`Cette fiche est une fiche de la gamme ${GAMMES[d.gamme || 'classic']?.nom || d.gamme}. Choisissez d'abord cette gamme en haut de la page, puis rouvrez le fichier.`); return; }
       etat = fusion(d.etat); remplir(); rendreProduits(); chercher(); maj();
       annoncer(`Fiche ouverte : ${fichier.name}`);
     } catch { alert('Ce fichier n\'est pas une fiche de débit enregistrée par cet outil.'); }
@@ -375,6 +400,14 @@ maj();
 pret = true;
 
 $('btnNouvelle').addEventListener('click', nouvelle);
+const choixGamme = $('gamme');
+choixGamme.value = gammeId;
+choixGamme.addEventListener('change', () => {
+  sauver(); try { localStorage.setItem(CLE_GAMME, choixGamme.value); } catch { /* ignoré */ }
+  history.replaceState(null, '', location.pathname + location.search); location.reload();
+});
+document.querySelector('.barre h1 span').textContent = `gamme ${GAMME.nom}`;
+document.title = `Fiche de débit ${GAMME.nom}`;
 $('btnOuvrir').addEventListener('click', () => $('fichierOuvrir').click());
 $('fichierOuvrir').addEventListener('change', ev => { if (ev.target.files[0]) ouvrir(ev.target.files[0]); ev.target.value = ''; });
 $('btnEnregistrer').addEventListener('click', enregistrer);

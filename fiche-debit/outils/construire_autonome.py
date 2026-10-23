@@ -14,13 +14,14 @@ def module_vers_script(nom, js):
         return f"const {{ {noms} }} = __m_{m.group(2).replace('-', '_')};"
     js = re.sub(r"^import\s*\{([\s\S]*?)\}\s*from\s*['\"]\./([\w-]+)\.js['\"];?", importe, js, flags=re.M)
     js = re.sub(r"^export\s+(?=(?:async\s+)?(?:const|let|function|class)\b)", '', js, flags=re.M)
+    nom = nom.replace('-', '_')
     return f"const __m_{nom} = (() => {{\n{js}\nreturn {{ {', '.join(exports)} }};\n}})();"
 
 images = {}
 for f in sorted(os.listdir(os.path.join(D, 'images'))):
     if f.endswith('.png'):
         images[f[:-4]] = 'data:image/png;base64,' + base64.b64encode(open(os.path.join(D, 'images', f), 'rb').read()).decode()
-code = '\n'.join(module_vers_script(n[:-3], lire(n)) for n in ('calcul.js', 'xlsx.js', 'bibliotheque.js', 'donnees.js', 'catalogue.js', 'app.js'))
+code = '\n'.join(module_vers_script(n[:-3], lire(n)) for n in ('calcul.js', 'xlsx.js', 'bibliotheque.js', 'donnees.js', 'donnees-rdb1.js', 'catalogue.js', 'app.js'))
 code = re.sub(r"`images/\$\{([^}]+)\}\.png`", r"__IMG[\1]", code)
 if 'images/' in code.replace('__IMG', ''): print('Attention : un chemin d\'image reste dans le code', file=sys.stderr)
 import json

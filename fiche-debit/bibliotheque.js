@@ -5,7 +5,7 @@
 // Les codes sont toujours des TEXTES exacts : 000959, 8001 et 7346 sont trois codes différents.
 import { creerXlsx, lireXlsx } from './xlsx.js';
 
-const CLE = 'kty_fiche_bibliotheque';
+const CLE_DEFAUT = 'kty_fiche_bibliotheque';
 const FORMAT = 'kty-bibliotheque-codes';
 export const FIN = ['9005 MAT', '7016 FT', 'BLANC 9016', 'ANODISÉ', 'RAL'];
 export const FINITIONS_CATALOGUE = ['', '9005 MAT', 'RAL7016FT', 'BLANC 9016', 'ANODISÉ', 'RAL À DÉFINIR', 'BRUT'];
@@ -39,7 +39,8 @@ export function lireCsv(texte) {
 const copie = o => JSON.parse(JSON.stringify(o));
 const sansAccent = s => String(s).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 
-export function creerBibliotheque({ FICHE, CATALOGUE, h, telecharger, surChangement }) {
+export function creerBibliotheque({ FICHE, CATALOGUE, h, telecharger, surChangement, cle = CLE_DEFAUT }) {
+  const CLE = cle;
   const lignesFiche = () => [...FICHE.gauche, ...FICHE.droite].filter(it => !it.vide);
   const origine = {
     format: FORMAT, version: 1, modifie: null,

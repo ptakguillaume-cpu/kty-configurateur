@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kty-app-v17'; // Augmentez le chiffre à chaque mise à jour pour forcer le refresh
+const CACHE_NAME = 'kty-app-v19'; // Augmentez le chiffre à chaque mise à jour pour forcer le refresh
 const urlsToCache = [
   './',
   './index.html',
@@ -16,6 +16,7 @@ const urlsToCache = [
   './fiche-debit/xlsx.js',
   './fiche-debit/bibliotheque.js',
   './fiche-debit/donnees.js',
+  './fiche-debit/donnees-rdb1.js',
   './fiche-debit/catalogue.js',
   './fiche-debit/images/angle-90.png',
   './fiche-debit/images/angle-carre.png',
@@ -36,7 +37,27 @@ const urlsToCache = [
   './fiche-debit/images/montant.png',
   './fiche-debit/images/omega.png',
   './fiche-debit/images/parclose-double.png',
-  './fiche-debit/images/parclose-simple.png'
+  './fiche-debit/images/parclose-simple.png',
+  './fiche-debit/images/rdb1-angle-libre.png',
+  './fiche-debit/images/rdb1-angle-multiple.png',
+  './fiche-debit/images/rdb1-angle90.png',
+  './fiche-debit/images/rdb1-capot-classic.png',
+  './fiche-debit/images/rdb1-capot-rdb1.png',
+  './fiche-debit/images/rdb1-clip-lisse.png',
+  './fiche-debit/images/rdb1-couvre-joint.png',
+  './fiche-debit/images/rdb1-depart-multiple.png',
+  './fiche-debit/images/rdb1-depart.png',
+  './fiche-debit/images/rdb1-doublage.png',
+  './fiche-debit/images/rdb1-huisserie-double.png',
+  './fiche-debit/images/rdb1-huisserie-simple.png',
+  './fiche-debit/images/rdb1-jonc.png',
+  './fiche-debit/images/rdb1-lisse.png',
+  './fiche-debit/images/rdb1-meneau.png',
+  './fiche-debit/images/rdb1-montant-special.png',
+  './fiche-debit/images/rdb1-montant.png',
+  './fiche-debit/images/rdb1-mousse.png',
+  './fiche-debit/images/rdb1-omega.png',
+  './fiche-debit/images/rdb1-parclose.png'
 ];
 
 self.addEventListener('install', event => {

@@ -35,6 +35,8 @@
 8026;Angle libre lg 5800mm - 9005 MAT;00ANG;9005 MAT;4;lecture à vérifier;False
 000091;Angle multiple lg.2700mm - blanc 9016;00PVA;BLANC 9016;4;lecture à vérifier;False
 000094;Angle multiple lg.5800mm - blanc 9016;00PVA;BLANC 9016;4;lecture à vérifier;False
+000099;Angle multiple lg.5800mm - RAL;00PVA;RAL À DÉFINIR;4;référence corrigée après double lecture du PDF;False
+999999;Article divers -;;;4;référence corrigée après double lecture du PDF;False
 8036;Battee supplementaire avec joint lg SP mm -;9005MAT;;5;lecture à vérifier;False
 001797;Bloc porte vitrage affleurant 72mm 1 vantail dim mm 03;;;5;lecture à vérifier;False
 005751;Bouchon 38 emboitable;38BOU;;5;lecture à vérifier;False
