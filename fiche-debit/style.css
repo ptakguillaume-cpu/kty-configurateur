@@ -56,7 +56,7 @@ table.profils .q { width: 24%; padding: 0; position: relative; }
 tr.rempli .q input, tr.rempli .q .calc { background: var(--saisi); }
 tr.rempli td.code { background: var(--saisi); }
 .q .manuel { position: absolute; right: 1px; top: 1px; width: 36px; height: 14px; font-size: 10px; font-weight: 400; color: #5b6470; border: 1px dashed #aab; border-radius: 3px; background: #fff; }
-.cercle { display: inline-block !important; padding: 0 6px; border: 2px solid transparent; border-radius: 50%; }
+.cercle { display: inline-block !important; padding: 0 6px; line-height: 1.1; border: 1.5px solid transparent; border-radius: 50%; }
 tr.rempli .cercle { border-color: var(--rouge); }
 table.profils td.titre { text-align: center; font-weight: 700; font-size: 11px; background: #fff; }
 .img-texte { display: block; text-align: center; font-size: 11px; font-weight: 600; line-height: 1.1; padding-top: 2px; }
@@ -64,6 +64,14 @@ table.profils td.titre { text-align: center; font-weight: 700; font-size: 11px; 
 .info label { align-self: center; font-weight: 700; text-decoration: underline; }
 .info textarea { width: 100%; min-height: 40px; border: 1px solid var(--trait); padding: 3px 6px; font: inherit; font-weight: 600; resize: vertical; background: #fff; }
 .info textarea:focus { outline: 2px solid var(--accent); }
+/* grille régulière : même hauteur de ligne dans les deux tableaux, séparation nette entre familles */
+table.profils tr { height: var(--h); }
+table.profils td { line-height: 1.05; overflow: hidden; }
+table.profils td.code, table.profils td.lg, table.profils td.q { white-space: nowrap; }
+table.profils tr.groupe > td, table.profils tr.groupe > th { border-top: 2px solid var(--trait); }
+table.profils tbody tr:first-child > td { border-top: 1px solid var(--trait); }
+table.profils td.fam.large { font-weight: 600; font-size: 11px; }
+table.profils td.fam.long { font-size: 9.5px; letter-spacing: -0.2px; }
 tr.tete-groupe td { background: var(--gris-clair); }
 .petit { font-size: 10px; font-weight: 400; color: #444; }
 
@@ -120,7 +128,7 @@ tr.tete-groupe td { background: var(--gris-clair); }
 /* ---------- impression : A4 paysage, comme la feuille du XLS ---------- */
 @page { size: A4 landscape; margin: 6mm; }
 @media print {
-    :root { --h: 3.75mm; --h-acc: 5.2mm; }
+    :root { --h: 4.15mm; --h-acc: 5.4mm; }
     body { background: #fff; font-size: 8pt; }
     .hors-impression { display: none !important; }
     main { padding: 0; }
@@ -128,6 +136,9 @@ tr.tete-groupe td { background: var(--gris-clair); }
     .info { margin-bottom: 1.5mm; gap: 3mm; }
     .info textarea { min-height: 7.5mm; height: 7.5mm; resize: none; overflow: hidden; font-size: 8.5pt; padding: 0.5mm 1.5mm; }
     .img-texte, table.profils td.titre { font-size: 6.4pt; }
+    .cercle { padding: 0 2px; }
+    table.profils td.fam.large { font-size: 6.4pt; } table.profils td.fam.long { font-size: 5.6pt; letter-spacing: -0.1px; }
+    table.profils tr.groupe > td, table.profils tr.groupe > th { border-top: 0.45mm solid var(--trait); }
     .corps { grid-template-columns: 27% 27% 1fr !important; gap: 2mm; }
     .panneau { grid-column: auto !important; }
     table.profils th { font-size: 6.5pt; }

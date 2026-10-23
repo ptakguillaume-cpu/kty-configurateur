@@ -40,7 +40,7 @@ G = [(4,5,'Lisse','00LIS'),(6,10,'Montant','00MON'),(11,15,'Couvre-joint plat','
      (37,41,'Départ multiple à couvre-joint','00DMCJ'),(42,44,'Clip de lisse','60ECA')]
 D = [(4,8,'Départ','00DEP'),(9,11,'Couvre-joint Oméga',''),(12,13,'Jonc',''),(14,16,'Angle 90°','00P2D'),
      (17,21,'Montant spécial renforcé',''),(22,26,'Capot','00CAP'),(27,31,'Angle libre','00ANG'),
-     (32,32,'Angle de doublage',''),(33,33,'Plat de doublage',''),(34,36,'Huisserie simple A/B carré',''),
+     (32,32,'Angle doubl.',''),(33,33,'Plat doubl.',''),(34,36,'Huisserie simple A/B carré',''),
      (37,40,'Huisserie DV type A carré',''),(41,41,'Jeu 3 paumelles bois',''),(42,42,'Jeu 6 paumelles bois',''),
      (43,43,'Jeu 2 paumelles clarit',''),(44,44,'Serrure clarit avec cylindre','')]
 CALC = {'gauche': set(range(11, 16)), 'droite': {41, 42}}
@@ -93,6 +93,9 @@ for it in res['gauche']:
         t = 'Simple vitrage' if it['ligne'] == 16 else 'Double vitrage'
         nouv.append(dict(id='G%d' % (it['ligne'] + 1), ligne=it['ligne'] + 1, famille=t, codeFamille='', longueur=None, codes={}, calcule=False, vide=True, titre=t))
 res['gauche'] = nouv
+for it in res['droite']:
+    if it['ligne'] == 32: it['libelle'] = 'Angle de doublage'
+    if it['ligne'] == 33: it['libelle'] = 'Plat de doublage'
 
 # --- Suggestions seulement : codes présents dans le PDF mais absents des tableaux du XLS (même EDI, même longueur, même finition).
 # NON appliquées : une référence peut ne plus exister dans une finition (ex. capot 2700 / 3250, angle libre 2550 / 2700 / 3250 : anodisé seulement). ---

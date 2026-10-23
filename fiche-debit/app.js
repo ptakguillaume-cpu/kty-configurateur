@@ -17,6 +17,7 @@ const IMAGES = {                                   // dessins de profils de la f
 };
 const IMAGE_SPAN = { D32: 2 };                      // un même dessin pour « Angle de doublage » et « Plat de doublage »
 const SANS_IMAGE_PROPRE = new Set(['D33']);
+const LIBELLE_LARGE = new Set(['D41', 'D42', 'D43', 'D44']);   // paumelles et serrure : libellé sur les 2 colonnes, sans dessin (comme le XLS)
 const PRODUITS_VIDES_MIN = 10;                     // lignes vides affichées pour garder l'aspect de la feuille
 
 // ---------- utilitaires ----------
@@ -86,8 +87,10 @@ function construireProfils(cote, titre) {
   const tbody = h('tbody');
   for (const g of groupes(FICHE[cote])) {
     g.items.forEach((it, i) => {
-      const tr = h('tr', { 'data-id': it.id });
-      if (i === 0 && it.vide && it.titre) {
+      const tr = h('tr', { 'data-id': it.id, class: i === 0 ? 'groupe' : '' });
+      if (i === 0 && LIBELLE_LARGE.has(it.id)) {
+        tr.append(h('td', { class: 'fam large' + (g.famille.length > 22 ? ' long' : ''), colspan: 2, rowspan: g.items.length, text: g.famille }));
+      } else if (i === 0 && it.vide && it.titre) {
         tr.append(h('td', { class: 'titre', colspan: 2, text: it.titre }));          // ex. « Simple vitrage » (ligne 17 du XLS)
       } else if (i === 0) {
         if (!SANS_IMAGE_PROPRE.has(it.id)) {
@@ -124,6 +127,7 @@ function construireProfils(cote, titre) {
     });
   }
   return h('table', { class: 'profils' },
+    h('colgroup', {}, ['17%', '22%', '17%', '17%', '27%'].map(w => h('col', { style: `width:${w}` }))),
     h('thead', {}, h('tr', {}, h('th', { colspan: 2, text: titre }), h('th', { text: 'code KTY' }), h('th', { text: 'Longueur' }), h('th', { text: 'Quantité' }))), tbody);
 }
 
