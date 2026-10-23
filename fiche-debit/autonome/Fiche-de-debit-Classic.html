@@ -204,21 +204,20 @@ tr.tete-groupe td { background: var(--gris-clair); }
 .bib-bloc h3 { margin: 0 0 4px; }
 .fenetre h3 { margin: 16px 0 4px; font-size: 15px; }
 
-/* ---------- suivi des modifications : ajouté = vert, modifié = orange, retiré = rouge ---------- */
-:root { --chg-ajout: #9be59a; --chg-modif: #ffc266; --chg-retrait: #ff8f8f; }
+/* ---------- suivi des modifications : écriture en VIOLET (le fond reste gris / blanc, réservé au stabilo) ---------- */
+:root { --chg: #7b1fa2; }
 .revision { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: center; margin-bottom: 6px; padding: 5px 10px; border: 1px solid var(--trait); background: var(--gris-clair); font-size: 13px; }
 .revision[hidden] { display: none; }
-.revision.modifiee { background: #fff3dc; border: 2px solid #e08a00; }
-.revision .legende { display: flex; gap: 6px; margin-left: auto; }
+.revision.modifiee { border: 2px solid var(--chg); color: var(--chg); font-weight: 700; }
+.revision .legende { display: flex; gap: 10px; margin-left: auto; color: var(--chg); }
 .revision .legende[hidden] { display: none; }
-.revision .legende i { font-style: normal; font-weight: 700; padding: 1px 10px; border: 1px solid var(--trait); }
-table.profils tr td.q.chg-ajout, table.profils tr.rempli td.q.chg-ajout, .liste td.n.chg-ajout, .acc-table tr td.n.chg-ajout, .acc-table tr.rempli td.n.chg-ajout, .revision i.chg-ajout { background: var(--chg-ajout) !important; }
-table.profils tr td.q.chg-modif, table.profils tr.rempli td.q.chg-modif, .liste td.n.chg-modif, .acc-table tr td.n.chg-modif, .acc-table tr.rempli td.n.chg-modif, .revision i.chg-modif { background: var(--chg-modif) !important; }
-table.profils tr td.q.chg-retrait, table.profils tr.rempli td.q.chg-retrait, .liste td.n.chg-retrait, .acc-table tr td.n.chg-retrait, .acc-table tr.rempli td.n.chg-retrait, .revision i.chg-retrait { background: var(--chg-retrait) !important; }
-.avant { position: absolute; left: 2px; top: 0; font-size: 8px; line-height: 1.1; color: #5a2a00; pointer-events: none; white-space: nowrap; }
-td.chg-retrait .avant { left: 0; right: 0; top: 50%; transform: translateY(-50%); text-align: center; font-size: 11px; font-weight: 700; color: #7a0000; }
+.revision .legende i { font-style: normal; font-weight: 700; }
+td.chg-ajout, td.chg-modif, td.chg-retrait, td.chg-ajout input, td.chg-modif input, td.chg-retrait input,
+td.chg-ajout .auto, td.chg-modif .auto, td.chg-ajout .calc, td.chg-modif .calc { color: var(--chg) !important; font-weight: 800; }
+.avant { position: absolute; left: 2px; top: 0; font-size: 8px; line-height: 1.1; color: var(--chg); font-weight: 700; pointer-events: none; white-space: nowrap; }
+td.chg-retrait .avant { left: 0; right: 0; top: 50%; transform: translateY(-50%); text-align: center; font-size: 11px; font-weight: 700; color: var(--chg); }
 .liste td.n { position: relative; }
-tr.fantome td { background: #fff0f0; color: #7a0000; text-decoration: line-through; }
+tr.fantome td { color: var(--chg); text-decoration: line-through; }
 tr.fantome td.n { text-decoration: none; }
 @media print {
     .revision { font-size: 7.5pt; padding: 0.3mm 1.5mm; margin-bottom: 1mm; border-width: 0.3mm; }
@@ -1162,7 +1161,7 @@ function arreterSuivi() {
 }
 function construireRevision() {                           // bandeau imprimé en haut de la fiche quand elle a été modifiée
   return h('div', { class: 'revision', id: 'revision', hidden: true }, h('strong'),
-    h('span', { class: 'legende' }, h('i', { class: 'chg-ajout', text: 'ajouté' }), h('i', { class: 'chg-modif', text: 'modifié' }), h('i', { class: 'chg-retrait', text: 'retiré' })));
+    h('span', { class: 'legende' }, h('i', { class: 'chg-ajout', text: 'ajouté' }), h('i', { class: 'chg-modif', text: 'modifié (avant X)' }), h('i', { class: 'chg-retrait', text: 'retiré (avant X)' })));
 }
 
 function maj() {
@@ -1252,8 +1251,17 @@ function chercher() {
 
 // ---------- fichiers : enregistrer, ouvrir, Excel, imprimer ----------
 const nomFichier = () => `${GAMME.prefixeFichier} ${etat.entete.chantier} ${etat.entete.niveau}`.replace(/\s+/g, ' ').trim().replace(/[\\/:*?"<>|]/g, '-');
-function telecharger(blob, nom) {
-  const a = h('a', { href: URL.createObjectURL(blob), download: nom });
+const TYPES_FICHIER = { json: ['Fiche KTY (.json)', 'application/json'], xlsx: ['Classeur Excel (.xlsx)', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'] };
+async function telecharger(blob, nom) {
+  const ext = nom.split('.').pop().toLowerCase();
+  if (window.showSaveFilePicker && TYPES_FICHIER[ext]) {            // Chrome / Edge : vraie fenêtre « Enregistrer sous » (dossier et nom au choix)
+    try {
+      const f = await window.showSaveFilePicker({ suggestedName: nom, types: [{ description: TYPES_FICHIER[ext][0], accept: { [TYPES_FICHIER[ext][1]]: ['.' + ext] } }] });
+      const w = await f.createWritable(); await w.write(blob); await w.close();
+      annoncer(`Fichier enregistré : ${f.name}`); return;
+    } catch (err) { if (err && err.name === 'AbortError') return; }  // annulé : rien à faire ; autre erreur : téléchargement classique
+  }
+  const a = h('a', { href: URL.createObjectURL(blob), download: nom });          // Firefox, Safari : dossier Téléchargements
   document.body.append(a); a.click();
   setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
 }
