@@ -297,7 +297,7 @@ function arreterSuivi() {
 }
 function construireRevision() {                           // bandeau imprimé en haut de la fiche quand elle a été modifiée
   return h('div', { class: 'revision', id: 'revision', hidden: true }, h('strong'),
-    h('span', { class: 'legende' }, h('i', { class: 'chg-ajout', text: 'ajouté' }), h('i', { class: 'chg-modif', text: 'modifié' }), h('i', { class: 'chg-retrait', text: 'retiré' })));
+    h('span', { class: 'legende' }, h('i', { class: 'chg-ajout', text: 'ajouté' }), h('i', { class: 'chg-modif', text: 'modifié (avant X)' }), h('i', { class: 'chg-retrait', text: 'retiré (avant X)' })));
 }
 
 function maj() {
