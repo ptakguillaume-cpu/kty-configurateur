@@ -1251,8 +1251,17 @@ function chercher() {
 
 // ---------- fichiers : enregistrer, ouvrir, Excel, imprimer ----------
 const nomFichier = () => `${GAMME.prefixeFichier} ${etat.entete.chantier} ${etat.entete.niveau}`.replace(/\s+/g, ' ').trim().replace(/[\\/:*?"<>|]/g, '-');
-function telecharger(blob, nom) {
-  const a = h('a', { href: URL.createObjectURL(blob), download: nom });
+const TYPES_FICHIER = { json: ['Fiche KTY (.json)', 'application/json'], xlsx: ['Classeur Excel (.xlsx)', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'] };
+async function telecharger(blob, nom) {
+  const ext = nom.split('.').pop().toLowerCase();
+  if (window.showSaveFilePicker && TYPES_FICHIER[ext]) {            // Chrome / Edge : vraie fenêtre « Enregistrer sous » (dossier et nom au choix)
+    try {
+      const f = await window.showSaveFilePicker({ suggestedName: nom, types: [{ description: TYPES_FICHIER[ext][0], accept: { [TYPES_FICHIER[ext][1]]: ['.' + ext] } }] });
+      const w = await f.createWritable(); await w.write(blob); await w.close();
+      annoncer(`Fichier enregistré : ${f.name}`); return;
+    } catch (err) { if (err && err.name === 'AbortError') return; }  // annulé : rien à faire ; autre erreur : téléchargement classique
+  }
+  const a = h('a', { href: URL.createObjectURL(blob), download: nom });          // Firefox, Safari : dossier Téléchargements
   document.body.append(a); a.click();
   setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
 }
