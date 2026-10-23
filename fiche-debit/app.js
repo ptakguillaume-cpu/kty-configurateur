@@ -15,6 +15,8 @@ const IMAGES = {                                   // dessins de profils de la f
   G32: 'angle-depart-multiple', G37: 'depart-multiple-cj', G42: 'clip-lisse',
   D4: 'depart', D9: 'omega', D12: 'jonc', D14: 'angle-90', D17: 'montant-special', D22: 'capot', D27: 'angle-libre', D32: 'angle-doublage', D34: 'huisserie', D37: 'huisserie',
 };
+const IMAGE_SPAN = { D32: 2 };                      // un même dessin pour « Angle de doublage » et « Plat de doublage »
+const SANS_IMAGE_PROPRE = new Set(['D33']);
 const PRODUITS_VIDES_MIN = 10;                     // lignes vides affichées pour garder l'aspect de la feuille
 
 // ---------- utilitaires ----------
@@ -86,14 +88,17 @@ function construireProfils(cote, titre) {
     g.items.forEach((it, i) => {
       const tr = h('tr', { 'data-id': it.id });
       if (i === 0) {
-        const img = h('td', { class: 'img', rowspan: g.items.length });
-        if (IMAGES[it.id]) img.append(h('img', { src: `images/${IMAGES[it.id]}.png`, alt: '' }));
-        tr.append(img);
+        if (!SANS_IMAGE_PROPRE.has(it.id)) {
+          const img = h('td', { class: 'img', rowspan: IMAGE_SPAN[it.id] || g.items.length });
+          if (IMAGES[it.id]) img.append(h('img', { src: `images/${IMAGES[it.id]}.png`, alt: '' }));
+          tr.append(img);
+        }
         const fam = h('td', { class: 'fam', rowspan: g.items.length }, h('span', { text: g.famille }));
         if (g.codeFamille) fam.append(h('small', { class: AVEC_CERCLE.has(it.id) ? 'cercle' : '', text: g.codeFamille }));
         if (g.famille === 'Jonc') fam.append(h('small', { id: 'couleurJonc' }));
         tr.append(fam);
       }
+      if (it.vide) { tr.append(h('td', { class: 'code' }), h('td', { class: 'lg' }), h('td', { class: 'q' })); tbody.append(tr); return; }
       const codeTd = h('td', { class: 'code' });
       const lg = it.longueur ? String(it.longueur) : it.largeur ? String(it.largeur) : (it.edi || '');
       const qTd = h('td', { class: 'q' });
@@ -149,7 +154,7 @@ function construirePanneau() {
     corpsProduits);
 
   // Accessoires : dessins à gauche (clip / éclisse / équerre, joints), comme dans le XLS
-  const IMG_ACC = { A36: { lignes: 3, img: 'clip-eclisse' }, A39: { lignes: 4, img: 'joint' }, A43: { lignes: 2, img: null } };
+  const IMG_ACC = { A36: { lignes: 9, img: 'accessoires' } };      // éclisse, clip, équerre, joints, cale, mousse : un seul dessin comme dans le XLS
   const SANS_IMAGE = new Set(['A34', 'A35']);
   const corpsAcc = h('tbody');
   rowLaquage = h('tr', { class: 'acc', hidden: true },

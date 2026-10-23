@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kty-app-v9'; // Augmentez le chiffre à chaque mise à jour pour forcer le refresh
+const CACHE_NAME = 'kty-app-v10'; // Augmentez le chiffre à chaque mise à jour pour forcer le refresh
 const urlsToCache = [
   './',
   './index.html',
@@ -21,13 +21,12 @@ const urlsToCache = [
   './fiche-debit/images/angle-doublage.png',
   './fiche-debit/images/angle-libre.png',
   './fiche-debit/images/capot.png',
-  './fiche-debit/images/clip-eclisse.png',
+  './fiche-debit/images/accessoires.png',
   './fiche-debit/images/clip-lisse.png',
   './fiche-debit/images/couvre-joint.png',
   './fiche-debit/images/depart-multiple-cj.png',
   './fiche-debit/images/depart.png',
   './fiche-debit/images/huisserie.png',
-  './fiche-debit/images/joint.png',
   './fiche-debit/images/jonc.png',
   './fiche-debit/images/lisse.png',
   './fiche-debit/images/meneau.png',

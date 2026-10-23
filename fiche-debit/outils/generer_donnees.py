@@ -38,7 +38,7 @@ G = [(4,5,'Lisse','00LIS'),(6,10,'Montant','00MON'),(11,15,'Couvre-joint plat','
      (19,19,'Parclose double vitrage','sans joints'),(21,21,'Parclose double vitrage','avec joints'),
      (22,26,'Meneau','00P3D'),(27,31,'Angle 90° carré','00P2DC'),(32,36,'Angle départ multiple','00ADM'),
      (37,41,'Départ multiple à couvre-joint','00DMCJ'),(42,44,'Clip de lisse','60ECA')]
-D = [(4,8,'Départ','00DEP'),(9,11,'Couvre-joint Oméga',''),(12,12,'Jonc',''),(14,16,'Angle 90°','00P2D'),
+D = [(4,8,'Départ','00DEP'),(9,11,'Couvre-joint Oméga',''),(12,13,'Jonc',''),(14,16,'Angle 90°','00P2D'),
      (17,21,'Montant spécial renforcé',''),(22,26,'Capot','00CAP'),(27,31,'Angle libre','00ANG'),
      (32,32,'Angle de doublage',''),(33,33,'Plat de doublage',''),(34,36,'Huisserie simple A/B carré',''),
      (37,40,'Huisserie DV type A carré',''),(41,41,'Jeu 3 paumelles bois',''),(42,42,'Jeu 6 paumelles bois',''),
@@ -50,6 +50,8 @@ for side, groups in (('gauche', G), ('droite', D)):
     for a, b, fam, cf in groups:
         for r in range(a, b + 1):
             cell = ws.cell(r, CODE_COL[side]).value
+            if side == 'droite' and r == 13:            # ligne vide du XLS sous le jonc : garde la hauteur du dessin
+                res[side].append(dict(id='D13', ligne=13, famille='Jonc', codeFamille='', longueur=None, codes={}, calcule=False, vide=True)); continue
             if cell in (None, '', 0) and not ws.cell(r + 34, 22).value and side == 'droite' and r in (13,):
                 continue
             codes = {}; tr = r + 34

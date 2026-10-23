@@ -8,6 +8,7 @@
     --accent: #1d4ed8;
     --rouge: #d11a1a;
     --h: 26px;
+    --h-acc: 34px;
 }
 * { box-sizing: border-box; }
 body { margin: 0; font: 14px/1.3 system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; color: var(--encre); background: var(--fond); }
@@ -87,7 +88,8 @@ tr.tete-groupe td { background: var(--gris-clair); }
 .liste tr.acc .auto { display: flex; align-items: center; justify-content: center; font-weight: 700; background: var(--gris-clair); height: calc(var(--h) - 2px); }
 .liste tr.rempli td.n input, .liste tr.rempli .auto { background: var(--saisi); }
 .acc-table { margin-top: 6px; border-top: 2px solid var(--trait); }
-.acc-table .a1 { width: 17%; } .acc-table .a2 { width: 31%; } .acc-table .a3 { width: 22%; } .acc-table .a4 { width: 15%; } .acc-table .a5 { width: 15%; }
+.acc-table td { height: var(--h-acc); }
+.acc-table .a1 { width: 20%; } .acc-table .a2 { width: 28%; } .acc-table .a3 { width: 22%; } .acc-table .a4 { width: 15%; } .acc-table .a5 { width: 15%; }
 
 .print-seulement { display: none; }
 .vide { color: #8a919b; text-align: center; font-size: 12px; height: var(--h); }
@@ -112,7 +114,7 @@ tr.tete-groupe td { background: var(--gris-clair); }
 /* ---------- impression : A4 paysage, comme la feuille du XLS ---------- */
 @page { size: A4 landscape; margin: 6mm; }
 @media print {
-    :root { --h: 3.75mm; }
+    :root { --h: 3.75mm; --h-acc: 5.2mm; }
     body { background: #fff; font-size: 8pt; }
     .hors-impression { display: none !important; }
     main { padding: 0; }
