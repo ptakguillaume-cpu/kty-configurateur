@@ -183,8 +183,11 @@ function maj() {
     const q = r.qte[id] || 0;
     if (L.calc) L.calc.textContent = fmt(q);
     L.tr.classList.toggle('rempli', q !== 0);
-    if (q > 0 && !code) alertes.push({ t: `Pas de code ${nomFin} pour « ${L.item.famille} ${L.item.longueur || L.item.largeur || ''} » : ajoutez-le avec « + Ligne libre ».` });
-    if (L.item.ajoutes && q > 0 && L.item.ajoutes.includes(fin)) { /* code complété depuis le PDF : rien à signaler */ }
+    if (q > 0 && !code) {
+      const dispo = Object.keys(L.item.codes).map(f => NOM_FINITION[f] === 'RAL (à définir ou demandé)' ? 'RAL' : f);
+      const nom = `« ${L.item.famille} ${L.item.longueur || L.item.largeur || ''} »`;
+      alertes.push({ t: dispo.length ? `${nom} n'existe plus qu'en ${dispo.join(', ')} : pas de code en ${nomFin}.` : `Pas de code pour ${nom} : ajoutez-le avec « + Ligne libre ».` });
+    }
   }
   $('couleurJonc').textContent = couleurJonc(fin, e.ral);
   $('finTxt').textContent = nomFin;

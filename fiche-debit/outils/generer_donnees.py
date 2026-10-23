@@ -79,7 +79,9 @@ for side, groups in (('gauche', G), ('droite', D)):
             res[side].append(item)
 
 
-# --- Complétion : codes absents du XLS mais présents dans le PDF (même code EDI, même longueur, même finition) ---
+# --- Suggestions seulement : codes présents dans le PDF mais absents des tableaux du XLS (même EDI, même longueur, même finition).
+# NON appliquées : une référence peut ne plus exister dans une finition (ex. capot 2700 / 3250, angle libre 2550 / 2700 / 3250 : anodisé seulement). ---
+COMPLETER = False
 MAPF = {'9005 MAT': '9005 MAT', '7016 FT': 'RAL7016FT', 'BLANC 9016': 'BLANC 9016', 'ANODISÉ': 'ANODISÉ', 'RAL': 'RAL À DÉFINIR'}
 def _lg(c):
     m = re.search(r'l[gG]?\.?\s*(\d{4})\s*mm', c['designation']) or re.search(r'[lI]g\.?\s*(\d{4})', c['designation'])
@@ -97,8 +99,8 @@ for side in ('gauche', 'droite'):
         for f in FIN:
             cand = idx.get((edi, l['longueur'], MAPF[f]), [])
             if f not in l['codes'] and len(cand) == 1:
-                l['codes'][f] = cand[0]; l.setdefault('ajoutes', []).append(f)
-                log.append(f"AJOUT {side} ligne {l['ligne']} {l['famille']} {l['longueur']} {f}: {cand[0]} {P[cand[0]]['designation'][:50]}")
+                if COMPLETER: l['codes'][f] = cand[0]; l.setdefault('ajoutes', []).append(f)
+                log.append(f"SUGGESTION (non appliquée) {side} ligne {l['ligne']} {l['famille']} {l['longueur']} {f}: {cand[0]} {P[cand[0]]['designation'][:50]}")
 
 ACCESS = [(34,'Ruban adhésif vitrage 10 mm','000782','40DFT6'),(35,'Ruban adhésif vitrage 12 mm','005755','40DFT9'),
           (36,'Éclisse','000783','40ECL'),(37,'Clip','000144','40CLI'),(38,'Équerre','000006','40EQU'),

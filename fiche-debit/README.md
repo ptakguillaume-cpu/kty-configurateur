@@ -36,4 +36,5 @@ Modifier `catalogue.json`, puis :
 python3 fiche-debit/outils/generer_donnees.py fiche.xlsx fiche-debit/catalogue.json fiche-debit
 ```
 (`fiche.xlsx` = le XLS d'origine converti en .xlsx.) Les codes sont des **textes exacts** : `007280`, `8001` et `7346` sont trois codes différents.
+Le PDF liste aussi des références qui n'existent plus dans certaines finitions : les tableaux de la fiche (donnés par le XLS) font foi, le catalogue n'ajoute rien de lui-même.
 Après toute modification, augmenter le numéro de version dans `sw.js` pour que les tablettes rechargent les fichiers.

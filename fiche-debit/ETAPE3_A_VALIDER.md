@@ -10,7 +10,7 @@
 ## Ce qui diffère, volontairement
 | Sujet | XLS | Outil |
 |---|---|---|
-| Codes manquants dans les tableaux | capot 2700 et 3250, angle libre 2550, 2700 et 3250 : un code **seulement en anodisé** | **20 codes ajoutés** depuis le PDF (9005 MAT, 7016 FT, blanc 9016, RAL), sans conflit ni ambiguïté |
+| Capot 2700 et 3250, angle libre 2550, 2700 et 3250 | un code **seulement en anodisé** | **gardé tel quel** : ces références n'existent plus qu'en anodisé (confirmé). Dans les autres finitions la ligne affiche « — » et une alerte « n'existe plus qu'en ANODISÉ » si on saisit une quantité |
 | Clip de lisse 25 | code `008001` tapé à la main | ligne conservée, code `008001` (hors catalogue) |
 | Angle 90° 3250 (7e ligne droite) | longueur **vide** dans le XLS | longueur 3250 reprise du catalogue |
 | Couvre-joint plat 2,50 m | « +2 » caché dans la formule | case « ± » d'ajout manuel (le cas AKPINAR affiche 58 + 2 manuel = 60 comme le XLS) |
