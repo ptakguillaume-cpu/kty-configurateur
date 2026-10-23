@@ -5,7 +5,7 @@ import ast, json, os, re, shutil, subprocess, sys, tempfile
 from collections import defaultdict
 
 RACINE = sys.argv[1] if len(sys.argv) > 1 else "."
-SKIP = {"node_modules", ".git", ".claude", "dist", "build", "__pycache__", "vendor"}
+SKIP = {"node_modules", ".git", ".claude", "dist", "build", "__pycache__", "vendor", "autonome"}   # autonome = fichier généré par construire_autonome.py
 SCRIPT = re.compile(r"<script\b([^>]*)>(.*?)</script>", re.S | re.I)
 FUNC = re.compile(r"^function\s+([A-Za-z_$][\w$]*)\s*\(", re.M)       # colonne 0 = niveau global
 DEF = re.compile(r"(?:function|const|let|var)\s+([A-Za-z_$][\w$]*)")

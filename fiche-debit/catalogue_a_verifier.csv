@@ -1,0 +1,219 @@
+﻿ref;designation;edi;finition;page_pdf;a_verifier;hors_catalogue
+005651;;;;1;désignation vide sur le PDF;False
+000070;Angle 90° lg. 2550mm - anodise;OOP2D;ANODISÉ;1;lecture à vérifier;False
+000080;Angle 90° lg. 2550mm - RAL;O0P2D;RAL À DÉFINIR;1;lecture à vérifier;False
+000076;Angle 90° lg. 2700mm - 9016;0OP2D;BLANC 9016;1;lecture à vérifier;False
+000081;Angle 90° lg. 2700mm - RAL;00P2D;RAL À DÉFINIR;1;lecture à vérifier;False
+007344;Angle 90°lg. 2700mm - RAL7016FT;O0P2D;RAL7016FT;1;lecture à vérifier;False
+000072;Angle 90° lg. 3050mm - anodisé;O0P2D;ANODISÉ;1;lecture à vérifier;False
+000082;Angle 90° lg.3050mm - RAL;O0P2D;RAL À DÉFINIR;1;lecture à vérifier;False
+007345;Angle 90°lg.3050mm -RAL7016FT;00P2D;RAL7016FT;1;lecture à vérifier;False
+000073;Angle 90° lg. 3250mm - anodisé;OP2D;ANODISÉ;1;lecture à vérifier;False
+000083;Angle 90°lg. 3250mm - RAL;0OP2D;RAL À DÉFINIR;1;lecture à vérifier;False
+000074;Angle 90° lg. 5800mm - anodisé;O0P2D;ANODISÉ;1;lecture à vérifier;False
+000084;Angle 90° lg. 5800mm - RAL;00P2D;RAL À DÉFINIR;1;lecture à vérifier;False
+007347;Angle 90°lg. 5800mm - RAL7016FT;O0P2D;RAL7016FT;1;lecture à vérifier;False
+007355;Angle 90 38 lg 3250mm, RAL7016FT;38P2D;RAL7016FT;1;lecture à vérifier;False
+001371;Angle 90 carre classic lg 2550mm,blanc 9016;O00P2DC;BLANC 9016;2;lecture à vérifier;False
+001374;Angle 90 carre classic lg 3250mm,blanc 9016;OOP2DC;BLANC 9016;2;lecture à vérifier;False
+8010;Angle 90° carre classic lg 3250mm - 9005 MAT;00P2DC;9005 MAT;2;lecture à vérifier;False
+8011;Angle 90° carre classic lg 5800mm - 9005 MAT;00P2DC;9005 MAT;2;lecture à vérifier;False
+8000;Angle 90° lg 2550mm - 9005 MAT;O0P2D;9005 MAT;2;lecture à vérifier;False
+8001;Angle 90° lg 2700mm - 9005 MAT;OOP2D;9005 MAT;2;lecture à vérifier;False
+8002;Angle 90° lg 3050mm - 9005 MAT;OOP2D;9005 MAT;2;lecture à vérifier;False
+8003;Angle 90°lg 3250mm - 9005 MAT;O0P2D;9005 MAT;2;lecture à vérifier;False
+8004;Angle 90°lg 5800mm - 9005 MAT;O0P2D;9005 MAT;2;lecture à vérifier;False
+000797;Angle de doublage 38 x 38 lg 3000mm - anodisé;11AND;;2;désignation relue visuellement;False
+8016;Angle de doublage 38 × 38 lg 3000mm - 9005 MAT;11AND;9005 MAT;3;lecture à vérifier;False
+006507;Angle depart multiple lg 2700mm, blanc 9016;O0ADM;BLANC 9016;3;lecture à vérifier;False
+006512;Angle depart multiple lg 2700mm, RAL;00ADM;RAL À DÉFINIR;3;lecture à vérifier;False
+006513;Angle depart multiple lg 3050mm, RAL;00ADM;RAL À DÉFINIR;3;lecture à vérifier;False
+007362;Angle depart multiple lg 3050mm, RAL7016FT;00ADM;RAL7016FT;3;lecture à vérifier;False
+8021;Angle depart multiple lg 5800mm - 9005 MAT;00ADM;9005 MAT;3;lecture à vérifier;False
+000395;Angle libre lg 2550mm - RAL;00ANG;RAL À DÉFINIR;3;lecture à vérifier;False
+8023;Angle libre lg 2700mm - 9005 MAT;00ANG;9005 MAT;3;lecture à vérifier;False
+8026;Angle libre lg 5800mm - 9005 MAT;00ANG;9005 MAT;4;lecture à vérifier;False
+000091;Angle multiple lg.2700mm - blanc 9016;00PVA;BLANC 9016;4;lecture à vérifier;False
+000094;Angle multiple lg.5800mm - blanc 9016;00PVA;BLANC 9016;4;lecture à vérifier;False
+8036;Battee supplementaire avec joint lg SP mm -;9005MAT;;5;lecture à vérifier;False
+001797;Bloc porte vitrage affleurant 72mm 1 vantail dim mm 03;;;5;lecture à vérifier;False
+005751;Bouchon 38 emboitable;38BOU;;5;lecture à vérifier;False
+8039;Capot de finition lg 2550mm - 9005 MAT;00CAP;9005 MAT;6;lecture à vérifier;False
+8040;Capot de finition lg 2700mm - 9005 MAT;00CAP;9005 MAT;6;lecture à vérifier;False
+000212;Capot de finition lg 2700mm - anodisé;00CAP;ANODISÉ;6;lecture à vérifier;False
+000217;Capot de finition lg 2700mm - blanc 9016;00CAP;BLANC 9016;6;lecture à vérifier;False
+000213;Capot de finition lg 3050mm - anodisé;00CAP;ANODISÉ;6;lecture à vérifier;False
+007383;Capot de finition lg 3050mm - RAL7016FT;00CAP;RAL7016FT;6;lecture à vérifier;False
+000342;Capot de finition lg 3250mm - blanc 9016;00CAP;BLANC 9016;6;lecture à vérifier;False
+000341;Capot de finition lg 3250mm - brut;00CAP;BRUT;6;lecture à vérifier;False
+007384;Capot de finition lg 3250mm- RAL7016FT;00CAP;RAL7016FT;6;lecture à vérifier;False
+8043;Capot de finition lg 5800mm - 9005 MAT;00CAP;9005 MAT;6;lecture à vérifier;False
+000225;Capot de finition lg 5800mm - RAL;00CAP;RAL À DÉFINIR;6;lecture à vérifier;False
+005449;Charniere double action 180mm;5449;;6;lecture à vérifier;False
+8044;Chassis huis 4 coupes d'onglet H 600x1200mm fdf - 9005 MAT;;9005 MAT;6;lecture à vérifier;False
+8048;prniere egale 15 x15mm ép 2mm lg 3000mm - 9005 MAT;50CE15;9005 MAT;7;lecture à vérifier;False
+8049;Corniere egale 20 × 20mm ép 2mm lg 3000mm - 9005 MAT;50CE20;9005 MAT;7;lecture à vérifier;False
+007397;Couvercle goulotte électrique lg 3000mm - RAL7016FT;05COE;RAL7016FT;7;lecture à vérifier;False
+8052;Couvercle goulotte plat lg 3000mm - 9005 MAT;05CGP;9005 MAT;8;lecture à vérifier;False
+000044;Couvre-joint plat lg 3050mm - anodise;60CJP;ANODISÉ;8;lecture à vérifier;False
+8065;Couvre-joint omega lg 2700mm - 9005 MAT;60CJO;9005 MAT;9;lecture à vérifier;False
+8068;Couvre-joint omega lg 5750mm - 9005 MAT;60CJO;9005 MAT;9;lecture à vérifier;False
+8060;Couvre-joint plat lg 3050mm - 9005 MAT;60CJP;9005 MAT;9;lecture à vérifier;False
+8069;Couvre-joint plat lg 3700mm - 9005 MAT;60CJP;9005 MAT;9;lecture à vérifier;False
+8057;Couvre-joint plat usine SIMPLE lg 3000mm - 9005 MAT;60CJPUS;9005 MAT;9;lecture à vérifier;False
+8083;Depart multiple a couvre-joint lg 3250mm - 9005 MAT;00DMCJ;9005 MAT;10;lecture à vérifier;False
+000102;Depart multiple a couvre-joint lg.3050mm - anodise;00DMCJ;ANODISÉ;10;lecture à vérifier;False
+007420;Depart mutiple a couvre-joint lg.3250mm - RAL7016FT;0ODMCJ;RAL7016FT;10;lecture à vérifier;False
+000248;Depart multiple a couvre-joint lg.5820mm - blanc 9016;00DMCJ;BLANC 9016;10;lecture à vérifier;False
+8090;Embouts pour goulotte électrique (la paire) - 9005 MAT;05EMBA;9005 MAT;12;lecture à vérifier;False
+005676;Ensemble de 2 ferme-porte TS300 et bandeau ISM T5000;5676;;12;lecture à vérifier;False
+001668;Ensemble mini-interrupteur simple;401NT;;12;lecture à vérifier;False
+000641;Gache verrou pour imposte porte bois -;42GV;;13;lecture à vérifier;False
+8094;Goulotte 38 lg 3250mm - 9005 MAT;38GOU;9005 MAT;13;lecture à vérifier;False
+8113;Huisserie Classic AB DV avec traverse fdf × mm - 9005 MAT;01HUSDTAB;9005 MAT;14;lecture à vérifier;False
+8111;Huisserie Classic AB SV avec traverse fdf × mm - 9005 MAT;01HUSSTAB;9005 MAT;14;lecture à vérifier;False
+8107;Huisserie Classic AB type B fdf 2050 x1270mm - 9005 MAT;01HUTBAB;9005 MAT;14;lecture à vérifier;False
+8117;Huisserie Classic carré AB fdf 2050 × 937mm - 9005 MAT;01HUCSAB;9005 MAT;16;lecture à vérifier;False
+8126;Huisserie Classic carré AB SV avec traverse fdf x mm - 9005 MAT;01HUCSSTSAB;9005 MAT;16;lecture à vérifier;False
+8120;Huisserie Classic carré AB type A fdf 2050 x1656mm - 9005 MAT;01HUCTAAB;9005 MAT;16;lecture à vérifier;False
+8125;Huisserie Classic carré AB type B fdf 2050 x1870mm - 9005 MAT;01HUCTBAB;9005 MAT;16;lecture à vérifier;False
+8130;Huisserie RDB1 carré DV fdf 2050 x1470mm fdf-- 9005 MAT;16HUCTB;9005 MAT;17;désignation reprise du XLS (illisible sur le PDF);False
+8138;Huisserie RDB1 carre type A fdf 2050 x1456mm - 9005 MAT;16HUCTA;9005 MAT;17;lecture à vérifier;False
+8139;Huisserie RDB1 carre type A fdf 2050 x1656mm - 9005 MAT;16HUCTA;9005 MAT;17;lecture à vérifier;False
+8143;Huisserie RDB1 carré type B fdf 2050 x1870mm - 9005 MAT;16HUCTB;9005 MAT;17;lecture à vérifier;False
+000467;Huisserie RDB1 carree dim fdf 2050x1470mm, RAL;16HSSC;RAL À DÉFINIR;17;lecture à vérifier;False
+007578;Huisserie RDB1 carrée, type A,dim fdf 2050x1656mm-- 7016 FT;16HUCTA;RAL7016FT;18;désignation reprise du XLS (illisible sur le PDF);False
+8153;Huisserie RDB1 DV avec traverse fdf x mm - 9005 MAT;16HUSDT;9005 MAT;19;lecture à vérifier;False
+8152;Huisserie RDB1 SV sans traverse fdf x mm - 9005 MAT;16HSS;9005 MAT;19;lecture à vérifier;False
+8147;Huisserie RDB1 type B fdf 2050 x1470mm - 9005 MAT;16HUTA;9005 MAT;19;lecture à vérifier;False
+8150;Huisserie RDB1 type B fdf 2050 x1870mm - 9005 MAT;16HUTB;9005 MAT;19;lecture à vérifier;False
+000965;"Huisserie RDB1;DV sans traverse,dim fdf 2500x3000 mm-blanc 9016";16HSD;BLANC 9016;20;lecture à vérifier;False
+8156;Jeu 2 paumelles porte clarit pour huisserie fdf 2050mm - 9005 MAT;42EVS;9005 MAT;20;lecture à vérifier;False
+8157;Jeu 2 paumelles porte clarit TTH pour imposte filante - 9005 MAT;42EVSTH;9005 MAT;20;lecture à vérifier;False
+8158;Jeu 3 paumelles porte aluminium pour huisserie fdf 2050mm - 9005 MAT;42EAS;9005 MAT;21;lecture à vérifier;False
+000353;Jeu 4 paumelles porte clarit pour huis fdf 2050 - blanc 9016;42EVD;BLANC 9016;21;lecture à vérifier;False
+8170;Jeu 6 paumelles porte clarit toute hauteur - 9005 MAT;42EVD6TH;9005 MAT;22;lecture à vérifier;False
+005482;Joint a bourrer 3mm;40JT3;;22;lecture à vérifier;False
+001427;Joint brosse 4.8x15 noir, le ml;03MG;;23;lecture à vérifier;False
+8173;Jonction systeme integral lg 2300mm - 9005 MAT;02JON;9005 MAT;23;lecture à vérifier;False
+001325;Jonction systeme integral,lg 2300mm,brut;02JON;BRUT;23;lecture à vérifier;False
+000824;Kit guichet à réusiner - largeur et hauteur maxi 1200 mm - RAL;60KIG;RAL À DÉFINIR;23;désignation reprise du XLS (illisible sur le PDF);False
+8176;Kit guichet a reusiner - largeur et hauteur maxi 1200 mm - 9005 MAT;60KIG;9005 MAT;23;lecture à vérifier;False
+8175;Kit guichet dimensions spéciales maxi L2500 x H1200mm-9005 MAT;60KIGSP;9005 MAT;23;désignation reprise du XLS (illisible sur le PDF);False
+007127;Liaison 38 classic lg 3250mm, RAL;38LC;RAL À DÉFINIR;25;lecture à vérifier;False
+000961;Lisse lg 3000mm - anodisé;0OLIS;ANODISÉ;25;lecture à vérifier;False
+000959;Lisse lg 3000mm - blanc 9016;0OLIS;BLANC 9016;25;lecture à vérifier;False
+000962;Lisse lg 3000mm - RAL;OOLIS;RAL À DÉFINIR;25;lecture à vérifier;False
+000040;Lisse lg 5000mm - blanc 9016;0OLIS;BLANC 9016;25;lecture à vérifier;False
+007444;Lisse lg 5000mm-RAL7016FT;OOLIS;RAL7016FT;25;lecture à vérifier;False
+000957;Lisse aluminium sans mousse,lg 5000mm - anodise;0OLIS;ANODISÉ;25;lecture à vérifier;False
+8194;Lisse cimaise lg 5000mm - 9005 MAT;00CIM;9005 MAT;25;lecture à vérifier;False
+000387;Lisse cimaise lg 5000mm - blanc 9016;00CIM;BLANC 9016;25;lecture à vérifier;False
+8190;Lisse lg 5000mm - 9005 MAT;OOLIS;9005 MAT;25;lecture à vérifier;False
+8199;Meneau lg 2550mm - 9005 MAT;0OP3D;9005 MAT;26;lecture à vérifier;False
+8201;Meneau lg 3050mm - 9005 MAT;0OP3D;9005 MAT;26;lecture à vérifier;False
+8202;Meneau lg 3250mm - 9005 MAT;OOP3D;9005 MAT;26;lecture à vérifier;False
+8203;Meneau lg 5800mm - 9005 MAT;00P3D;9005 MAT;26;lecture à vérifier;False
+000196;Meneau lg.2550mm - anodise;OOP3D;ANODISÉ;26;lecture à vérifier;False
+000201;Meneau lg.2550mm - blanc 9016;OOP3D;BLANC 9016;26;lecture à vérifier;False
+000206;Meneau lg.2700mm - RAL;O0P3D;RAL À DÉFINIR;26;lecture à vérifier;False
+007451;Meneau lg.2700mm - RAL7016FT;00P3D;RAL7016FT;26;lecture à vérifier;False
+007452;Meneau lg.3050mm - RAL7016FT;0OP3D;RAL7016FT;26;lecture à vérifier;False
+000199;Meneau lg.3250mm - anodisé;OOP3D;ANODISÉ;26;lecture à vérifier;False
+000204;Meneau lg.3250mm - blanc 9016;OOP3D;BLANC 9016;26;lecture à vérifier;False
+000209;Meneau lg.3250mm - RAL;0OP3D;RAL À DÉFINIR;26;lecture à vérifier;False
+007453;Meneau lg.3250mm - RAL7016FT;O0P3D;RAL7016FT;26;lecture à vérifier;False
+000200;Meneau lg.5800mm - anodise;00P3D;ANODISÉ;26;lecture à vérifier;False
+000205;Meneau lg.5800mm - blanc 9016;OOP3D;BLANC 9016;26;lecture à vérifier;False
+007454;Meneau lg.5800mm -RAL7016FT;00P3D;RAL7016FT;26;lecture à vérifier;False
+8204;Meplat 20 × 2 lg 3000mm - 9005 MAT;50PLA20;9005 MAT;26;lecture à vérifier;False
+000007;Montant lg 2500mm - brut;0OMON;BRUT;27;lecture à vérifier;False
+8206;Montant d'about 38 lg 3250mm - 9005 MAT;38MA;9005 MAT;27;lecture à vérifier;False
+007460;Montant d'about 38 Ig3250mm, RAL7016FT;38MA;RAL7016FT;27;lecture à vérifier;False
+001157;Montant d'angle d'habillage lg 3050mm - brut;11MOA;BRUT;27;lecture à vérifier;False
+007333;Montant et couvre joint usines SIMPLE, lg 3000mm, RAL;00MCJUS;RAL À DÉFINIR;27;lecture à vérifier;False
+000593;Montant gache porte coulissante,dim 50x30mm,lg 3000mm - anodisé;50MG;ANODISÉ;27;lecture à vérifier;False
+005052;Montant gache porte coulissante,dim 50x30mm,lg 3000mm - RAL;50MG;RAL À DÉFINIR;27;lecture à vérifier;False
+8212;Montant gauche d'huisserie classic fdf 2050mm - 9005 MAT;;9005 MAT;27;lecture à vérifier;False
+8214;Montant huisserie RDB1 carré fdf 2600mm PD coté gâche - 9005 MAT;;;28;désignation relue visuellement;False
+001176;Montant RDB1, lg 3050mm - brut;15MON;BRUT;28;lecture à vérifier;False
+001452;Montant RF lg 3700mm, brut;03CLI;BRUT;28;lecture à vérifier;False
+000937;Parclose double vitrage lg 3000mm - anodisé;O0PAD;ANODISÉ;29;lecture à vérifier;False
+007468;Parclose double vitrage lg 2500mm,RAL7016FT;OOPAD;RAL7016FT;29;lecture à vérifier;False
+002000;Parclose double vitrage lg 2500mm-anodisé;OOPAD;ANODISÉ;29;lecture à vérifier;False
+000938;Parclose double vitrage lg 3000mm - blanc 9016;0OPAD;BLANC 9016;29;lecture à vérifier;False
+000939;Parclose double vitrage lg 3000mm - RAL;OOPAD;RAL À DÉFINIR;29;lecture à vérifier;False
+8222;Parclose double vitrage lg 3000mm - 9005 MAT;OOPAD;9005 MAT;29;lecture à vérifier;False
+8218;Parclose DV lg 3000mm avec JOINT POSE pour vitrage 6a8.8mm - 9005 MAT;00PADJP;9005 MAT;29;lecture à vérifier;False
+002005;Parclose simple vitrage lg 2500mm,blanc 9016;OOPAS;BLANC 9016;29;lecture à vérifier;False
+002006;Parclose simple vitrage lg 2500mm,RAL;OOPAS;RAL À DÉFINIR;29;lecture à vérifier;False
+8226;Parclose simple vitrage lg 3000mm - 9005 MAT;OOPAS;9005 MAT;29;lecture à vérifier;False
+000922;Parclose simple vitrage lg 3000mm - blanc 9016 OOPAS;;BLANC 9016;29;lecture à vérifier;False
+007474;Parclose simple vitrage lg 3000mm - RAL7016FT;00PAS;RAL7016FT;30;lecture à vérifier;False
+007113;Parclose SV lg 2m50 avec JOINT POSE pour vitrage 6à8.8mm,anodisé;00PASJP;;30;désignation relue visuellement;False
+007110;Parclose SV lg 3m00 avec JOINT POSE pour vitrage 6à8.8mm,anodisé;00PASJP;;30;désignation relue visuellement;False
+8227;Plat de doublage 38 x 2.8 lg 3000mm - 9005 MAT;11PLA;9005 MAT;30;lecture à vérifier;False
+000994;Porte coulissante SV type A,dim.SP × - RAL;37COA;RAL À DÉFINIR;31;lecture à vérifier;False
+8238;Porte coulissante DV type A dim 2036 x 828mm - 9005 MAT;38COA;9005 MAT;31;lecture à vérifier;False
+8239;Porte coulissante DV type A dim 2036 x 928mm - 9005 MAT;38COA;9005 MAT;31;lecture à vérifier;False
+001092;Porte coulissante DV type B,dim SP mm - blanc 9016;38COB;BLANC 9016;32;lecture à vérifier;False
+8230;Porte coulissante SV type A dim 2036 x 828mm - 9005 MAT;37COA;9005 MAT;32;lecture à vérifier;False
+8232;Porte coulissante SV type A dim. speciales × mm - 9005 MAT;37COA;9005 MAT;32;lecture à vérifier;False
+8247;Profil cimaise lg 4000mm - 9005 MAT;60CIP;9005 MAT;32;lecture à vérifier;False
+005038;Profil de finition vertical système intégral lg 3000mm - blanc 9016;02FIN;;33;désignation relue visuellement;False
+8249;Profil huisserie carré lg 6320mm - 9005 MAT;;9005 MAT;33;lecture à vérifier;False
+8245;Profil U 15x15x15 ép 2mm lg 3000mm - 9005 MAT;;9005 MAT;33;lecture à vérifier;False
+8246;Profil U 20 × 40 × 20mm ép 2mm lg 3000mm - 9005 MAT;50COU204020;9005 MAT;33;lecture à vérifier;False
+8251;Rail lg 3m pour 1 porte coulissante STD larg maxi 1200mm - 9005 MAT;60RA1V;9005 MAT;33;lecture à vérifier;False
+005711;Rail lg 3m pour 1 porte coulissante STD larg maxi 1200mm, RAL;60RA1V;RAL À DÉFINIR;33;désignation reprise du XLS (illisible sur le PDF);False
+8253;Rail lg 3m pour 2 portes coulissantes STD larg max 2x730mm - 9005 MAT;;9005 MAT;33;"code EDI repris du XLS; code EDI absent du PDF (texte du XLS retiré)";False
+005735;Rail lg 3m pour 2 portes coulissantes STD larg maxi 2x730mm,anodisé;;ANODISÉ;33;"code EDI repris du XLS; code EDI absent du PDF (texte du XLS retiré)";False
+005736;Rail lg 3m pour 2 portes coulissantes STD larg maxi 2x730mm,blanc9016;;BLANC 9016;33;"code EDI repris du XLS; code EDI absent du PDF (texte du XLS retiré)";False
+005737;Rail lg 3m pour 2 portes coulissantes STD [arg maxi 2x730mm,RAL;;RAL À DÉFINIR;33;"code EDI repris du XLS; code EDI absent du PDF (texte du XLS retiré)";False
+007503;Rail lg 3m pour 2 portes coulissantes STD larg maxi 2x730mm,RAL7016FT;;RAL7016FT;33;"code EDI repris du XLS; code EDI absent du PDF (texte du XLS retiré)";False
+8254;Rail lg 3m pour 2 portes coulissantes TH larg max 2x730mm - 9005 MAT;60RA2VTH;9005 MAT;33;lecture à vérifier;False
+007504;Rail lg 3m pour 2 portes coulissantes TH larg maxi 2x730mm,RAL7016FT;;RAL7016FT;33;"code EDI repris du XLS; code EDI absent du PDF (texte du XLS retiré)";False
+005036;Rosace aveugle OVAL inox, la paire;60RA;;34;lecture à vérifier;False
+000782;Ruban adhésif 7058 6x2mm pour vitrage ep 10mm- (le rouleau de 18 ml);40DFT6;;34;désignation relue visuellement;False
+007512;Semi-fixe SV,dim 2036x728,poussant gauche - RAL7016FT;7512;RAL7016FT;34;lecture à vérifier;False
+007514;Semi-fixe SV,dim 2036x828,poussant gauche - RAL7016FT;35VAB;RAL7016FT;34;lecture à vérifier;False
+8271;Semi-fixe DV dim 2036 x 528mm poussant gauche - 9005 MAT;36VAB;9005 MAT;35;lecture à vérifier;False
+8273;Semi-fixe DV dim 2036 x 728mm poussant gauche - 9005 MAT;36VAB;9005 MAT;35;lecture à vérifier;False
+8274;Semi-fixe DV dim 2036 x 828mm poussant droit - 9005 MAT;36VAB;9005 MAT;35;lecture à vérifier;False
+8278;Semi-fixe DV dim spéciales x mm poussant droit - 9005 MAT;36VAB;9005 MAT;35;lecture à vérifier;False
+000058;Semi-fixe DV,dim 2036x528,poussant gauche - blanc 9016;36VAB;BLANC 9016;35;lecture à vérifier;False
+000166;Semi-fixe DV,dim 2036x528,poussant gauche - RAL;36VAB;RAL À DÉFINIR;35;lecture à vérifier;False
+007524;Semi-fixe DV,dim 2036x728,poussant gauche - RAL7016FT;36VAB;RAL7016FT;36;lecture à vérifier;False
+007528;Semi-fixe DV,dim 2036x928,poussant gauche - RAL7016FT;36VAB;RAL7016FT;36;lecture à vérifier;False
+000292;Semi-fixe DV,dim.SP .poussant gauche - RAL;36VAB;RAL À DÉFINIR;36;lecture à vérifier;False
+8261;Semi-fixe SV dim 2036 x 728mm poussant gauche - 9005 MAT;35VAB;9005 MAT;36;lecture à vérifier;False
+8262;Semi-fixe SV dim 2036 x 828mm poussant droit - 9005 MAT;35VAB;9005 MAT;36;lecture à vérifier;False
+8263;Semi-fixe SV dim 2036 x 828mm poussant gauche - 9005 MAT;35VAB;9005 MAT;36;lecture à vérifier;False
+8264;Semi-fixe SV dim 2036 x 928mm poussant droit - - 9005 MAT;35VAB;9005 MAT;36;désignation reprise du XLS (illisible sur le PDF);False
+005744;Serreur GH lg 5750mm,anodisé;;ANODISÉ;36;code EDI absent du PDF (texte du XLS retiré);False
+007801;Serreur GH lg 5750mm,BRUT;;BRUT;36;code EDI absent du PDF (texte du XLS retiré);False
+8282;Serrure de milieu porte clarit STREMLER 4360 - 9005 MAT;45SVS;9005 MAT;37;lecture à vérifier;False
+8283;Serrure et gache a repetition + loqueteaux STREMLER 4300 - 9005 MAT;45SVD;9005 MAT;37;lecture à vérifier;False
+8286;Support huisserie 38 usine lg 3000mm - 9005 MAT;;9005 MAT;37;lecture à vérifier;False
+8290;Tole pliee en L dim × mm ep mm lg mm - 9005 MAT;46L;9005 MAT;38;lecture à vérifier;False
+000658;Tole pliee en L, dim mm,ep mm,longueur mm - blanc 9016;46L;BLANC 9016;38;lecture à vérifier;False
+000906;Tole pliee en L, dim mm,ep mm,longueur mm - RAL;46L;RAL À DÉFINIR;38;lecture à vérifier;False
+8291;Tole pliee en U dim int mm lg mm - 9005 MAT;46U;9005 MAT;38;lecture à vérifier;False
+000576;Tole pliee en U dim int mm,longueur mm - anodise;46U;ANODISÉ;38;lecture à vérifier;False
+000577;Tole pliee en U dim int mm,longueur mm - blanc 9016;46U;BLANC 9016;38;lecture à vérifier;False
+000594;Tole pliee en U dim int mm,longueur mm - RAL;46U;RAL À DÉFINIR;38;lecture à vérifier;False
+005616;"Traverse huis classic ""carrée"" DV,avec traverse brut fdf mm";;;38;désignation relue visuellement;False
+005451;Traverse intermédiaire allège tôle perforée suivant plan P1608-807A;;;38;désignation relue visuellement;False
+8298;Tube 0 100mm lg 6000mm - 9005 MAT;50TUC100;9005 MAT;38;lecture à vérifier;False
+000256;Vantail serrure SV dim.SP ,poussant droit - RAL;35VA5;RAL À DÉFINIR;39;lecture à vérifier;False
+000113;Vantail serrure SV,dim 2036x728mm,poussant gauche - blanc 9016;35VAS;BLANC 9016;39;lecture à vérifier;False
+8307;Vantail serrure DV dim 2036 × 728mm poussant droit - 9005 MAT;36VAS;9005 MAT;40;lecture à vérifier;False
+000512;Vantail serrure DV,dim 2036x728,poussant droit - RAL;36VAS;RAL À DÉFINIR;40;lecture à vérifier;False
+8304;Vantail serrure SV dim 2036 x 828mm poussant gauche - 9005 MAT;35VAS;9005 MAT;41;lecture à vérifier;False
+8299;Vantail serrure SV dim spe × mm poussant droit - 9005 MAT;35VAS;9005 MAT;41;lecture à vérifier;False
+001534;Vitrage feuillete 33/2 pour porte dimensions hors standar;1534;;41;lecture à vérifier;False
+001532;Vitrage feuillete 33/2 pour porte dimensions standard;;;41;"lecture à vérifier; code EDI absent du PDF (texte du XLS retiré)";False
+7349;Couvre joint Plat usine DOUBLE,lg 300Omm,Anodisé;60CJPUD;ANODISÉ;8;lecture à vérifier;False
+7351;Couvre joint Plat usine DOUBLE,lg 3000mm,RAL;60CJPUD;RAL À DÉFINIR;8;lecture à vérifier;False
+7348;Couvre joint Plat usine SIMPLE,lg 3000mm,RAL;60CJPUS;RAL À DÉFINIR;8;lecture à vérifier;False
+008001;Clip de lisse 25;60ECA;;0;confirmé par l'utilisateur, absent du PDF;True
