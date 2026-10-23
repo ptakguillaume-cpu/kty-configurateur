@@ -211,3 +211,7 @@
 8299;Vantail serrure SV dim spe × mm poussant droit - 9005 MAT;35VAS;9005 MAT;41;lecture à vérifier;False
 001534;Vitrage feuillete 33/2 pour porte dimensions hors standar;1534;;41;lecture à vérifier;False
 001532;Vitrage feuillete 33/2 pour porte dimensions standard;vitrage;;41;lecture à vérifier;False
+7349;Couvre joint Plat usine DOUBLE,lg 300Omm,Anodisé;60CJPUD;ANODISÉ;8;lecture à vérifier;False
+7351;Couvre joint Plat usine DOUBLE,lg 3000mm,RAL;60CJPUD;RAL À DÉFINIR;8;lecture à vérifier;False
+7348;Couvre joint Plat usine SIMPLE,lg 3000mm,RAL;60CJPUS;RAL À DÉFINIR;8;lecture à vérifier;False
+008001;Clip de lisse 25;60ECA;;0;confirmé par l'utilisateur, absent du PDF;True

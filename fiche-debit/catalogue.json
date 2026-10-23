@@ -17296,5 +17296,68 @@
   "page_pdf": 0,
   "a_verifier": "",
   "hors_catalogue": true
+ },
+ {
+  "ref": "7349",
+  "designation": "Couvre joint Plat usine DOUBLE,lg 300Omm,Anodisé",
+  "edi": "60CJPUD",
+  "finition": "ANODISÉ",
+  "page_pdf": 8,
+  "a_verifier": "lecture à vérifier",
+  "hors_catalogue": false
+ },
+ {
+  "ref": "7350",
+  "designation": "Couvre joint Plat usine DOUBLE,lg 3000mm,Blanc 9016",
+  "edi": "60CJPUD",
+  "finition": "BLANC 9016",
+  "page_pdf": 8,
+  "a_verifier": "",
+  "hors_catalogue": false
+ },
+ {
+  "ref": "7351",
+  "designation": "Couvre joint Plat usine DOUBLE,lg 3000mm,RAL",
+  "edi": "60CJPUD",
+  "finition": "RAL À DÉFINIR",
+  "page_pdf": 8,
+  "a_verifier": "lecture à vérifier",
+  "hors_catalogue": false
+ },
+ {
+  "ref": "7346",
+  "designation": "Couvre joint Plat usine SiMPLE,lg 3000mm,Anodisé",
+  "edi": "60CJPUS",
+  "finition": "ANODISÉ",
+  "page_pdf": 8,
+  "a_verifier": "",
+  "hors_catalogue": false
+ },
+ {
+  "ref": "7347",
+  "designation": "Couvre joint Plat usine SiMPLE,lg 3000mm,Blanc 9016",
+  "edi": "60CJPUS",
+  "finition": "BLANC 9016",
+  "page_pdf": 8,
+  "a_verifier": "",
+  "hors_catalogue": false
+ },
+ {
+  "ref": "7348",
+  "designation": "Couvre joint Plat usine SIMPLE,lg 3000mm,RAL",
+  "edi": "60CJPUS",
+  "finition": "RAL À DÉFINIR",
+  "page_pdf": 8,
+  "a_verifier": "lecture à vérifier",
+  "hors_catalogue": false
+ },
+ {
+  "ref": "008001",
+  "designation": "Clip de lisse 25",
+  "edi": "60ECA",
+  "finition": "",
+  "page_pdf": 0,
+  "a_verifier": "confirmé par l'utilisateur, absent du PDF",
+  "hors_catalogue": true
  }
 ]

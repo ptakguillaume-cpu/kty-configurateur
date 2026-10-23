@@ -3,13 +3,13 @@
 ## Chiffres
 | | |
 |---|---|
-| Codes lus dans le PDF « nouveau Code Produit » (42 pages) | **1921** |
+| Codes lus dans le PDF « nouveau Code Produit » (42 pages) | **1 927** |
 | Codes présents dans l'onglet CODE du XLS | **508** |
-| Codes du PDF **absents du XLS** | **1415** |
+| Codes du PDF **absents du XLS** | **1 421** |
 | Codes du XLS absents du PDF | 2 |
 | Lignes du PDF à revérifier à l'œil | 212 |
 
-Le XLS ne contient donc que **26 %** des codes : c'est la cause principale des codes manquants.
+Le XLS ne contient donc que **26 %** des codes (506 sur 1 927) : c'est la cause principale des codes manquants.
 
 ## 1. Vraies erreurs trouvées dans le XLS (même référence, sens différent)
 | Réf. | Page PDF | Le PDF dit | Le XLS dit | Problème |
@@ -45,3 +45,12 @@ Le XLS ne contient donc que **26 %** des codes : c'est la cause principale des c
 - BLANC 9016 : 294
 - RAL7016FT : 293
 - BRUT : 68
+
+## 5. Codes mal écrits dans le XLS (cause probable des « bugs »)
+Le PDF écrit les codes avec des **zéros devant** (6 chiffres sous 8000, par exemple `007280`) et sur 4 chiffres à partir de 8000 (`8001`). Le XLS les mélange :
+- **35 codes** écrits sans les zéros (`7280`, `1341`, `7483`…) dans l'onglet CODE : une recherche sur `007280` ne les trouve pas.
+- **3 codes à 5 chiffres** : `00516`, `00668`, `00556` (devraient être `000516`, `000668`, `000556`).
+- **109 codes saisis comme des nombres** : Excel enlève alors les zéros.
+- **43 doublons** dans l'onglet CODE.
+- **Attention** : le PDF contient aussi `7346` à `7351` (4 chiffres, couvre-joint plat usiné, page 8). Ce sont d'**autres produits** que `007346` à `007351` (angles 90°, page 1). L'outil garde donc le code **exactement comme écrit**, en texte.
+- **008001** (clip de lisse 25, confirmé par vous) n'est **pas dans le PDF** : il est gardé comme « hors catalogue », comme Z-DIV.

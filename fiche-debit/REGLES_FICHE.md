@@ -41,20 +41,22 @@ Ce document décrit comment fonctionne votre XLS, en clair, puis liste les point
 
 | N° | Où | Constat | Proposition | Votre avis |
 |---|---|---|---|---|
-| A | E12 (2,7 m) | soustrait **J10** (Oméga 3050) alors qu'il n'y a pas d'Oméga 2700 | ne rien soustraire | |
-| B | E14 (3,25 m) | soustrait **J10** (Oméga 3050) alors qu'il n'y a pas d'Oméga 3250 | ne rien soustraire | |
-| C | E15 (5,75 m) | ajoute les montants spéciaux si U7 = **3,25** (au lieu de 5,75) | tester 5,75 | |
-| D | E11 seulement | ajoute « huisseries simples + 2 × huisseries DV + 2 » ; le « +2 » est une constante sans explication | garder les huisseries sur 2,50 m ; **le +2 : à vous de dire** | |
-| E | D21 | `=SI(C18=0;"";3000)` teste **C18** au lieu de **C21** (copier-coller) | tester C21 | |
-| F | Options S8 / U8 | la 2e ligne de longueur (2,5 et 5,75) existe mais **aucune formule ne la lit** | prendre en compte les 2 lignes (R7+R8, T7+T8) | |
-| G | Clips V28 | 5,75 m = ×12 clips, alors que 3,25 m = ×11 : progression incohérente | à vous de me donner le bon nombre pour 5,75 m | |
-| H | Clip de lisse, ligne 43 | code tapé **008001** = « Angle 90° lg 2700 – 9005 MAT » pour une longueur 25, quantité 50 | à vous de dire quel clip de lisse c'est | |
-| I | R44 | cellule non étiquetée, retirée de P38 (équerres) et P44 (mousse) : « −R44×2 » et « −5×R44 » | à vous de dire ce que c'est | |
-| J | Formule G12 (jonc) | si RAL à définir : affiche un **code** au lieu d'un nom de couleur | afficher « RAL à définir » | |
+| A | E12 (2,7 m) | soustrait **J10** (Oméga 3050) alors qu'il n'y a pas d'Oméga 2700 | ne rien soustraire | **Validé** |
+| B | E14 (3,25 m) | soustrait **J10** (Oméga 3050) alors qu'il n'y a pas d'Oméga 3250 | ne rien soustraire | **Validé** |
+| C | E15 (5,75 m) | ajoute les montants spéciaux si U7 = **3,25** (au lieu de 5,75) | tester 5,75 | **Validé** |
+| D | E11 seulement | « huisseries simples + 2 × huisseries DV » : **gardé tel quel** (écrit dans le tableau). Le « +2 » est un ajout manuel (il en manquait 2) | pas de constante : une **case « ajout manuel »** par longueur de couvre-joint | **Validé** |
+| E | D21 | `=SI(C18=0;"";3000)` teste **C18** au lieu de **C21** (copier-coller) | tester C21 | **Validé** |
+| F | Options S8 / U8 | la 2e ligne de longueur (2,5 et 5,75) existe mais **aucune formule ne la lit** | prendre en compte les 2 lignes (R7+R8, T7+T8) | **Validé** |
+| G | Clips V28 | 5,75 m = ×12 clips, 3,25 m = ×11 | **normal, gardé** (8, 9, 10, 11, 12) | **Validé** |
+| H | Clip de lisse, ligne 43 | code **008001** = « Clip 25 » (confirmé) ; ne pas le confondre avec **8001** (angle 90° 2700 – 9005 MAT) | gardé, ajouté au catalogue comme « hors catalogue » (absent du PDF) | **Validé** |
+| I | R44 | = **nombre de départs en lisse** : retire 2 équerres et 5 m de mousse par départ en lisse | gardé, case nommée « Départs en lisse » | **Validé** |
+| J | Formule G12 (jonc) | si RAL à définir : affiche un **code** au lieu d'un nom de couleur | afficher « RAL à définir » | **à confirmer** |
 
 ## 4. Contrôle des codes cachés (V à AE)
 Tous les codes des tableaux de finition ont été comparés au PDF : **tous existent** et la finition correspond à la colonne (blanc, anodisé, 7016, 9005, RAL).
 Les produits « brut » (montants spéciaux renforcés 6600 à 6605, départ, montant) ont volontairement le même code dans toutes les colonnes.
 Le jonc anodisé donne « Jonc gris RAL 7035 » (134) : voulu, la fiche l'affiche aussi (« GRIS 7035 »).
+
+(Comparaison faite en tenant compte des zéros de tête : voir le rapport de l'étape 1, section 5.)
 
 Donc les codes faux viennent surtout de **l'onglet CODE incomplet** (508 codes sur 1 925), pas de ces tableaux.

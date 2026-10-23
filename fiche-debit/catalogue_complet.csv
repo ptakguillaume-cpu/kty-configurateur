@@ -1921,3 +1921,10 @@
 000484;Vitrage stadip 55/2 silence, plus value;41STA6;;42;;False
 005652;Vitrage trempe 8mm suivant plan P1608-758;;;42;;False
 Z-DIV;Dessus Traverse à ??? Du Bas de la Porte;;;0;;True
+7349;Couvre joint Plat usine DOUBLE,lg 300Omm,Anodisé;60CJPUD;ANODISÉ;8;lecture à vérifier;False
+7350;Couvre joint Plat usine DOUBLE,lg 3000mm,Blanc 9016;60CJPUD;BLANC 9016;8;;False
+7351;Couvre joint Plat usine DOUBLE,lg 3000mm,RAL;60CJPUD;RAL À DÉFINIR;8;lecture à vérifier;False
+7346;Couvre joint Plat usine SiMPLE,lg 3000mm,Anodisé;60CJPUS;ANODISÉ;8;;False
+7347;Couvre joint Plat usine SiMPLE,lg 3000mm,Blanc 9016;60CJPUS;BLANC 9016;8;;False
+7348;Couvre joint Plat usine SIMPLE,lg 3000mm,RAL;60CJPUS;RAL À DÉFINIR;8;lecture à vérifier;False
+008001;Clip de lisse 25;60ECA;;0;confirmé par l'utilisateur, absent du PDF;True
