@@ -132,6 +132,13 @@ tr.tete-groupe td { background: var(--gris-clair); }
 .resultats .edi { color: #5b6470; font-size: 12px; }
 .resultats button { min-height: 36px; }
 
+/* fenêtre « type de cloison » */
+.cloison label { display: flex; align-items: center; gap: 10px; margin: 12px 0 4px; font-weight: 600; }
+.cloison select, .cloison input[type="text"] { min-height: 40px; padding: 4px 8px; border: 1px solid #b8bec8; border-radius: 6px; font: inherit; background: #fff; }
+.cloison input[type="text"] { width: 90px; }
+.cloison .case { font-weight: 400; }
+.cloison .actions { display: flex; gap: 10px; }
+
 /* tablette (écran tactile) : cases plus hautes, plus faciles à toucher */
 @media (pointer: coarse) {
     :root { --h: 34px; }

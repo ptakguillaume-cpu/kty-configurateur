@@ -24,8 +24,26 @@ export function etatInitial() {
     },
     accessoires: {},                            // quantités saisies des accessoires (A34, A35, A36, A39…A43)
     produits: [],                               // lignes ajoutées : { ref, designation, qte }
+    cloison: { type: '', modules: '', h2500: false },   // type de cloison (fenêtre « Nouvelle fiche ») : sert à calculer les traverses
     revision: { numero: 0, base: null, date: null },   // suivi des modifications : version figée (voir revision.js)
   };
+}
+
+// Types de cloison et nombre de traverses par module (PTH et VTH sans imposte : aucune traverse ; VSA avec imposte : 1 d'allège + 1 d'imposte)
+export const TYPES_CLOISON = [
+  { id: 'PTH', nom: 'PTH', par: 0 }, { id: 'PTH imposte', nom: 'PTH avec imposte', par: 1 },
+  { id: 'VTH', nom: 'VTH', par: 0 }, { id: 'VTH imposte', nom: 'VTH avec imposte', par: 1 },
+  { id: 'VSA', nom: 'VSA', par: 1 }, { id: 'VSA imposte', nom: 'VSA avec imposte', par: 2 },
+];
+// Traverses : 2 équerres par traverse. Elles sont coupées dans des montants de 2500 (2 traverses par montant) déjà saisis dans la ligne
+// Montant 2500, qui comptent déjà 2 équerres chacun : l'outil ajoute la différence (option « traverses » = nombre de montants × 2 équerres).
+// Cloison de 2500 de haut : les montants de traverses sont comptés à part, donc toutes les équerres des traverses sont ajoutées.
+export function traversesCloison(c) {
+  const t = TYPES_CLOISON.find(x => x.id === c?.type), modules = Math.max(0, Math.floor(Number(String(c?.modules ?? '').replace(',', '.')) || 0));
+  if (!t || !t.par || !modules) return { type: t || null, modules, traverses: 0, montants: 0, option: 0, equerres: 0 };
+  const traverses = modules * t.par, montants = Math.ceil(traverses / 2);
+  const option = c.h2500 ? traverses : Math.floor(traverses / 2);
+  return { type: t, modules, traverses, montants, option, equerres: option * 2 };
 }
 
 const num = v => {

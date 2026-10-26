@@ -3,7 +3,7 @@ import { FICHE_RDB1 } from './donnees-rdb1.js';
 import { CATALOGUE } from './catalogue.js';
 import {
   etatInitial, calculer, ROLES_CLASSIC, ROLES_RDB1, abreger, couleurJonc, libelleFinition,
-  LG_COUVRE_JOINT, LARGEURS_CA_SIMPLE, LARGEURS_CA_DOUBLE, FINITIONS,
+  LG_COUVRE_JOINT, LARGEURS_CA_SIMPLE, LARGEURS_CA_DOUBLE, FINITIONS, TYPES_CLOISON, traversesCloison,
 } from './calcul.js';
 import { creerXlsx } from './xlsx.js';
 import { creerBibliotheque } from './bibliotheque.js';
@@ -88,6 +88,7 @@ function fusion(brut) {
       doublage: deux(b.options.doublage, o.doublage), renfort: deux(b.options.renfort, o.renfort),
       caSimple: { ...b.options.caSimple, ...(o.caSimple || {}) }, caDouble: { ...b.options.caDouble, ...(o.caDouble || {}) },
     },
+    cloison: { ...b.cloison, ...(brut.cloison && typeof brut.cloison === 'object' ? brut.cloison : {}) },
     accessoires: { ...(brut.accessoires || {}) },
     produits: Array.isArray(brut.produits) ? brut.produits.map(p => ({ ref: String(p.ref ?? ''), designation: String(p.designation ?? ''), qte: p.qte ?? '' })) : [],
     revision: brut.revision && typeof brut.revision === 'object' ? { numero: Number(brut.revision.numero) || 0, base: brut.revision.base || null, date: brut.revision.date || null } : b.revision,
@@ -335,7 +336,7 @@ function maj() {
     tr.classList.toggle('rempli', q > 0);
   }
   for (const { p, tr } of lignesProduits) tr.classList.toggle('rempli', nombre(p.qte) !== 0);
-  majRevision(r);
+  majRevision(r); majTraverses();
   if (fin === 'RAL' && !e.ral) alertes.push({ t: 'Finition RAL : indiquez le RAL demandé dans l\'en-tête (sinon « RAL À DÉFINIR » est imprimé).', info: true });
   if (message) alertes.push({ t: message, info: true });
   const zone = $('alertes');
@@ -359,13 +360,63 @@ function optSimple(titre, aide, cle) {
   const c = lier(h('input', { type: 'text', inputmode: 'numeric', 'aria-label': titre, autocomplete: 'off' }), () => etat.options[cle], v => { etat.options[cle] = v; });
   return h('div', { class: 'option' }, h('span', { class: 'titre', text: titre }), h('div', { class: 'ligne' }, c), h('p', { class: 'aide', text: aide }));
 }
+// Traverses : le type de cloison (fenêtre ci-dessous) remplit cette case ; on peut toujours la corriger à la main
+function optTraverses() {
+  const o = optSimple('Traverses : montants de 2500 à compléter en équerres', 'Ajoute 2 équerres par montant. Rempli automatiquement par le type de cloison, corrigeable à la main.', 'traverses');
+  o.append(h('p', { class: 'aide', id: 'resumeTraverses' }), h('button', { type: 'button', class: 'bouton', text: 'Type de cloison…', onclick: () => ouvrirCloison() }));
+  return o;
+}
+function majTraverses() {
+  const el = $('resumeTraverses'); if (!el) return;
+  const c = traversesCloison(etat.cloison);
+  el.textContent = c.type
+    ? (c.traverses ? `${c.type.nom}, ${c.modules} module${c.modules > 1 ? 's' : ''} : ${c.traverses} traverse${c.traverses > 1 ? 's' : ''} (${c.montants} montant${c.montants > 1 ? 's' : ''} de 2500${etat.cloison.h2500 ? ', comptés à part' : ''}) → +${c.equerres} équerres.` : `${c.type.nom} : pas de traverse.`)
+    : 'Type de cloison non renseigné.';
+}
+// Petit formulaire « type de cloison » : proposé à chaque nouvelle fiche, ou depuis les options
+function ouvrirCloison() {
+  const c0 = etat.cloison;
+  const type = h('select', { 'aria-label': 'Type de cloison' }, h('option', { value: '', text: '— passer / je ne sais pas —' }), TYPES_CLOISON.map(t => h('option', { value: t.id, text: t.nom })));
+  const modules = h('input', { type: 'text', inputmode: 'numeric', 'aria-label': 'Nombre de modules', autocomplete: 'off', placeholder: 'ex. 3' });
+  const h2500 = h('input', { type: 'checkbox', id: 'cloison2500' });
+  const zoneModules = h('div', { class: 'cloison-suite' },
+    h('label', {}, 'Nombre de modules ', modules),
+    h('label', { class: 'case' }, h2500, ' Cloison de 2500 de haut'),
+    h('p', { class: 'aide', text: 'Si la cloison fait 2500 de haut, les montants des traverses sont comptés à part : l\'outil ajoute alors toutes les équerres des traverses.' }));
+  const resume = h('p', { class: 'bib-message' });
+  const fermer = () => { f.remove(); document.body.style.overflow = ''; };
+  const lire = () => ({ type: type.value, modules: modules.value.replace(/[^0-9]/g, ''), h2500: h2500.checked });
+  const rafraichir = () => {
+    modules.value = modules.value.replace(/[^0-9]/g, '');
+    const c = lire(), t = TYPES_CLOISON.find(x => x.id === c.type), r = traversesCloison(c);
+    zoneModules.hidden = !(t && t.par);
+    resume.hidden = !t;
+    resume.textContent = !t ? '' : !t.par ? `${t.nom} : pas de traverse, rien à ajouter.` : !r.traverses ? 'Indiquez le nombre de modules.' : `${r.traverses} traverse${r.traverses > 1 ? 's' : ''}, ${r.montants} montant${r.montants > 1 ? 's' : ''} de 2500 : l'outil ajoute ${r.equerres} équerres.`;
+  };
+  const valider = () => {
+    etat.cloison = lire();
+    const t = TYPES_CLOISON.find(x => x.id === etat.cloison.type);
+    if (t) etat.options.traverses = t.par ? String(traversesCloison(etat.cloison).option || '') : '';
+    fermer(); remplir(); maj();
+  };
+  type.value = c0.type; modules.value = c0.modules || ''; h2500.checked = !!c0.h2500;
+  [type, modules, h2500].forEach(e => e.addEventListener('input', rafraichir));
+  modules.addEventListener('keydown', ev => { if (ev.key === 'Enter') { ev.preventDefault(); valider(); } });
+  const f = h('div', { class: 'fenetre cloison hors-impression', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Type de cloison', onkeydown: ev => { if (ev.key === 'Escape') fermer(); } },
+    h('div', { class: 'fenetre-contenu', style: 'max-width:520px' },
+      h('div', { class: 'fenetre-tete' }, h('h2', { text: 'Type de cloison' })),
+      h('p', { class: 'aide', text: 'Pour calculer automatiquement les équerres des traverses. Vous pouvez passer cette étape.' }),
+      h('label', {}, 'Type ', type), zoneModules, resume,
+      h('div', { class: 'actions', style: 'margin-top:14px' }, h('button', { type: 'button', class: 'bouton principal', text: 'Valider', onclick: valider }), h('button', { type: 'button', class: 'bouton', text: 'Passer', onclick: fermer }))));
+  document.body.append(f); document.body.style.overflow = 'hidden'; rafraichir(); type.focus();
+}
 function construireOptions() {
   $('options').append(
     optNbLg('Montants D, M, MS de doublage — ligne 1', 'Retire 1 couvre-joint plat par montant, sur la longueur choisie.', 'doublage', 0),
     optNbLg('Montants D, M, MS de doublage — ligne 2', 'Même règle, pour une 2e longueur.', 'doublage', 1),
     optNbLg('Montants M et MS renforcés — ligne 1', 'Ajoute 2 couvre-joints plats par montant, et 2 équerres.', 'renfort', 0),
     optNbLg('Montants M et MS renforcés — ligne 2', 'Même règle, pour une 2e longueur.', 'renfort', 1),
-    optSimple('Nb de montants pour traverse / DL', 'Ajoute 2 équerres par montant.', 'traverses'),
+    optTraverses(),
     optSimple('Départs en lisse', 'Retire 2 équerres et 5 m de mousse départ par départ en lisse.', 'departsLisse'),
     optNbLarg('Portes CA simples', 'Retire ces portes des jeux de paumelles bois (3) quand la largeur correspond à l\'huisserie simple.', 'caSimple', LARGEURS_CA_SIMPLE),
     optNbLarg('Portes CA double vantail', 'Retire ces portes des jeux de paumelles bois (6) quand la largeur correspond à l\'huisserie double.', 'caDouble', LARGEURS_CA_DOUBLE),
@@ -413,7 +464,7 @@ function exporterExcel() {
   rappelIdentite();
   const r = calculerFiche(), e = etat.entete, L = [];
   L.push([{ v: `KTY — Fiche de débit gamme ${GAMME.nom}`, gras: true }]);
-  [['Société', e.societe], ['Réf chantier', e.chantier], ['Niveau', e.niveau], ['Finition', libelleFinition(e)], ['Devis ou commande', e.mode], ['Page', e.page], ['INFO', e.remarque]]
+  [['Société', e.societe], ['Réf chantier', e.chantier], ['Niveau', e.niveau], ['Finition', libelleFinition(e)], ['Type de cloison', (TYPES_CLOISON.find(t => t.id === etat.cloison.type) || {}).nom || ''], ['Devis ou commande', e.mode], ['Page', e.page], ['INFO', e.remarque]]
     .forEach(([k, v]) => L.push([{ v: k, gras: true }, v]));
   L.push([]);
   L.push(['PROFILS', 'Code KTY', 'Longueur', 'Quantité', '', '', 'Code KTY', 'Longueur / largeur', 'Quantité'].map(v => (v ? { v, gras: true } : v)));
@@ -475,6 +526,7 @@ function ouvrir(fichier) {
 function nouvelle() {
   if (!confirm('Vous allez effacer la fiche.\nVeuillez confirmer cette action.')) return;
   etat = etatInitial(); remplir(); rendreProduits(); chercher(); maj();
+  ouvrirCloison();
 }
 function imprimer() {
   const titre = document.title; document.title = nomFichier();
