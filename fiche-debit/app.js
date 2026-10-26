@@ -101,7 +101,11 @@ const sauver = () => { try { localStorage.setItem(CLE, JSON.stringify(etat)); } 
 const synchros = [];
 function lier(champ, lire, ecrire) {
   synchros.push(() => { champ.value = lire() ?? ''; });
-  champ.addEventListener('input', () => { ecrire(champ.value); maj(); });
+  const numerique = /^(decimal|numeric)$/.test(champ.getAttribute('inputmode') || '');
+  champ.addEventListener('input', () => {
+    if (numerique && /[^0-9.,+\-]/.test(champ.value)) { champ.value = champ.value.replace(/[^0-9.,+\-]/g, ''); annoncer('Cette case n\'accepte que des chiffres.'); }   // pas de lettres dans une quantité
+    ecrire(champ.value); maj();
+  });
   return champ;
 }
 const remplir = () => synchros.forEach(f => f());
@@ -333,7 +337,6 @@ function maj() {
   for (const { p, tr } of lignesProduits) tr.classList.toggle('rempli', nombre(p.qte) !== 0);
   majRevision(r);
   if (fin === 'RAL' && !e.ral) alertes.push({ t: 'Finition RAL : indiquez le RAL demandé dans l\'en-tête (sinon « RAL À DÉFINIR » est imprimé).', info: true });
-  if (!e.societe || !e.chantier) alertes.push({ t: 'Société et référence chantier non renseignées (elles servent au nom du fichier).', info: true });
   if (message) alertes.push({ t: message, info: true });
   const zone = $('alertes');
   zone.replaceChildren();
@@ -407,6 +410,7 @@ async function telecharger(blob, nom) {
   setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
 }
 function exporterExcel() {
+  rappelIdentite();
   const r = calculerFiche(), e = etat.entete, L = [];
   L.push([{ v: `KTY — Fiche de débit gamme ${GAMME.nom}`, gras: true }]);
   [['Société', e.societe], ['Réf chantier', e.chantier], ['Niveau', e.niveau], ['Finition', libelleFinition(e)], ['Devis ou commande', e.mode], ['Page', e.page], ['INFO', e.remarque]]
@@ -449,7 +453,9 @@ function exporterExcel() {
   }
   telecharger(creerXlsx({ nom: 'Fiche de débit', lignes: L, largeurs: [34, 14, 16, 10, 3, 34, 14, 18, 10] }), nomFichier() + '.xlsx');
 }
+function rappelIdentite() { if (!etat.entete.societe || !etat.entete.chantier) annoncer('Pensez à renseigner Société et Réf chantier : elles servent au nom du fichier.'); }
 function enregistrer() {
+  rappelIdentite();
   const contenu = JSON.stringify({ format: 'kty-fiche-debit', version: 1, gamme: gammeId, enregistre: new Date().toISOString(), etat }, null, 1);
   telecharger(new Blob([contenu], { type: 'application/json' }), nomFichier() + '.json');
 }
@@ -515,3 +521,12 @@ $('btnLigneLibre').addEventListener('click', () => {
 document.querySelector('.entete-panneau')?.addEventListener('change', chercher);
 
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('../sw.js').catch(() => {});
+
+// Entrée = case de quantité suivante (Maj + Entrée = précédente), comme dans un tableau Excel
+document.addEventListener('keydown', ev => {
+  if (ev.key !== 'Enter' || ev.isComposing || !ev.target.matches?.('#fiche input[inputmode="decimal"], #fiche input[inputmode="numeric"]') || ev.target.classList.contains('manuel')) return;
+  const cases = [...document.querySelectorAll('#fiche input[inputmode="decimal"], #fiche input[inputmode="numeric"]')].filter(i => !i.classList.contains('manuel') && i.offsetParent);
+  const suivante = cases[cases.indexOf(ev.target) + (ev.shiftKey ? -1 : 1)];
+  ev.preventDefault();
+  if (suivante) { suivante.focus(); suivante.select?.(); suivante.scrollIntoView({ block: 'nearest' }); }
+});
