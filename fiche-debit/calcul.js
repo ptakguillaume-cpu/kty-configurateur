@@ -24,8 +24,27 @@ export function etatInitial() {
     },
     accessoires: {},                            // quantités saisies des accessoires (A34, A35, A36, A39…A43)
     produits: [],                               // lignes ajoutées : { ref, designation, qte }
+    cloison: { modules: {}, h2500: false },   // types de cloison et nombre de modules de chacun (fenêtre « Nouvelle fiche ») : sert à calculer les traverses
     revision: { numero: 0, base: null, date: null },   // suivi des modifications : version figée (voir revision.js)
   };
+}
+
+// Types de cloison et nombre de traverses par module (PTH et VTH sans imposte : aucune traverse ; VSA avec imposte : 1 d'allège + 1 d'imposte)
+export const TYPES_CLOISON = [
+  { id: 'PTH', nom: 'PTH', par: 0 }, { id: 'PTH imposte', nom: 'PTH avec imposte', par: 1 },
+  { id: 'VTH', nom: 'VTH', par: 0 }, { id: 'VTH imposte', nom: 'VTH avec imposte', par: 1 },
+  { id: 'VSA', nom: 'VSA', par: 1 }, { id: 'VSA imposte', nom: 'VSA avec imposte', par: 2 },
+];
+// Traverses : 2 équerres par traverse. Elles sont coupées dans des montants de 2500 (2 traverses par montant) déjà saisis dans la ligne
+// Montant 2500, qui comptent déjà 2 équerres chacun : l'outil ajoute la différence (option « traverses » = nombre de montants × 2 équerres).
+// Cloison de 2500 de haut : les montants de traverses sont comptés à part, donc toutes les équerres des traverses sont ajoutées.
+export function traversesCloison(c) {
+  const nb = v => Math.max(0, Math.floor(Number(String(v ?? '').replace(',', '.')) || 0));
+  const m = c?.modules && typeof c.modules === 'object' ? c.modules : {};
+  const lignes = TYPES_CLOISON.map(t => ({ type: t, modules: nb(m[t.id]), traverses: nb(m[t.id]) * t.par })).filter(l => l.modules);
+  const traverses = lignes.reduce((s, l) => s + l.traverses, 0), montants = Math.ceil(traverses / 2);
+  const option = c?.h2500 ? traverses : Math.floor(traverses / 2);          // plusieurs types : les traverses sont additionnées
+  return { lignes, traverses, montants, option, equerres: option * 2 };
 }
 
 const num = v => {
