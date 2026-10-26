@@ -17,6 +17,7 @@ export function etatInitial() {
     options: {
       doublage: [{ nb: '', lg: 2.5 }, { nb: '', lg: 2.5 }],   // « D et M et MS de doublage »
       renfort: [{ nb: '', lg: 2.7 }, { nb: '', lg: 5.75 }],   // « M et MS renforcer »
+      montantsTraverses: '',                                  // montants de 2500 des traverses, ajoutés à la ligne Montant 2500 (fenêtre « type de cloison », modifiable)
       traverses: '',                                          // « Nb de montants pour traverse / DL » (vide, comme après « effacer »)
       caSimple: { nb: '', largeur: 930 },
       caDouble: { nb: '', largeur: 1856 },
@@ -76,8 +77,8 @@ export const ROLES_RDB1 = {
 };
 
 export function calculer(etat, { legacy = false, roles = ROLES_CLASSIC } = {}) {
-  const q = id => (id ? num(etat.qte[id]) : 0);
   const o = etat.options;
+  const q = id => (id ? num(etat.qte[id]) + (id === roles.montants[0] ? num(o.montantsTraverses) : 0) : 0);   // + montants de 2500 des traverses
   const somme = ids => ids.reduce((s, id) => s + q(id), 0);
 
   // --- Couvre-joint plat ---
@@ -126,6 +127,7 @@ export function calculer(etat, { legacy = false, roles = ROLES_CLASSIC } = {}) {
   // --- Quantités finales par ligne ---
   const qte = {};
   for (const id of Object.keys(etat.qte)) if (num(etat.qte[id])) qte[id] = num(etat.qte[id]);
+  if (q(roles.montants[0])) qte[roles.montants[0]] = q(roles.montants[0]);
   roles.couvreJoint.forEach((id, k) => { qte[id] = cj[k]; });
   qte[roles.paumelles[0]] = J41; qte[roles.paumelles[1]] = J42;
 

@@ -67,6 +67,10 @@ assert.equal(tr({ 'VSA imposte': 3 }).equerres, 6); assert.equal(tr({ 'PTH impos
 assert.deepEqual([tr({ 'PTH imposte': 2, 'VSA imposte': 1, VTH: 4 }).traverses, tr({ 'PTH imposte': 2, 'VSA imposte': 1 }).montants, tr({ 'PTH imposte': 2, 'VSA imposte': 1 }).equerres], [4, 2, 4], 'plusieurs types : les traverses s\'additionnent');
 assert.equal(tr({}).option, 0); assert.equal(tr({ VSA: '' }).option, 0); assert.equal(traversesCloison(undefined).option, 0);
 { const e = etatInitial(); e.qte = { G7: 2 }; const sans = calculer(e).equerres; e.options.traverses = String(tr({ 'PTH imposte': 3 }).option); assert.equal(calculer(e).equerres, sans + 2, 'l\'outil ajoute 2 équerres'); }
+{ // montants des traverses ajoutés à la ligne Montant 2500 : les montants comptent leurs couvre-joints et leurs équerres
+  const e = etatInitial(); e.qte = { G6: 3 }; const a = calculer(e); e.options.montantsTraverses = '2'; const b2 = calculer(e);
+  assert.equal(b2.qte.G6, 5, 'ligne Montant 2500 = saisie + montants des traverses'); assert.equal(b2.cj[0], a.cj[0] + 4, '2 couvre-joints par montant'); assert.equal(b2.equerres, a.equerres + 4, '2 équerres par montant');
+  const v = etatInitial(); v.options.montantsTraverses = '2'; assert.equal(calculer(v).qte.G6, 2, 'même sans saisie'); }
 console.log('Traverses selon le type de cloison : OK');
 const vide = calculer(etatInitial());
 assert.deepEqual([vide.clips, vide.equerres, vide.mousse, vide.J41, vide.J42, ...vide.cj], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'une fiche vide ne doit rien calculer');

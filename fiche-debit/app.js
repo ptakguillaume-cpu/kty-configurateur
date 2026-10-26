@@ -117,6 +117,8 @@ function lier(champ, lire, ecrire) {
 const remplir = () => synchros.forEach(f => f());
 
 // ---------- tableaux de profils ----------
+let champMontant = null;
+const montantsAuto = () => nombre(etat.options.montantsTraverses);   // montants de 2500 des traverses, ajoutés automatiquement à la ligne Montant 2500
 const lignes = {};                                // id -> { item, tr, codeTd, calc }
 function groupes(items) {
   const g = [];
@@ -164,12 +166,19 @@ function construireProfils(cote, titre) {
             () => (etat.manuel[k] || ''), v => { etat.manuel[k] = nombre(v); }));
         }
       } else {
-        qTd.append(lier(h('input', { type: 'text', inputmode: 'decimal', 'aria-label': `${it.libelle || it.famille} ${lg}`, autocomplete: 'off' }),
-          () => etat.qte[it.id], v => { if (v === '') delete etat.qte[it.id]; else etat.qte[it.id] = v; }));
+        const montant = it.id === GAMME.roles.montants[0];            // ligne Montant 2500 : la case affiche le total, traverses comprises
+        const saisie = lier(h('input', { type: 'text', inputmode: 'decimal', 'aria-label': `${it.libelle || it.famille} ${lg}`, autocomplete: 'off' }),
+          () => { const a = montant ? montantsAuto() : 0; return a ? fmt(nombre(etat.qte[it.id]) + a) : etat.qte[it.id]; },
+          v => {
+            const a = montant ? montantsAuto() : 0;
+            if (a) { const x = Math.max(0, nombre(v) - a); if (x) etat.qte[it.id] = String(x); else delete etat.qte[it.id]; }
+            else if (v === '') delete etat.qte[it.id]; else etat.qte[it.id] = v;
+          });
+        qTd.append(saisie); if (montant) champMontant = saisie;
       }
       tr.append(codeTd, h('td', { class: 'lg', text: lg }), qTd);
       tbody.append(tr);
-      lignes[it.id] = { item: it, tr, codeTd, calc, qTd };
+      lignes[it.id] = { item: it, tr, codeTd, calc, qTd, saisie: it.id === GAMME.roles.montants[0] ? champMontant : null };
     });
   }
   return h('table', { class: 'profils' },
@@ -320,6 +329,11 @@ function maj() {
     L.codeTd.classList.toggle('absent', !code);
     L.codeTd.title = code ? (DESIGNATION.get(code) || '') : `Pas de code en ${nomFin} pour cette ligne`;
     const q = r.qte[id] || 0;
+    if (L.saisie) {                                          // ligne Montant 2500 : info « dont N pour traverses » au survol
+      const a = montantsAuto();
+      L.saisie.title = a ? `dont ${a} pour les traverses (ajoutés automatiquement)` : '';
+      if (document.activeElement !== L.saisie) L.saisie.value = a ? fmt(nombre(etat.qte[id]) + a) : (etat.qte[id] ?? '');
+    }
     if (L.calc) { L.calc.textContent = fmt(q); L.calc.classList.toggle('zero', !q); }
     L.tr.classList.toggle('rempli', q !== 0);
     if (q > 0 && !code) {
@@ -378,7 +392,7 @@ function majTraverses() {
   const c = traversesCloison(etat.cloison);
   el.textContent = !c.lignes.length ? 'Type de cloison non renseigné.'
     : !c.traverses ? `${detailCloison(c)} : pas de traverse.`
-    : `${detailCloison(c)} : ${pluriel(c.traverses, 'traverse')} (${pluriel(c.montants, 'montant')} de 2500${etat.cloison.h2500 ? ', comptés à part' : ''}) → +${c.equerres} équerres.`;
+    : `${detailCloison(c)} : ${pluriel(c.traverses, 'traverse')} (${pluriel(c.montants, 'montant')} de 2500${etat.cloison.h2500 ? ', comptés à part' : ', ajoutés à la ligne Montant 2500'}) → +${c.equerres} équerres.`;
 }
 // Petit formulaire « type de cloison » : proposé à chaque nouvelle fiche, ou depuis les options
 function ouvrirCloison() {
@@ -398,7 +412,7 @@ function ouvrirCloison() {
   const valider = () => {
     etat.cloison = lire();
     const r = traversesCloison(etat.cloison);
-    if (r.lignes.length) etat.options.traverses = String(r.option || '');
+    if (r.lignes.length) { etat.options.traverses = String(r.option || ''); etat.options.montantsTraverses = etat.cloison.h2500 ? '' : String(r.montants || ''); }
     fermer(); remplir(); maj();
   };
   [...Object.values(champs), h2500].forEach(e => e.addEventListener('input', rafraichir));
@@ -409,7 +423,7 @@ function ouvrirCloison() {
       h('p', { class: 'aide', text: 'Indiquez le nombre de modules de chaque type présent sur la fiche (plusieurs types possibles). Les équerres des traverses sont calculées pour vous. Vous pouvez passer cette étape.' }),
       lignes,
       h('label', { class: 'case' }, h2500, ' Cloison de 2500 de haut'),
-      h('p', { class: 'aide', text: 'Si la cloison fait 2500 de haut, les montants des traverses sont comptés à part : l\'outil ajoute alors toutes les équerres des traverses.' }),
+      h('p', { class: 'aide', text: 'Sinon, les montants de 2500 des traverses sont ajoutés automatiquement à la ligne Montant 2500 : ne les saisissez plus vous-même. Si la cloison fait 2500 de haut, ils sont comptés à part : cochez la case, l\'outil ajoute alors toutes les équerres des traverses.' }),
       resume,
       h('div', { class: 'actions', style: 'margin-top:14px' }, h('button', { type: 'button', class: 'bouton principal', text: 'Valider', onclick: valider }), h('button', { type: 'button', class: 'bouton', text: 'Passer', onclick: fermer }))));
   document.body.append(f); document.body.style.overflow = 'hidden'; rafraichir(); Object.values(champs)[1].focus();
@@ -421,6 +435,7 @@ function construireOptions() {
     optNbLg('Montants M et MS renforcés — ligne 1', 'Ajoute 2 couvre-joints plats par montant, et 2 équerres.', 'renfort', 0),
     optNbLg('Montants M et MS renforcés — ligne 2', 'Même règle, pour une 2e longueur.', 'renfort', 1),
     optTraverses(),
+    optSimple('Montants de 2500 pour les traverses', 'Ajoutés automatiquement à la ligne Montant 2500 : ne les saisissez plus vous-même. Modifiable.', 'montantsTraverses'),
     optSimple('Départs en lisse', 'Retire 2 équerres et 5 m de mousse départ par départ en lisse.', 'departsLisse'),
     optNbLarg('Portes CA simples', 'Retire ces portes des jeux de paumelles bois (3) quand la largeur correspond à l\'huisserie simple.', 'caSimple', LARGEURS_CA_SIMPLE),
     optNbLarg('Portes CA double vantail', 'Retire ces portes des jeux de paumelles bois (6) quand la largeur correspond à l\'huisserie double.', 'caDouble', LARGEURS_CA_DOUBLE),
