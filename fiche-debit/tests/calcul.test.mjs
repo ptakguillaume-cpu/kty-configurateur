@@ -58,14 +58,15 @@ assert.equal(c1.equerres, (10 + 0 + 2 + 2 + 0 + 4) * 2 + 3 * 6 + 1 * 4, 'équerr
 assert.equal(c1.qte.G10, c1.cj[0]); assert.equal(c1.qte.G12, c1.cj[2], 'couvre-joint plat RDB1 = lignes G10 à G14');
 assert.equal(c1.qte.D40, 2, 'jeu 3 paumelles = huisseries simples'); assert.equal(c1.qte.D41, 1, 'jeu 6 paumelles = huisseries doubles');
 assert.equal(c1.mousse, 10, 'mousse : 2 départs de 2,5 m, 2 côtés, arrondi à 5 m');
-// --- Traverses selon le type de cloison ---
-const tr = (type, modules, h2500 = false) => traversesCloison({ type, modules, h2500 });
-assert.deepEqual([tr('PTH', 5).traverses, tr('VTH', 5).traverses], [0, 0], 'PTH et VTH simples : pas de traverse');
-assert.equal(tr('PTH imposte', 3).traverses, 3); assert.equal(tr('VSA', 3).traverses, 3); assert.equal(tr('VSA imposte', 3).traverses, 6, 'VSA avec imposte : 2 traverses par module (allège + imposte)');
-assert.equal(tr('PTH imposte', 3).montants, 2, '3 traverses = 2 montants de 2500'); assert.equal(tr('PTH imposte', 3).equerres, 2, '3 traverses : 6 équerres, dont 4 déjà comptées avec les 2 montants');
-assert.equal(tr('VSA imposte', 3).equerres, 6); assert.equal(tr('PTH imposte', 3, true).equerres, 6, 'cloison de 2500 : toutes les équerres des traverses');
-assert.equal(tr('', 3).option, 0); assert.equal(tr('VSA', '').option, 0);
-{ const e = etatInitial(); e.qte = { G7: 2 }; const sans = calculer(e).equerres; e.options.traverses = String(tr('PTH imposte', 3).option); assert.equal(calculer(e).equerres, sans + 2, 'l\'outil ajoute 2 équerres'); }
+// --- Traverses selon le type de cloison (plusieurs types possibles sur une même fiche) ---
+const tr = (modules, h2500 = false) => traversesCloison({ modules, h2500 });
+assert.equal(tr({ PTH: 5, VTH: 5 }).traverses, 0, 'PTH et VTH simples : pas de traverse');
+assert.equal(tr({ 'PTH imposte': 3 }).traverses, 3); assert.equal(tr({ VSA: 3 }).traverses, 3); assert.equal(tr({ 'VSA imposte': 3 }).traverses, 6, 'VSA avec imposte : 2 traverses par module (allège + imposte)');
+assert.equal(tr({ 'PTH imposte': 3 }).montants, 2, '3 traverses = 2 montants de 2500'); assert.equal(tr({ 'PTH imposte': 3 }).equerres, 2, '3 traverses : 6 équerres, dont 4 déjà comptées avec les 2 montants');
+assert.equal(tr({ 'VSA imposte': 3 }).equerres, 6); assert.equal(tr({ 'PTH imposte': 3 }, true).equerres, 6, 'cloison de 2500 : toutes les équerres des traverses');
+assert.deepEqual([tr({ 'PTH imposte': 2, 'VSA imposte': 1, VTH: 4 }).traverses, tr({ 'PTH imposte': 2, 'VSA imposte': 1 }).montants, tr({ 'PTH imposte': 2, 'VSA imposte': 1 }).equerres], [4, 2, 4], 'plusieurs types : les traverses s\'additionnent');
+assert.equal(tr({}).option, 0); assert.equal(tr({ VSA: '' }).option, 0); assert.equal(traversesCloison(undefined).option, 0);
+{ const e = etatInitial(); e.qte = { G7: 2 }; const sans = calculer(e).equerres; e.options.traverses = String(tr({ 'PTH imposte': 3 }).option); assert.equal(calculer(e).equerres, sans + 2, 'l\'outil ajoute 2 équerres'); }
 console.log('Traverses selon le type de cloison : OK');
 const vide = calculer(etatInitial());
 assert.deepEqual([vide.clips, vide.equerres, vide.mousse, vide.J41, vide.J42, ...vide.cj], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'une fiche vide ne doit rien calculer');
