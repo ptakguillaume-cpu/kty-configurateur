@@ -411,8 +411,19 @@ function majTraverses() {
     : `${detailCloison(c)} : ${pluriel(c.traverses, 'traverse')} (${pluriel(c.montants, 'montant')} de 2500${etat.cloison.h2500 ? ', comptés à part' : ', ajoutés à la ligne Montant 2500'}) → +${c.equerres} équerres.`;
 }
 // Petit formulaire « type de cloison » : proposé à chaque nouvelle fiche, ou depuis les options
+// Portes (Classic) : nombre de jeux de paumelles tapé dans le formulaire ; ils remplissent les lignes Jeu 3 alu / Jeu 4 alu TH, et le Jeu 4 bois TH (absent du tableau) va dans la liste des produits
+const CODES_BOIS_TH = { '9005 MAT': '8164', '7016 FT': '007613', 'BLANC 9016': '000481', 'ANODISÉ': '000901', 'RAL': '000486' };
+const produitBoisTH = () => etat.produits.find(p => Object.values(CODES_BOIS_TH).includes(p.ref));
 function ouvrirCloison() {
   const c0 = etat.cloison;
+  const avecPortes = GAMME.id === 'classic';
+  const PORTES = [
+    { id: 'D45', nom: 'Portes alu SV (simple vitrage)', aide: 'Jeu 3 paumelles alu', lire: () => etat.qte.D45 },
+    { id: 'D46', nom: 'Portes alu isolant (et CA toute hauteur)', aide: 'Jeu 4 paumelles alu TH', lire: () => etat.qte.D46 },
+    { id: 'boisTH', nom: 'Portes bois toute hauteur', aide: 'Jeu 4 paumelles bois TH, ajouté à la liste des produits', lire: () => produitBoisTH()?.qte },
+  ];
+  const champsPortes = Object.fromEntries(PORTES.map(p => [p.id, h('input', { type: 'text', inputmode: 'numeric', 'aria-label': `Jeux de paumelles : ${p.nom}`, autocomplete: 'off', placeholder: '0', value: p.lire() || '' })]));
+  const lignesPortes = PORTES.map(p => h('label', { class: 'ligne-cloison' }, h('span', { class: 'nom', text: p.nom }), champsPortes[p.id], h('span', { class: 'aide', text: p.aide })));
   const champs = Object.fromEntries(TYPES_CLOISON.map(t => [t.id, h('input', { type: 'text', inputmode: 'numeric', 'aria-label': `Nombre de modules ${t.nom}`, autocomplete: 'off', placeholder: '0', value: c0.modules[t.id] || '' })]));
   const h2500 = h('input', { type: 'checkbox', id: 'cloison2500' }); h2500.checked = !!c0.h2500;
   const lignes = TYPES_CLOISON.map(t => h('label', { class: 'ligne-cloison' }, h('span', { class: 'nom', text: t.nom }), champs[t.id], h('span', { class: 'aide', text: t.par ? (t.par === 1 ? '1 traverse par module' : '2 traverses par module (allège + imposte)') : 'pas de traverse' })));
@@ -420,7 +431,7 @@ function ouvrirCloison() {
   const fermer = () => { f.remove(); document.body.style.overflow = ''; };
   const lire = () => ({ modules: Object.fromEntries(TYPES_CLOISON.map(t => [t.id, champs[t.id].value.replace(/[^0-9]/g, '')]).filter(([, v]) => v)), h2500: h2500.checked });
   const rafraichir = () => {
-    for (const i of Object.values(champs)) i.value = i.value.replace(/[^0-9]/g, '');
+    for (const i of [...Object.values(champs), ...Object.values(champsPortes)]) i.value = i.value.replace(/[^0-9]/g, '');
     const c = lire(), r = traversesCloison(c);
     resume.textContent = !r.lignes.length ? 'Indiquez le nombre de modules de chaque type de cloison de la fiche.' : !r.traverses ? 'Pas de traverse : rien à ajouter.'
       : `${pluriel(r.traverses, 'traverse')}, ${pluriel(r.montants, 'montant')} de 2500 : l'outil ajoute ${r.equerres} équerres.`;
@@ -429,17 +440,24 @@ function ouvrirCloison() {
     etat.cloison = lire();
     const r = traversesCloison(etat.cloison);
     if (r.lignes.length) { etat.options.traverses = String(r.option || ''); etat.options.montantsTraverses = etat.cloison.h2500 ? '' : String(r.montants || ''); }
+    if (avecPortes) {                                                  // seules les cases remplies sont écrites
+      for (const id of ['D45', 'D46']) { const v = champsPortes[id].value.replace(/[^0-9]/g, ''); if (v) etat.qte[id] = v; }
+      const v = champsPortes.boisTH.value.replace(/[^0-9]/g, '');
+      if (v) { const p = produitBoisTH(); const ref = CODES_BOIS_TH[etat.entete.finition] || ''; if (p) { p.qte = v; p.ref = ref || p.ref; } else etat.produits.push({ ref, designation: 'Jeu 4 pau. porte bois toute hauteur', qte: v }); rendreProduits(); }
+    }
     fermer(); remplir(); maj();
   };
-  [...Object.values(champs), h2500].forEach(e => e.addEventListener('input', rafraichir));
+  [...Object.values(champs), ...Object.values(champsPortes), h2500].forEach(e => e.addEventListener('input', rafraichir));
   Object.values(champs).forEach(i => i.addEventListener('keydown', ev => { if (ev.key === 'Enter') { ev.preventDefault(); valider(); } }));
   const f = h('div', { class: 'fenetre cloison hors-impression', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Type de cloison', onkeydown: ev => { if (ev.key === 'Escape') fermer(); } },
     h('div', { class: 'fenetre-contenu', style: 'max-width:560px' },
-      h('div', { class: 'fenetre-tete' }, h('h2', { text: 'Types de cloison de la fiche' })),
+      h('div', { class: 'fenetre-tete' }, h('h2', { text: 'Types de cloison et portes' })),
       h('p', { class: 'aide', text: 'Indiquez le nombre de modules de chaque type présent sur la fiche (plusieurs types possibles). Les équerres des traverses sont calculées pour vous. Vous pouvez passer cette étape.' }),
       lignes,
       h('label', { class: 'case' }, h2500, ' Cloison de 2500 de haut'),
       h('p', { class: 'aide', text: 'Sinon, les montants de 2500 des traverses sont ajoutés automatiquement à la ligne Montant 2500 : ne les saisissez plus vous-même. Si la cloison fait 2500 de haut, ils sont comptés à part : cochez la case, l\'outil ajoute alors toutes les équerres des traverses.' }),
+      avecPortes ? [h('h3', { text: 'Portes : nombre de jeux de paumelles' }),
+        h('p', { class: 'aide', text: 'Les jeux de paumelles alu sont retirés du Jeu 3 paumelles bois (calculé avec les huisseries). Remplace l\'option « Portes CA » : remplissez bien cette partie en début de fiche.' }), ...lignesPortes] : null,
       resume,
       h('div', { class: 'actions', style: 'margin-top:14px' }, h('button', { type: 'button', class: 'bouton principal', text: 'Valider', onclick: valider }), h('button', { type: 'button', class: 'bouton', text: 'Passer', onclick: fermer }))));
   document.body.append(f); document.body.style.overflow = 'hidden'; rafraichir(); Object.values(champs)[1].focus();
@@ -453,7 +471,7 @@ function construireOptions() {
     optTraverses(),
     optSimple('Montants de 2500 pour les traverses', 'Ajoutés automatiquement à la ligne Montant 2500 : ne les saisissez plus vous-même. Modifiable.', 'montantsTraverses'),
     optSimple('Départs en lisse', 'Retire 2 équerres et 5 m de mousse départ par départ en lisse.', 'departsLisse'),
-    optNbLarg('Portes CA simples', 'Retire ces portes des jeux de paumelles bois (3) quand la largeur correspond à l\'huisserie simple.', 'caSimple', LARGEURS_CA_SIMPLE),
+    optNbLarg('Portes CA simples', 'Retire ces portes des jeux de paumelles bois (3) quand la largeur correspond à l\'huisserie simple. Inutile si les portes alu sont indiquées dans le formulaire « Types de cloison et portes ».', 'caSimple', LARGEURS_CA_SIMPLE),
     optNbLarg('Portes CA double vantail', 'Retire ces portes des jeux de paumelles bois (6) quand la largeur correspond à l\'huisserie double.', 'caDouble', LARGEURS_CA_DOUBLE),
   );
 }

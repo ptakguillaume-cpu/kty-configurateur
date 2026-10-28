@@ -148,9 +148,10 @@ table.profils tr.pc1 > td.img { text-align: left; }
 .cloison select, .cloison input[type="text"] { min-height: 40px; padding: 4px 8px; border: 1px solid #b8bec8; border-radius: 6px; font: inherit; background: #fff; }
 .cloison input[type="text"] { width: 70px; text-align: center; }
 .cloison .ligne-cloison { margin: 6px 0; }
-.cloison .ligne-cloison .nom { width: 150px; }
+.cloison .ligne-cloison .nom { width: 200px; flex: none; }
 .cloison .ligne-cloison .aide { margin: 0; font-weight: 400; font-size: 12.5px; }
 .cloison .case { font-weight: 400; }
+.cloison h3 { margin: 18px 0 2px; }
 .cloison .actions { display: flex; gap: 10px; }
 
 /* tablette (écran tactile) : cases plus hautes, plus faciles à toucher */
