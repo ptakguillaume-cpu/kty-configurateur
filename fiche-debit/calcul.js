@@ -122,7 +122,8 @@ export function calculer(etat, { legacy = false, roles = ROLES_CLASSIC } = {}) {
   const retraitSimple = LARGEURS_CA_SIMPLE.includes(num(o.caSimple.largeur)) ? num(o.caSimple.nb) : 0;
   const retraitDouble = LARGEURS_CA_DOUBLE.includes(num(o.caDouble.largeur)) ? num(o.caDouble.nb) : 0;
   const jeuxAlu = somme(roles.jeuxAlu || []);                    // portes alu (jeux 3 et 4) : retirées du Jeu 3 paumelles bois
-  const J41 = huisSimples - retraitSimple - jeuxAlu;
+  // Sans aucune huisserie simple dans la grille (huisseries TH ajoutées à la liste), le Jeu 3 bois ne compte rien : les jeux 4 bois TH le remplacent
+  const J41 = !legacy && huisSimples === 0 ? 0 : huisSimples - retraitSimple - jeuxAlu;
   const J42 = huisDV - retraitDouble;
 
   // --- Quantités finales par ligne ---

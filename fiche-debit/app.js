@@ -497,38 +497,58 @@ function chercher() {
   if (trouves.length > 40) zone.append(h('li', { class: 'edi', text: `… ${trouves.length - 40} autres résultats : précisez la recherche.` }));
 }
 
-// Ordre de la liste CODE / Désignation : huisseries, puis paumelles, puis vantaux, puis le reste. Un produit ajouté se range à sa place sans bousculer les lignes déjà là.
+// Liste CODE / Désignation organisée par blocs de porte : huisserie, puis paumelles, puis vantail, puis le reste (béquille…).
+// Une huisserie ouvre un nouveau bloc (la toute première se place en tête de liste) ; les autres produits rejoignent le dernier bloc, à leur place. Les lignes déjà là ne bougent pas.
 const rangProduit = d => /paum|^jeu\b/i.test(d) ? 1 : /^huis/i.test(d) ? 0 : /^vantail/i.test(d) ? 2 : 3;      // d'après le début de la désignation (« Jeu 3 pau. … sur Huis. bois » est bien une paumelle)
 function ajouterProduit(p) {
-  const r = rangProduit(p.designation);
-  let pos = 0;
-  etat.produits.forEach((x, i) => { if (rangProduit(x.designation) <= r) pos = i + 1; });
-  etat.produits.splice(pos, 0, p);
+  const r = rangProduit(p.designation), L = etat.produits;
+  if (r === 0) { if (L.some(x => rangProduit(x.designation) === 0)) L.push(p); else L.unshift(p); return; }
+  let debut = -1;
+  L.forEach((x, i) => { if (rangProduit(x.designation) === 0) debut = i; });
+  let pos = debut + 1;
+  for (let i = debut + 1; i < L.length; i++) if (rangProduit(L[i].designation) <= r) pos = i + 1;
+  L.splice(pos, 0, p);
 }
 
 // ---------- huisseries à ajouter à la liste (Classic) : double alu carré type B (4 largeurs) et TH carré SV sans traverse (sur mesure) ----------
 const FIN5 = ['9005 MAT', '7016 FT', 'BLANC 9016', 'ANODISÉ', 'RAL'];
+const codes5 = c => Object.fromEntries(FIN5.map((f, i) => [f, c[i]]));
+const PAUMELLES_DOUBLES = {                                          // jeux de 6 ou 8 paumelles ajoutés avec une huisserie double
+  alu6: { des: 'Jeu 6 pau. porte alu pour huis. fdf 2050mm', codes: codes5(['8167', '007616', '000790', '000431', '000791']) },
+  aluIso: { nom: 'Alu isolant', des: 'Jeu 8 pau. porte alu pour huis. fdf 2050mm', codes: codes5(['8171', '007620', '001134', '001133', '001135']) },
+  aluTH: { nom: 'Alu toute hauteur', des: 'Jeu 8 pau. porte alu toute hauteur', codes: codes5(['8172', '007621', '000713', '000698', '000724']) },
+  boisTH: { nom: 'Bois toute hauteur', des: 'Jeu 8 pau. porte bois toute hauteur', codes: codes5(['', '007622', '000121', '000620', '000629']) },
+};
 const HUISSERIES_RAPIDES = [
   ...[['1270', ['8122', '007566', '007266', '007267', '007268']], ['1470', ['8123', '007567', '007269', '007270', '007271']], ['1670', ['8124', '007568', '007272', '007273', '007274']], ['1870', ['8125', '007561', '007275', '007276', '007277']]]
-    .map(([l, c]) => ({ nom: `Huisserie double alu carré type B, fdf 2050 x ${l}`, des: `Huis. carré AB type B fdf 2050x${l}`, codes: Object.fromEntries(FIN5.map((f, i) => [f, c[i]])) })),
+    .map(([l, c]) => ({ paum: 'alu6', nom: `Huisserie double alu carré type B, fdf 2050 x ${l}`, des: `Huis. carré AB type B fdf 2050x${l}`, codes: Object.fromEntries(FIN5.map((f, i) => [f, c[i]])) })),
   { nom: 'Huisserie TH carré, SV avec traverse (sur mesure)', des: 'Huis. carré AB SV avec traverse TH fdf x mm (dim. à préciser)', codes: Object.fromEntries(FIN5.map((f, i) => [f, ['8126', '007569', '005284', '007285', '007286'][i]])) },
   { nom: 'Huisserie TH carré, SV sans traverse (sur mesure)', des: 'Huis. carré AB SV sans traverse TH fdf x mm (dim. à préciser)', codes: Object.fromEntries(FIN5.map((f, i) => [f, ['8127', '007570', '007278', '007279', '007280'][i]])) },
+  { paum: 'choix', nom: 'Huisserie double TH carré, DV avec traverse (sur mesure)', des: 'Huis. carré AB DV avec traverse TH fdf x mm (dim. à préciser)', codes: Object.fromEntries(FIN5.map((f, i) => [f, ['8128', '007571', '007287', '007288', '007289'][i]])) },
+  { paum: 'choix', nom: 'Huisserie double TH carré, DV sans traverse (sur mesure)', des: 'Huis. carré AB DV sans traverse TH fdf x mm (dim. à préciser)', codes: Object.fromEntries(FIN5.map((f, i) => [f, ['8129', '007572', '007281', '007282', '005283'][i]])) },
 ];
 function ouvrirHuisseries() {
   const info = h('p', { class: 'bib-message', text: `Cliquez sur une huisserie pour l'ajouter à la liste (finition de la fiche : ${libelleFinition(etat.entete)}).` });
+  const portes = h('select', { 'aria-label': 'Portes des huisseries doubles TH' }, h('option', { value: '', text: '— choisir —' }),
+    ['aluIso', 'aluTH', 'boisTH'].map(k => h('option', { value: k, text: PAUMELLES_DOUBLES[k].nom })));
   const fermer = () => { f.remove(); document.body.style.overflow = ''; };
   const boutons = HUISSERIES_RAPIDES.map(x => h('button', { type: 'button', class: 'bouton', style: 'display:block;width:100%;text-align:left;margin:6px 0', text: x.nom, onclick: () => {
-    const ref = x.codes[etat.entete.finition] || '';
-    ajouterProduit({ ref, designation: x.des, qte: '1' }); rendreProduits();
-    info.textContent = ref ? `Ajouté : ${ref} — ${x.des}. Vous pouvez en ajouter d'autres.` : `Ajouté sans code (pas de référence pour cette finition) : ${x.des}.`;
+    const fin = etat.entete.finition, ref = x.codes[fin] || '';
+    const pk = x.paum === 'choix' ? portes.value : x.paum;
+    if (x.paum === 'choix' && !pk) { info.textContent = 'Choisissez d\'abord le type de portes (liste « Portes des huisseries doubles TH »).'; portes.focus(); return; }
+    ajouterProduit({ ref, designation: x.des, qte: '1' });
+    let txt = ref ? `Ajouté : ${ref} — ${x.des}.` : `Ajouté sans code (pas de référence pour cette finition) : ${x.des}.`;
+    if (pk) { const pa = PAUMELLES_DOUBLES[pk], pr = pa.codes[fin] || ''; ajouterProduit({ ref: pr, designation: pa.des, qte: '1' }); txt += pr ? ` + ${pr} — ${pa.des}.` : ` + ${pa.des} (pas de code pour cette finition).`; }
+    rendreProduits(); info.textContent = txt + ' Vous pouvez en ajouter d\'autres.';
   } }));
   const f = h('div', { class: 'fenetre cloison hors-impression', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Huisseries', onkeydown: ev => { if (ev.key === 'Escape') fermer(); } },
-    h('div', { class: 'fenetre-contenu', style: 'max-width:560px' },
+    h('div', { class: 'fenetre-contenu', style: 'max-width:600px' },
       h('div', { class: 'fenetre-tete' }, h('h2', { text: 'Huisseries à ajouter' })),
-      h('p', { class: 'aide', text: 'La ligne est ajoutée à la liste CODE / Désignation / Qts avec le bon code. Pour les huisseries sur mesure, précisez la dimension dans la désignation.' }),
+      h('p', { class: 'aide', text: 'Chaque huisserie ouvre un nouveau bloc dans la liste CODE / Désignation / Qts. Les huisseries doubles ajoutent aussi leur jeu de paumelles (6 ou 8). Pour les huisseries sur mesure, précisez la dimension dans la désignation.' }),
+      h('label', {}, 'Portes des huisseries doubles TH ', portes),
       boutons, info,
       h('div', { class: 'actions', style: 'margin-top:14px' }, h('button', { type: 'button', class: 'bouton principal', text: 'Terminé', onclick: fermer }))));
-  document.body.append(f); document.body.style.overflow = 'hidden'; f.querySelector('button').focus();
+  document.body.append(f); document.body.style.overflow = 'hidden'; portes.focus();
 }
 
 // ---------- fichiers : enregistrer, ouvrir, Excel, imprimer ----------

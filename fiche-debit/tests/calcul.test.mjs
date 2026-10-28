@@ -78,6 +78,11 @@ assert.equal(tr({}).option, 0); assert.equal(tr({ VSA: '' }).option, 0); assert.
 { // portes alu : leurs jeux de paumelles sont retirés du Jeu 3 bois (le Jeu 6 bois ne change pas)
   const e = etatInitial(); e.qte = { D34: 5, D38: 2 }; const a = calculer(e); e.qte.D45 = '2'; e.qte.D46 = '1'; const b2 = calculer(e);
   assert.equal(b2.J41, a.J41 - 3, 'Jeu 3 bois = huisseries simples - jeux alu'); assert.equal(b2.J42, a.J42, 'Jeu 6 bois inchangé'); assert.equal(b2.qte.D45, 2); }
+{ // sans huisserie simple dans la grille (TH ajoutées à la liste) : le Jeu 3 bois reste à 0 même avec des portes alu ou CA
+  const e = etatInitial(); e.qte = { D45: '2', D46: '1' }; e.options.caSimple.nb = '1'; e.options.caSimple.largeur = 930;
+  const r = calculer(e); assert.equal(r.J41, 0, 'Jeu 3 bois = 0 sans huisserie simple'); assert.equal(r.qte.D41, 0);
+  e.qte.D34 = '5'; assert.equal(calculer(e).J41, 5 - 1 - 3, 'avec des huisseries simples, le calcul reste celui de la fiche');
+  assert.equal(calculer({ ...e, qte: { D45: '2' } }, { legacy: true }).J41, -3, 'XLS d\'origine : pas de remise à 0'); }
 console.log('Traverses selon le type de cloison : OK');
 const vide = calculer(etatInitial());
 assert.deepEqual([vide.clips, vide.equerres, vide.mousse, vide.J41, vide.J42, ...vide.cj], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'une fiche vide ne doit rien calculer');
