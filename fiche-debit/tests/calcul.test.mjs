@@ -17,7 +17,7 @@ const etatDepuis = c => {
 };
 cas.forEach((c, i) => {
   const r = calculer(etatDepuis(c), { legacy: true }), a = c.attendu;
-  const got = { cj: r.cj, clips: r.clips, equerres: r.equerres, mousse: r.mousse, J41: r.J41, J42: r.J42 };
+  const got = { cj: r.cj.slice(0, 5), clips: r.clips, equerres: r.equerres, mousse: r.mousse, J41: r.J41, J42: r.J42 };
   // le XLS ne borne pas à 0 : on compare avant bornage pour les équerres et la mousse
   const attendu = { ...a };
   try {
@@ -71,9 +71,13 @@ assert.equal(tr({}).option, 0); assert.equal(tr({ VSA: '' }).option, 0); assert.
   const e = etatInitial(); e.qte = { G6: 3 }; const a = calculer(e); e.options.montantsTraverses = '2'; const b2 = calculer(e);
   assert.equal(b2.qte.G6, 5, 'ligne Montant 2500 = saisie + montants des traverses'); assert.equal(b2.cj[0], a.cj[0] + 4, '2 couvre-joints par montant'); assert.equal(b2.equerres, a.equerres + 4, '2 équerres par montant');
   const v = etatInitial(); v.options.montantsTraverses = '2'; assert.equal(calculer(v).qte.G6, 2, 'même sans saisie'); }
+{ // couvre-joint plat de 3,7 m (Classic) : 6e emplacement, 12 clips, montant 3700 compté comme un montant
+  const e = etatInitial(); e.qte = { G9b: 3 }; const r = calculer(e);
+  assert.equal(r.cj[5], 6, '3 montants de 3700 = 6 couvre-joints de 3700'); assert.equal(r.qte.G14b, 6); assert.equal(r.clips, 100, '6 × 12 = 72 clips -> 1 boîte de 100'); assert.equal(r.equerres, 6, '2 équerres par montant');
+  e.manuel[5] = 2; assert.equal(calculer(e).cj[5], 8, 'ajout manuel sur le 3,7 m'); e.manuel[5] = 0; assert.equal(calculer(e, { roles: ROLES_RDB1 }).cj[5], 0, 'pas de 3,7 m en RDB1'); }
 console.log('Traverses selon le type de cloison : OK');
 const vide = calculer(etatInitial());
-assert.deepEqual([vide.clips, vide.equerres, vide.mousse, vide.J41, vide.J42, ...vide.cj], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'une fiche vide ne doit rien calculer');
+assert.deepEqual([vide.clips, vide.equerres, vide.mousse, vide.J41, vide.J42, ...vide.cj], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'une fiche vide ne doit rien calculer');
 assert.deepEqual(vide.alertes, []);
 console.log('Fiche vide : tout à zéro : OK');
 if (ko) process.exit(1);
