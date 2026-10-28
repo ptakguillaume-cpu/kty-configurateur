@@ -75,6 +75,9 @@ assert.equal(tr({}).option, 0); assert.equal(tr({ VSA: '' }).option, 0); assert.
   const e = etatInitial(); e.qte = { G9b: 3 }; const r = calculer(e);
   assert.equal(r.cj[5], 6, '3 montants de 3700 = 6 couvre-joints de 3700'); assert.equal(r.qte.G14b, 6); assert.equal(r.clips, 100, '6 × 12 = 72 clips -> 1 boîte de 100'); assert.equal(r.equerres, 6, '2 équerres par montant');
   e.manuel[5] = 2; assert.equal(calculer(e).cj[5], 8, 'ajout manuel sur le 3,7 m'); e.manuel[5] = 0; assert.equal(calculer(e, { roles: ROLES_RDB1 }).cj[5], 0, 'pas de 3,7 m en RDB1'); }
+{ // portes alu : leurs jeux de paumelles sont retirés du Jeu 3 bois (le Jeu 6 bois ne change pas)
+  const e = etatInitial(); e.qte = { D34: 5, D38: 2 }; const a = calculer(e); e.qte.D45 = '2'; e.qte.D46 = '1'; const b2 = calculer(e);
+  assert.equal(b2.J41, a.J41 - 3, 'Jeu 3 bois = huisseries simples - jeux alu'); assert.equal(b2.J42, a.J42, 'Jeu 6 bois inchangé'); assert.equal(b2.qte.D45, 2); }
 console.log('Traverses selon le type de cloison : OK');
 const vide = calculer(etatInitial());
 assert.deepEqual([vide.clips, vide.equerres, vide.mousse, vide.J41, vide.J42, ...vide.cj], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'une fiche vide ne doit rien calculer');
