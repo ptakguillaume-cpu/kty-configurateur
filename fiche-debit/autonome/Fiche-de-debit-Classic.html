@@ -297,6 +297,7 @@ td.chg-retrait .auto, td.chg-retrait .calc { color: transparent; }          /* l
             <input id="recherche" type="search" placeholder="Nom ou code du produit…" autocomplete="off">
             <label class="case"><input id="rechercheFinition" type="checkbox" checked> Seulement la finition de la fiche</label>
             <button class="bouton" id="btnLigneLibre" type="button">+ Ligne libre</button>
+            <button class="bouton" id="btnHuisseries" type="button" hidden>+ Huisseries…</button>
         </div>
         <ul id="resultats" class="resultats"></ul>
     </section>
@@ -1361,7 +1362,7 @@ function ouvrirCloison() {
     if (avecPortes) {                                                  // seules les cases remplies sont écrites
       for (const id of ['D45', 'D46']) { const v = champsPortes[id].value.replace(/[^0-9]/g, ''); if (v) etat.qte[id] = v; }
       const v = champsPortes.boisTH.value.replace(/[^0-9]/g, '');
-      if (v) { const p = produitBoisTH(); const ref = CODES_BOIS_TH[etat.entete.finition] || ''; if (p) { p.qte = v; p.ref = ref || p.ref; } else etat.produits.push({ ref, designation: 'Jeu 4 pau. porte bois toute hauteur', qte: v }); rendreProduits(); }
+      if (v) { const p = produitBoisTH(); const ref = CODES_BOIS_TH[etat.entete.finition] || ''; if (p) { p.qte = v; p.ref = ref || p.ref; } else ajouterProduit({ ref, designation: 'Jeu 4 pau. porte bois toute hauteur', qte: v }); rendreProduits(); }
     }
     fermer(); remplir(); maj();
   };
@@ -1410,9 +1411,43 @@ function chercher() {
   if (!trouves.length) { zone.append(h('li', { text: 'Aucun produit trouvé.' })); return; }
   for (const c of trouves.slice(0, 40)) {
     zone.append(h('li', {}, h('b', { text: c.ref }), h('span', { text: c.des + (c.hors ? ' (hors catalogue)' : '') }), h('span', { class: 'edi', text: c.edi }),
-      h('button', { type: 'button', class: 'bouton', text: 'Ajouter', onclick: () => { etat.produits.push({ ref: c.ref, designation: abreger(c.des), qte: '1' }); rendreProduits(); annoncer(`Ajouté : ${c.ref}`); } })));
+      h('button', { type: 'button', class: 'bouton', text: 'Ajouter', onclick: () => { ajouterProduit({ ref: c.ref, designation: abreger(c.des), qte: '1' }); rendreProduits(); annoncer(`Ajouté : ${c.ref}`); } })));
   }
   if (trouves.length > 40) zone.append(h('li', { class: 'edi', text: `… ${trouves.length - 40} autres résultats : précisez la recherche.` }));
+}
+
+// Ordre de la liste CODE / Désignation : huisseries, puis paumelles, puis vantaux, puis le reste. Un produit ajouté se range à sa place sans bousculer les lignes déjà là.
+const rangProduit = d => /paum|^jeu\b/i.test(d) ? 1 : /^huis/i.test(d) ? 0 : /^vantail/i.test(d) ? 2 : 3;      // d'après le début de la désignation (« Jeu 3 pau. … sur Huis. bois » est bien une paumelle)
+function ajouterProduit(p) {
+  const r = rangProduit(p.designation);
+  let pos = 0;
+  etat.produits.forEach((x, i) => { if (rangProduit(x.designation) <= r) pos = i + 1; });
+  etat.produits.splice(pos, 0, p);
+}
+
+// ---------- huisseries à ajouter à la liste (Classic) : double alu carré type B (4 largeurs) et TH carré SV sans traverse (sur mesure) ----------
+const FIN5 = ['9005 MAT', '7016 FT', 'BLANC 9016', 'ANODISÉ', 'RAL'];
+const HUISSERIES_RAPIDES = [
+  ...[['1270', ['8122', '007566', '007266', '007267', '007268']], ['1470', ['8123', '007567', '007269', '007270', '007271']], ['1670', ['8124', '007568', '007272', '007273', '007274']], ['1870', ['8125', '007561', '007275', '007276', '007277']]]
+    .map(([l, c]) => ({ nom: `Huisserie double alu carré type B, fdf 2050 x ${l}`, des: `Huis. carré AB type B fdf 2050x${l}`, codes: Object.fromEntries(FIN5.map((f, i) => [f, c[i]])) })),
+  { nom: 'Huisserie TH carré, SV avec traverse (sur mesure)', des: 'Huis. carré AB SV avec traverse TH fdf x mm (dim. à préciser)', codes: Object.fromEntries(FIN5.map((f, i) => [f, ['8126', '007569', '005284', '007285', '007286'][i]])) },
+  { nom: 'Huisserie TH carré, SV sans traverse (sur mesure)', des: 'Huis. carré AB SV sans traverse TH fdf x mm (dim. à préciser)', codes: Object.fromEntries(FIN5.map((f, i) => [f, ['8127', '007570', '007278', '007279', '007280'][i]])) },
+];
+function ouvrirHuisseries() {
+  const info = h('p', { class: 'bib-message', text: `Cliquez sur une huisserie pour l'ajouter à la liste (finition de la fiche : ${libelleFinition(etat.entete)}).` });
+  const fermer = () => { f.remove(); document.body.style.overflow = ''; };
+  const boutons = HUISSERIES_RAPIDES.map(x => h('button', { type: 'button', class: 'bouton', style: 'display:block;width:100%;text-align:left;margin:6px 0', text: x.nom, onclick: () => {
+    const ref = x.codes[etat.entete.finition] || '';
+    ajouterProduit({ ref, designation: x.des, qte: '1' }); rendreProduits();
+    info.textContent = ref ? `Ajouté : ${ref} — ${x.des}. Vous pouvez en ajouter d'autres.` : `Ajouté sans code (pas de référence pour cette finition) : ${x.des}.`;
+  } }));
+  const f = h('div', { class: 'fenetre cloison hors-impression', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Huisseries', onkeydown: ev => { if (ev.key === 'Escape') fermer(); } },
+    h('div', { class: 'fenetre-contenu', style: 'max-width:560px' },
+      h('div', { class: 'fenetre-tete' }, h('h2', { text: 'Huisseries à ajouter' })),
+      h('p', { class: 'aide', text: 'La ligne est ajoutée à la liste CODE / Désignation / Qts avec le bon code. Pour les huisseries sur mesure, précisez la dimension dans la désignation.' }),
+      boutons, info,
+      h('div', { class: 'actions', style: 'margin-top:14px' }, h('button', { type: 'button', class: 'bouton principal', text: 'Terminé', onclick: fermer }))));
+  document.body.append(f); document.body.style.overflow = 'hidden'; f.querySelector('button').focus();
 }
 
 // ---------- fichiers : enregistrer, ouvrir, Excel, imprimer ----------
@@ -1537,6 +1572,8 @@ $('btnFiger').addEventListener('click', figer);
 $('btnSuivi').addEventListener('click', arreterSuivi);
 $('recherche').addEventListener('input', chercher);
 $('rechercheFinition').addEventListener('change', chercher);
+$('btnHuisseries').hidden = GAMME.id !== 'classic';
+$('btnHuisseries').addEventListener('click', ouvrirHuisseries);
 $('btnLigneLibre').addEventListener('click', () => {
   etat.produits.push({ ref: '', designation: '', qte: '1' }); rendreProduits(); maj();
   const champs = document.querySelectorAll('#produits input.code-p'); champs[champs.length - 1]?.focus();
