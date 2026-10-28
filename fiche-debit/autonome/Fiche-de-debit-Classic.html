@@ -1433,6 +1433,8 @@ const HUISSERIES_RAPIDES = [
     .map(([l, c]) => ({ nom: `Huisserie double alu carré type B, fdf 2050 x ${l}`, des: `Huis. carré AB type B fdf 2050x${l}`, codes: Object.fromEntries(FIN5.map((f, i) => [f, c[i]])) })),
   { nom: 'Huisserie TH carré, SV avec traverse (sur mesure)', des: 'Huis. carré AB SV avec traverse TH fdf x mm (dim. à préciser)', codes: Object.fromEntries(FIN5.map((f, i) => [f, ['8126', '007569', '005284', '007285', '007286'][i]])) },
   { nom: 'Huisserie TH carré, SV sans traverse (sur mesure)', des: 'Huis. carré AB SV sans traverse TH fdf x mm (dim. à préciser)', codes: Object.fromEntries(FIN5.map((f, i) => [f, ['8127', '007570', '007278', '007279', '007280'][i]])) },
+  { nom: 'Huisserie double TH carré, DV avec traverse (sur mesure)', des: 'Huis. carré AB DV avec traverse TH fdf x mm (dim. à préciser)', codes: Object.fromEntries(FIN5.map((f, i) => [f, ['8128', '007571', '007287', '007288', '007289'][i]])) },
+  { nom: 'Huisserie double TH carré, DV sans traverse (sur mesure)', des: 'Huis. carré AB DV sans traverse TH fdf x mm (dim. à préciser)', codes: Object.fromEntries(FIN5.map((f, i) => [f, ['8129', '007572', '007281', '007282', '005283'][i]])) },
 ];
 function ouvrirHuisseries() {
   const info = h('p', { class: 'bib-message', text: `Cliquez sur une huisserie pour l'ajouter à la liste (finition de la fiche : ${libelleFinition(etat.entete)}).` });
