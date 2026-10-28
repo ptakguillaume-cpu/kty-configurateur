@@ -2,8 +2,8 @@
 // Reprend les formules du XLS « Fiche de Débit Classic » avec les corrections validées (A, B, C, D, E, F, G, H, I).
 // `legacy: true` rejoue les formules d'origine à l'identique (sert uniquement aux tests de comparaison).
 
-export const LG_COUVRE_JOINT = [2.5, 2.7, 3.05, 3.25, 5.75];        // m, lignes couvre-joint plat 2500 … 5750
-export const CLIPS_PAR_COUVRE_JOINT = [8, 9, 10, 11, 12];           // point G : validé tel quel
+export const LG_COUVRE_JOINT = [2.5, 2.7, 3.05, 3.25, 5.75, 3.7];    // m, lignes couvre-joint plat ; le 3,7 m (Classic) est ajouté en dernier pour ne pas décaler les fiches enregistrées
+export const CLIPS_PAR_COUVRE_JOINT = [8, 9, 10, 11, 12, 12];           // point G : validé tel quel
 export const LARGEURS_CA_SIMPLE = [730, 830, 930];
 export const LARGEURS_CA_DOUBLE = [1256, 1456, 1656, 1856];
 export const FINITIONS = ['9005 MAT', '7016 FT', 'BLANC 9016', 'ANODISÉ', 'RAL'];
@@ -13,7 +13,7 @@ export function etatInitial() {
     version: 1,
     entete: { societe: '', chantier: '', niveau: '', finition: 'BLANC 9016', ral: '', mode: 'DEVIS', page: '', remarque: '' },
     qte: {},                                    // quantités saisies, clé = id de ligne (G6, D4…)
-    manuel: [0, 0, 0, 0, 0],                    // point D : ajout manuel sur chaque couvre-joint plat
+    manuel: [0, 0, 0, 0, 0, 0],                   // point D : ajout manuel sur chaque couvre-joint plat
     options: {
       doublage: [{ nb: '', lg: 2.5 }, { nb: '', lg: 2.5 }],   // « D et M et MS de doublage »
       renfort: [{ nb: '', lg: 2.7 }, { nb: '', lg: 5.75 }],   // « M et MS renforcer »
@@ -62,10 +62,10 @@ const plage = (p, a, b) => Array.from({ length: b - a + 1 }, (_, i) => p + (a + 
 // Rôle de chaque ligne de la fiche dans les calculs. Les listes à 5 emplacements correspondent aux longueurs
 // 2,5 / 2,7 / 3,05 / 3,25 / 5,75 m (null = pas de ligne pour cette longueur sur la fiche).
 export const ROLES_CLASSIC = {
-  montants: plage('G', 6, 10), meneaux: plage('G', 22, 26), angleDepartMultiple: plage('G', 32, 36), departMultipleCJ: plage('G', 37, 41),
+  montants: [...plage('G', 6, 10), 'G9b'], meneaux: plage('G', 22, 26), angleDepartMultiple: plage('G', 32, 36), departMultipleCJ: plage('G', 37, 41),
   departs: plage('D', 4, 8), montantsSpeciaux: plage('D', 17, 21), omega: ['D9', null, 'D10', null, 'D11'], omegaOrigine: ['D9', 'D10', 'D10', 'D10', 'D11'],
   huisSimples: plage('D', 34, 36), huisDV: plage('D', 37, 40), angle90: plage('D', 14, 16), angleCarre: plage('G', 27, 31),
-  couvreJoint: plage('G', 11, 15), paumelles: ['D41', 'D42'],
+  couvreJoint: [...plage('G', 11, 15), 'G14b'], paumelles: ['D41', 'D42'],
 };
 // RDB1 : mêmes règles que la Classic, chaque ligne étant rattachée à son équivalent selon sa place sur la fiche
 // (montant 15MON = montant, angle 90° 15P2D = angle carré, angle multiple 00PVA = angle départ multiple, départ multiple RDB1 = départ multiple à couvre-joint…).
@@ -99,7 +99,7 @@ export function calculer(etat, { legacy = false, roles = ROLES_CLASSIC } = {}) {
       const cible = legacy && k === 4 ? 3.25 : lg;
       if (egal(l.lg, cible)) t += num(l.nb) * 2;
     }
-    t -= legacy ? omegaOrigine[k] : omega[k];
+    t -= (legacy ? omegaOrigine[k] : omega[k]) || 0;
     if (k === 0) t += huisSimples + huisDV * 2 + (legacy ? 2 : 0);
     if (!legacy) t += num(etat.manuel[k]);
     return t;

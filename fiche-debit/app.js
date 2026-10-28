@@ -15,12 +15,13 @@ const GAMMES = {
     id: 'classic', nom: 'Classic', fiche: FICHE_CLASSIC, cleBrouillon: 'kty_fiche_debit_brouillon', cleBib: 'kty_fiche_bibliotheque', calcul: true, roles: ROLES_CLASSIC, prefixeFichier: 'Fiche de Débit',
     images: {                                         // dessins de profils de la fiche (repris du XLS), par première ligne de famille
       G4: 'lisse', G6: 'montant', G11: 'couvre-joint', G18: 'parclose-simple', G21: 'parclose-double', G22: 'meneau', G27: 'angle-carre',
-      G32: 'angle-depart-multiple', G37: 'depart-multiple-cj', G42: 'clip-lisse',
+      G32: 'angle-depart-multiple', G37: 'depart-multiple-cj',
       D4: 'depart', D9: 'omega', D12: 'jonc', D14: 'angle-90', D17: 'montant-special', D22: 'capot', D27: 'angle-libre', D32: 'angle-doublage', D34: 'huisserie', D37: 'huisserie',
     },
+    rectangles: { G16: 'pc1', G17: 'pc2', G18: 'pc3', G19: 'pc1', G20: 'pc2', G21: 'pc3' },   // blocs parclose : un seul rectangle (comme l'Excel d'origine)
     imageSpan: { D32: 2 },                            // un même dessin pour « Angle de doublage » et « Plat de doublage »
     sansImagePropre: ['D33'],
-    libelleLarge: ['D41', 'D42', 'D43', 'D44'],       // paumelles et serrure : libellé sur les 2 colonnes, sans dessin (comme le XLS)
+    libelleLarge: ['D41', 'D42', 'D45', 'D46'],       // jeux de paumelles : libellé sur les 2 colonnes, sans dessin (comme le XLS)
     cercle: ['G16', 'G18', 'G19', 'G21'],             // macro « cercle rouge » du XLS
   },
   rdb1: {
@@ -31,18 +32,18 @@ const GAMMES = {
       D2: 'rdb1-depart', D7: 'rdb1-omega', D12: 'rdb1-jonc', D14: 'rdb1-mousse', D17: 'rdb1-montant-special', D21: 'rdb1-capot-classic', D26: 'rdb1-angle-libre',
       D31: 'rdb1-doublage', D33: 'rdb1-huisserie-simple', D36: 'rdb1-huisserie-double',
     },
-    imageSpan: { D31: 2 }, sansImagePropre: ['D32'], libelleLarge: ['D40', 'D41', 'D42', 'D43'], cercle: [],
+    imageSpan: { D31: 2 }, rectangles: {}, sansImagePropre: ['D32'], libelleLarge: ['D40', 'D41', 'D42', 'D43'], cercle: [],
   },
 };
 let gammeId = 'classic';
 try { const h0 = (location.hash || '').replace('#', ''), s = GAMMES[h0] ? h0 : localStorage.getItem(CLE_GAMME); if (GAMMES[s]) gammeId = s; } catch { /* stockage indisponible : gamme Classic */ }
 const GAMME = GAMMES[gammeId], FICHE = GAMME.fiche;
 const CLE = GAMME.cleBrouillon, IMAGES = GAMME.images, IMAGE_SPAN = GAMME.imageSpan;
-const SANS_IMAGE_PROPRE = new Set(GAMME.sansImagePropre), LIBELLE_LARGE = new Set(GAMME.libelleLarge), AVEC_CERCLE = new Set(GAMME.cercle);
+const RECTANGLES = GAMME.rectangles, SANS_IMAGE_PROPRE = new Set(GAMME.sansImagePropre), LIBELLE_LARGE = new Set(GAMME.libelleLarge), AVEC_CERCLE = new Set(GAMME.cercle);
 const NOM_FINITION = { '9005 MAT': '9005 MAT', '7016 FT': '7016 FT', 'BLANC 9016': 'BLANC 9016', 'ANODISÉ': 'ANODISÉ', RAL: 'RAL (à définir ou demandé)' };
 const FINITION_CATALOGUE = { '9005 MAT': '9005 MAT', '7016 FT': 'RAL7016FT', 'BLANC 9016': 'BLANC 9016', 'ANODISÉ': 'ANODISÉ', RAL: 'RAL À DÉFINIR' };
 let DESIGNATION = new Map();                          // référence -> désignation (reconstruit depuis la bibliothèque)
-const PRODUITS_VIDES_MIN = 18;                     // lignes vides affichées pour garder l'aspect de la feuille
+const PRODUITS_VIDES_MIN = gammeId === 'classic' ? 15 : 18;   // lignes vides affichées pour garder l'aspect de la feuille (3 de moins en Classic : 3 clips de lisse de plus dans les accessoires)
 
 // ---------- utilitaires ----------
 function h(tag, props = {}, ...enfants) {
@@ -80,14 +81,29 @@ function cloisonLue(c) {                          // accepte aussi l'ancien form
   const modules = c.modules && typeof c.modules === 'object' ? { ...c.modules } : (c.type ? { [c.type]: c.modules } : {});
   return { modules, h2500: !!c.h2500 };
 }
-function fusion(brut) {
+// Fiches Classic enregistrées avant le déplacement des clips de lisse (vers les accessoires) et le remplacement des paumelles clarit / serrure (vers la liste des produits)
+const ANCIENNES_LIGNES = {
+  D43: { designation: 'Jeu 2 paumelles clarit', codes: { '9005 MAT': '8156', '7016 FT': '007604', 'BLANC 9016': '000138', 'ANODISÉ': '000136', 'RAL': '000354' } },
+  D44: { designation: 'Serrure clarit avec cylindre', codes: { '9005 MAT': '8282', 'BLANC 9016': '000771' } },
+};
+function migrerClassic(res) {
+  for (const [g, a] of [['G42', 'A45'], ['G43', 'A46'], ['G44', 'A47']]) {
+    if (res.qte[g] !== undefined) { if (nombre(res.qte[g]) && res.accessoires[a] === undefined) res.accessoires[a] = res.qte[g]; delete res.qte[g]; }
+  }
+  for (const [id, x] of Object.entries(ANCIENNES_LIGNES)) {
+    if (res.qte[id] !== undefined) { if (nombre(res.qte[id])) res.produits.push({ ref: x.codes[res.entete.finition] || '', designation: x.designation, qte: res.qte[id] }); delete res.qte[id]; }
+  }
+  return res;
+}
+function fusion(brut) { const r = fusionBrute(brut); return gammeId === 'classic' ? migrerClassic(r) : r; }
+function fusionBrute(brut) {
   const b = etatInitial(), o = brut.options || {};
   const deux = (base, src) => [0, 1].map(i => ({ ...base[i], ...((src || [])[i] || {}) }));
   return {
     ...b,
     entete: { ...b.entete, ...(brut.entete || {}) },
     qte: { ...(brut.qte || {}) },
-    manuel: Array.isArray(brut.manuel) && brut.manuel.length === 5 ? brut.manuel : b.manuel,
+    manuel: Array.isArray(brut.manuel) ? b.manuel.map((_, i) => nombre(brut.manuel[i])) : b.manuel,
     options: {
       ...b.options, ...o,
       doublage: deux(b.options.doublage, o.doublage), renfort: deux(b.options.renfort, o.renfort),
@@ -134,7 +150,7 @@ function construireProfils(cote, titre) {
   const tbody = h('tbody');
   for (const g of groupes(FICHE[cote])) {
     g.items.forEach((it, i) => {
-      const tr = h('tr', { 'data-id': it.id, class: i === 0 ? 'groupe' : '' });
+      const tr = h('tr', { 'data-id': it.id, class: ((i === 0 ? 'groupe ' : '') + (RECTANGLES[it.id] || '')).trim() });
       if (i === 0 && LIBELLE_LARGE.has(it.id)) {
         tr.append(h('td', { class: 'fam large' + (g.famille.length > 22 ? ' long' : ''), colspan: 2, rowspan: g.items.length, text: g.famille }));
       } else if (i === 0 && it.vide && it.titre) {
@@ -176,7 +192,7 @@ function construireProfils(cote, titre) {
           });
         qTd.append(saisie); if (montant) champMontant = saisie;
       }
-      tr.append(codeTd, h('td', { class: 'lg', text: lg }), qTd);
+      tr.append(codeTd, h('td', { class: lg.length > 6 ? 'lg long' : 'lg', text: lg }), qTd);
       tbody.append(tr);
       lignes[it.id] = { item: it, tr, codeTd, calc, qTd, saisie: it.id === GAMME.roles.montants[0] ? champMontant : null };
     });
@@ -216,7 +232,7 @@ function construirePanneau() {
     corpsProduits, corpsFantomes);
 
   // Accessoires : dessins à gauche (clip / éclisse / équerre, joints), comme dans le XLS
-  const IMG_ACC = { A36: { lignes: 9, img: 'accessoires' } };      // éclisse, clip, équerre, joints, cale, mousse : un seul dessin comme dans le XLS
+  const IMG_ACC = { A36: { lignes: 9, img: 'accessoires' }, A45: { lignes: 3, img: 'clip-lisse' } };      // éclisse, clip, équerre, joints, cale, mousse : un seul dessin comme dans le XLS
   const SANS_IMAGE = new Set(['A34', 'A35']);
   const corpsAcc = h('tbody');
   rowLaquage = h('tr', { class: 'acc', hidden: true },
@@ -367,7 +383,7 @@ function maj() {
 // ---------- options de calcul ----------
 function optNbLg(titre, aide, tableau, i) {
   const nb = lier(h('input', { type: 'text', inputmode: 'numeric', 'aria-label': titre + ' : nombre', autocomplete: 'off' }), () => etat.options[tableau][i].nb, v => { etat.options[tableau][i].nb = v; });
-  const lg = lier(h('select', { 'aria-label': titre + ' : longueur' }, LG_COUVRE_JOINT.map(x => h('option', { value: String(x), text: fmtLg(x) }))), () => String(etat.options[tableau][i].lg), v => { etat.options[tableau][i].lg = parseFloat(v); });
+  const lg = lier(h('select', { 'aria-label': titre + ' : longueur' }, LG_COUVRE_JOINT.slice(0, GAMME.roles.couvreJoint.length).map(x => h('option', { value: String(x), text: fmtLg(x) }))), () => String(etat.options[tableau][i].lg), v => { etat.options[tableau][i].lg = parseFloat(v); });
   return h('div', { class: 'option' }, h('span', { class: 'titre', text: titre }), h('div', { class: 'ligne' }, nb, lg), h('p', { class: 'aide', text: aide }));
 }
 function optNbLarg(titre, aide, cle, largeurs) {
@@ -491,7 +507,7 @@ function exporterExcel() {
   const g = parLigne('gauche'), d = parLigne('droite');
   const cell = (it, id) => {
     if (!it || it.vide) return ['', '', '', ''];
-    const q = r.qte[id + it.ligne] || 0, code = it.codes[e.finition];
+    const q = r.qte[it.id] || 0, code = it.codes[e.finition];
     return [`${it.libelle || it.famille} ${it.codeFamille}`.trim(), { v: code || '—', texte: true }, it.longueur || (it.largeur ? 'larg. ' + it.largeur : it.texteLong || it.edi || ''), q || ''];
   };
   for (const n of [...new Set([...FICHE.gauche, ...FICHE.droite].map(i => i.ligne))].sort((p, q) => p - q)) {
