@@ -297,6 +297,7 @@ td.chg-retrait .auto, td.chg-retrait .calc { color: transparent; }          /* l
             <input id="recherche" type="search" placeholder="Nom ou code du produit…" autocomplete="off">
             <label class="case"><input id="rechercheFinition" type="checkbox" checked> Seulement la finition de la fiche</label>
             <button class="bouton" id="btnLigneLibre" type="button">+ Ligne libre</button>
+            <button class="bouton" id="btnHuisseries" type="button" hidden>+ Huisseries…</button>
         </div>
         <ul id="resultats" class="resultats"></ul>
     </section>
@@ -1415,6 +1416,30 @@ function chercher() {
   if (trouves.length > 40) zone.append(h('li', { class: 'edi', text: `… ${trouves.length - 40} autres résultats : précisez la recherche.` }));
 }
 
+// ---------- huisseries à ajouter à la liste (Classic) : double alu carré type B (4 largeurs) et TH carré SV sans traverse (sur mesure) ----------
+const FIN5 = ['9005 MAT', '7016 FT', 'BLANC 9016', 'ANODISÉ', 'RAL'];
+const HUISSERIES_RAPIDES = [
+  ...[['1270', ['8122', '007566', '007266', '007267', '007268']], ['1470', ['8123', '007567', '007269', '007270', '007271']], ['1670', ['8124', '007568', '007272', '007273', '007274']], ['1870', ['8125', '007561', '007275', '007276', '007277']]]
+    .map(([l, c]) => ({ nom: `Huisserie double alu carré type B, fdf 2050 x ${l}`, des: `Huis. carré AB type B fdf 2050x${l}`, codes: Object.fromEntries(FIN5.map((f, i) => [f, c[i]])) })),
+  { nom: 'Huisserie TH carré, SV sans traverse (sur mesure)', des: 'Huis. carré AB SV sans traverse TH fdf x mm (dim. à préciser)', codes: Object.fromEntries(FIN5.map((f, i) => [f, ['8127', '007570', '007278', '007279', '007280'][i]])) },
+];
+function ouvrirHuisseries() {
+  const info = h('p', { class: 'bib-message', text: `Cliquez sur une huisserie pour l'ajouter à la liste (finition de la fiche : ${libelleFinition(etat.entete)}).` });
+  const fermer = () => { f.remove(); document.body.style.overflow = ''; };
+  const boutons = HUISSERIES_RAPIDES.map(x => h('button', { type: 'button', class: 'bouton', style: 'display:block;width:100%;text-align:left;margin:6px 0', text: x.nom, onclick: () => {
+    const ref = x.codes[etat.entete.finition] || '';
+    etat.produits.push({ ref, designation: x.des, qte: '1' }); rendreProduits();
+    info.textContent = ref ? `Ajouté : ${ref} — ${x.des}. Vous pouvez en ajouter d'autres.` : `Ajouté sans code (pas de référence pour cette finition) : ${x.des}.`;
+  } }));
+  const f = h('div', { class: 'fenetre cloison hors-impression', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Huisseries', onkeydown: ev => { if (ev.key === 'Escape') fermer(); } },
+    h('div', { class: 'fenetre-contenu', style: 'max-width:560px' },
+      h('div', { class: 'fenetre-tete' }, h('h2', { text: 'Huisseries à ajouter' })),
+      h('p', { class: 'aide', text: 'La ligne est ajoutée à la liste CODE / Désignation / Qts avec le bon code. Pour les huisseries sur mesure, précisez la dimension dans la désignation.' }),
+      boutons, info,
+      h('div', { class: 'actions', style: 'margin-top:14px' }, h('button', { type: 'button', class: 'bouton principal', text: 'Terminé', onclick: fermer }))));
+  document.body.append(f); document.body.style.overflow = 'hidden'; f.querySelector('button').focus();
+}
+
 // ---------- fichiers : enregistrer, ouvrir, Excel, imprimer ----------
 const nomFichier = () => `${GAMME.prefixeFichier} ${etat.entete.chantier} ${etat.entete.niveau}`.replace(/\s+/g, ' ').trim().replace(/[\\/:*?"<>|]/g, '-');
 const TYPES_FICHIER = { json: ['Fiche KTY (.json)', 'application/json'], xlsx: ['Classeur Excel (.xlsx)', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'] };
@@ -1537,6 +1562,8 @@ $('btnFiger').addEventListener('click', figer);
 $('btnSuivi').addEventListener('click', arreterSuivi);
 $('recherche').addEventListener('input', chercher);
 $('rechercheFinition').addEventListener('change', chercher);
+$('btnHuisseries').hidden = GAMME.id !== 'classic';
+$('btnHuisseries').addEventListener('click', ouvrirHuisseries);
 $('btnLigneLibre').addEventListener('click', () => {
   etat.produits.push({ ref: '', designation: '', qte: '1' }); rendreProduits(); maj();
   const champs = document.querySelectorAll('#produits input.code-p'); champs[champs.length - 1]?.focus();
