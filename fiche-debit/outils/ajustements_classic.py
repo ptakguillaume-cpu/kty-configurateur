@@ -3,7 +3,7 @@ Usage : python3 fiche-debit/outils/ajustements_classic.py   (depuis la racine du
  - ajoute le montant 00MON de 3700 (001452, brut) et le couvre-joint plat de 3700 (001711…001713, 8069 ; 7016 FT à compléter dans la bibliothèque) ;
  - retire le bloc « Clip de lisse » de gauche (il passe dans le tableau des accessoires) ;
  - 2e série : retire la ligne vide du jonc, ajoute les huisseries double alu carré type B (1270 à 1870), rend les lignes « anodisé seulement » conditionnelles, ajoute des lignes de remplissage ;
- - remplace « Jeu 2 paumelles clarit » et « Serrure clarit » par « Jeu 3 paumelles alu » et « Jeu 4 paumelles alu toute hauteur ».
+ - remplace « Jeu 2 paumelles clarit » et « Serrure clarit » par « Jeu 3 paumelles alu » et « Jeu 4 paumelles alu ».
 Les identifiants de lignes existants ne changent pas (les fiches enregistrées restent lisibles) ; seul l'ordre d'affichage (« ligne ») est renuméroté."""
 import json, os
 D = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'donnees.js')
@@ -23,7 +23,7 @@ if 'D45' not in ids('droite'):
     d = F['droite']; k = next(k for k, i in enumerate(d) if i['id'] == 'D43')
     new = [dict(id='D45', ligne=0, famille='Jeu 3 paumelles alu', codeFamille='', longueur=None, calcule=False, edi='42EAS',
                 codes={'9005 MAT': '8158', '7016 FT': '007607', 'BLANC 9016': '000375', 'ANODISÉ': '000421', 'RAL': '000416'}),
-           dict(id='D46', ligne=0, famille='Jeu 4 paumelles alu TH', codeFamille='', longueur=None, calcule=False, edi='42EAS4TH',
+           dict(id='D46', ligne=0, famille='Jeu 4 paumelles alu', codeFamille='', longueur=None, calcule=False, edi='42EAS4TH',
                 codes={'9005 MAT': '8163', '7016 FT': '007612', 'BLANC 9016': '000743', 'ANODISÉ': '000970', 'RAL': '000916'})]
     d[k:k + 2] = new
 if 'A45' not in [a['id'] for a in F['accessoires']]:
