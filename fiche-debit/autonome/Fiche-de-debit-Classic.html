@@ -268,12 +268,13 @@ td.chg-retrait .auto, td.chg-retrait .calc { color: transparent; }          /* l
 /* ---------- impression : écriture plus grosse dans les cases (choix « A » validé) ---------- */
 @media print {
     table.profils col:nth-child(1) { width: 18.5% !important; } table.profils col:nth-child(2) { width: 19.5% !important; } table.profils col:nth-child(3) { width: 18% !important; }
-    table.profils col:nth-child(4) { width: 16% !important; } table.profils col:nth-child(5) { width: 28% !important; }
+    table.profils col:nth-child(4) { width: 18% !important; } table.profils col:nth-child(5) { width: 26% !important; }
     table.profils td.code, table.profils td.lg { font-size: 8.6pt !important; letter-spacing: -0.2px; }
-    table.profils td.lg.long { font-size: 6.2pt !important; letter-spacing: -0.4px; }          /* codes internes de 6 caractères et plus (42EAD8, 42EAS4TH) */
+    table.profils td.lg.long { font-size: 6.6pt !important; letter-spacing: -0.3px; }          /* codes internes de 6 caractères et plus (42EAD8, 42EAS4TH) */
     .q input, .q .calc { font-size: 10pt !important; }
     table.profils .fam, table.profils .fam small, table.profils td.titre, .img-texte { font-size: 6.8pt !important; }
-    table.profils td.fam.large, table.profils td.fam.long { font-size: 6pt !important; letter-spacing: -0.1px; }
+    table.profils td.fam.large { font-size: 7.2pt !important; letter-spacing: -0.2px; }          /* jeux de paumelles, serrure… */
+    table.profils td.fam.long, table.profils td.fam.large.long { font-size: 6pt !important; letter-spacing: -0.1px; }
     .liste td, .liste th, .acc-table td { font-size: 8pt !important; }
     .acc-table td.n .auto, .acc-table td.n input { font-size: 10pt !important; }
 }
