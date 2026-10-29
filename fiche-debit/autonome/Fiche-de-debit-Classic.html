@@ -702,13 +702,32 @@ function creerBibliotheque({ FICHE, CATALOGUE, h, telecharger, surChangement, cl
   let index = new Map();
   const reindexer = () => { index = new Map(bib.catalogue.map(c => [c[0], c])); };
   const existe = ref => index.has(ref);
+  // Codes livrés qui ont changé depuis (anciennes bibliothèques enregistrées sans « base ») : montant spécial renforcé 00MSPR à la place des anciens 00MONSP
+  const MIGRATIONS = { D17: { '000239': '006600' }, D18: { '000240': '006602' }, D19: { '000244': '006603' }, D20: { '000245': '006604' }, D21: { '000243': '006605' } };
   function appliquer() {
     reindexer();
-    for (const it of lignesFiche()) if (bib.codes[it.id]) it.codes = Object.fromEntries(Object.entries(bib.codes[it.id]).filter(([f, c]) => FIN.includes(f) && c));
+    // Une bibliothèque enregistrée garde une copie des codes de la fiche : pour que les codes livrés plus tard (corrections) arrivent quand même,
+    // une ligne que l'utilisateur n'a pas modifiée (code identique à la « base » enregistrée avec elle) suit les codes livrés ; une ligne modifiée garde son code.
+    const ancien = !bib.base;
+    for (const it of lignesFiche()) {
+      const saved = bib.codes[it.id];
+      if (!saved) continue;                                          // ligne ajoutée depuis : codes livrés
+      const livre = origine.codes[it.id] || {}, base = bib.base && bib.base.codes && bib.base.codes[it.id];
+      const fus = {};
+      for (const f of FIN) {
+        let c = saved[f];
+        if (ancien) { const m = MIGRATIONS[it.id]; if (m && m[c]) c = m[c]; }
+        else if (base && base[f] === c) c = livre[f];
+        if (c) fus[f] = c;
+      }
+      bib.codes[it.id] = fus; it.codes = { ...fus };
+    }
+    bib.base = { codes: copie(origine.codes) };
     for (const a of FICHE.accessoires) if (bib.accessoires[a.id]) a.code = bib.accessoires[a.id];
   }
   function sauver() {
     bib.modifie = new Date().toISOString();
+    bib.base = { codes: copie(origine.codes) };                    // codes livrés au moment de l'enregistrement : sert à savoir quelles lignes l'utilisateur a modifiées
     try { localStorage.setItem(CLE, JSON.stringify(bib)); } catch { /* stockage indisponible : la bibliothèque reste valable jusqu'à la fermeture */ }
     appliquer(); surChangement(bib); etatBarre();
   }

@@ -15,6 +15,7 @@ Bouton **« Bibliothèque des codes »** en haut de la fiche. Trois onglets :
 
 Bon à savoir :
 - La bibliothèque est gardée **dans le navigateur de l'appareil**. Pour que tous les postes aient les mêmes codes : un poste modifie, enregistre la bibliothèque, les autres l'ouvrent.
+- Quand l'outil est mis à jour avec de nouveaux codes, **les lignes que vous n'avez jamais modifiées dans la bibliothèque suivent les nouveaux codes** ; une ligne que vous avez corrigée garde votre code.
 - Une fiche ouverte plus tard affiche les codes de la bibliothèque **du moment** (une fiche enregistrée avant un changement de code montrera le nouveau code).
 - On ne peut pas créer une nouvelle *ligne* de fiche (nouvelle longueur, nouvelle famille) : pour un produit en plus, utiliser « + Ligne libre » sur la fiche, ou demander une évolution.
 
