@@ -18,7 +18,7 @@ const GAMMES = {
       G32: 'angle-depart-multiple', G37: 'depart-multiple-cj',
       D4: 'depart', D9: 'omega', D12: 'jonc', D14: 'angle-90', D17: 'montant-special', D22: 'capot', D27: 'angle-libre', D32: 'angle-doublage', D34: 'huisserie', D37: 'huisserie', D47: 'huisserie',
     },
-    finsApres: ['D33', 'D42', 'D45', 'D46', 'D51', 'D52'],              // lignes qui suivent une ligne du même ensemble (Angle / Plat de doublage, jeux de paumelles) : trait fin au-dessus
+    finsApres: ['D33', 'D42', 'D45', 'D46', 'D51', 'D52', 'G17', 'G18', 'G20', 'G21'],              // lignes qui suivent une ligne du même ensemble (Angle / Plat de doublage, jeux de paumelles) : trait fin au-dessus
     deplacementAnodise: { ids: ['D27', 'D28', 'D29', 'D30', 'D31'], avant: 'D32' },     // en anodisé, le bloc « Angle libre » passe en bas du tableau de gauche (les autres finitions ne changent pas)
     rectangles: { G16: 'pc1', G17: 'pc2', G18: 'pc3', G19: 'pc1', G20: 'pc2', G21: 'pc3' },   // blocs parclose : un seul rectangle (comme l'Excel d'origine)
     imageSpan: { D32: 2 },                            // un même dessin pour « Angle de doublage » et « Plat de doublage »
