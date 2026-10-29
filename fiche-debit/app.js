@@ -200,7 +200,7 @@ function construireProfils(cote, titre) {
           });
         qTd.append(saisie); if (montant) champMontant = saisie;
       }
-      tr.append(codeTd, h('td', { class: lg.length > 6 ? 'lg long' : 'lg', text: lg }), qTd);
+      tr.append(codeTd, h('td', { class: lg.length > 5 ? 'lg long' : 'lg', text: lg }), qTd);
       tbody.append(tr);
       lignes[it.id] = { item: it, tr, codeTd, calc, qTd, saisie: LIGNES_AUTO.has(it.id) ? champMontant : null };
     });
