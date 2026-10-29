@@ -944,6 +944,7 @@ const GAMMES = {
       G32: 'angle-depart-multiple', G37: 'depart-multiple-cj',
       D4: 'depart', D9: 'omega', D12: 'jonc', D14: 'angle-90', D17: 'montant-special', D22: 'capot', D27: 'angle-libre', D32: 'angle-doublage', D34: 'huisserie', D37: 'huisserie', D47: 'huisserie',
     },
+    deplacementAnodise: { ids: ['D27', 'D28', 'D29', 'D30', 'D31'], avant: 'D32' },     // en anodisé, le bloc « Angle libre » passe en bas du tableau de gauche (les autres finitions ne changent pas)
     rectangles: { G16: 'pc1', G17: 'pc2', G18: 'pc3', G19: 'pc1', G20: 'pc2', G21: 'pc3' },   // blocs parclose : un seul rectangle (comme l'Excel d'origine)
     imageSpan: { D32: 2 },                            // un même dessin pour « Angle de doublage » et « Plat de doublage »
     sansImagePropre: ['D33'],
@@ -1268,7 +1269,12 @@ function construireRevision() {                           // bandeau imprimé en
 
 // Lignes « anodisé seulement » (n'existent plus dans les autres finitions) et lignes de remplissage : les deux tableaux gardent la même hauteur
 function majLignesConditionnelles() {
-  const fin = etat.entete.finition;
+  const fin = etat.entete.finition, dep = GAMME.deplacementAnodise;
+  if (dep && lignes[dep.avant]) {                                           // déplace les lignes (avec leurs cases de saisie) d'un tableau à l'autre
+    const rows = dep.ids.map(id => lignes[id].tr);
+    if (fin === 'ANODISÉ') { const ancre = tbodies.gauche.querySelector('tr.remplissage'); rows.forEach(tr => tbodies.gauche.insertBefore(tr, ancre)); }
+    else rows.forEach(tr => tbodies.droite.insertBefore(tr, lignes[dep.avant].tr));
+  }
   for (const L of Object.values(lignes)) if (L.item.seulement) L.tr.hidden = !L.item.seulement.includes(fin);
   for (const G of groupesCond) {
     const visibles = G.rows.filter(tr => !tr.hidden);
