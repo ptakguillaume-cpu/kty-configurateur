@@ -201,8 +201,11 @@ table.profils tr.pc1 > td.img { text-align: left; }
     table.profils td, table.profils th, .liste td, .liste th { border-width: 0.3mm; border-color: #000; }
     table.profils tr.groupe > td, table.profils tr.groupe > th { border-top-width: 0.55mm; }
     .acc-table { border-top-width: 0.55mm; }
-    /* les cases de quantité (position: relative) recouvrent la moitié des traits de la grille : on les retrace dans la case */
-    table.profils td.q, .acc-table td.n, .liste td.n { box-shadow: inset 0 -0.15mm 0 #000; }
+    /* à l'impression, les cases de quantité ne sont plus « position: relative » (elles recouvraient la moitié des traits de la grille et faisaient des doubles lignes) ;
+       la petite mention « avant N » du suivi se place alors dans le flux, au-dessus du chiffre */
+    table.profils td.q, .liste td.n, .acc-table td.n { position: static !important; }
+    .avant { position: relative !important; display: block; height: 0; overflow: visible; left: 0.4mm !important; right: auto !important; top: calc(var(--h) * -1 + 0.15mm) !important; transform: none !important; white-space: nowrap; }
+    td.chg-retrait .avant { left: 0 !important; top: calc(var(--h) * -0.5 - 0.55em) !important; text-align: center; }
 }
 
 /* ---------- bibliothèque des codes (écran seulement) ---------- */

@@ -21,7 +21,7 @@ const GAMMES = {
     rectangles: { G16: 'pc1', G17: 'pc2', G18: 'pc3', G19: 'pc1', G20: 'pc2', G21: 'pc3' },   // blocs parclose : un seul rectangle (comme l'Excel d'origine)
     imageSpan: { D32: 2 },                            // un même dessin pour « Angle de doublage » et « Plat de doublage »
     sansImagePropre: ['D33'],
-    libelleLarge: ['D41', 'D42', 'D45', 'D46'],       // jeux de paumelles : libellé sur les 2 colonnes, sans dessin (comme le XLS)
+    libelleLarge: ['D41', 'D42', 'D45', 'D46', 'D51', 'D52'],       // jeux de paumelles : libellé sur les 2 colonnes, sans dessin (comme le XLS)
     cercle: ['G16', 'G18', 'G19', 'G21'],             // macro « cercle rouge » du XLS
   },
   rdb1: {

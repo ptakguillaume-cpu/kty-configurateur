@@ -44,6 +44,10 @@ if 'D47' not in ids('droite'):                           # 2e série : huisserie
         if i['id'] == 'GV1': i['remplissage'] = True
     g += [dict(id='GV%d' % n, ligne=0, famille='', codeFamille='', vide=True, remplissage=True, codes={}) for n in range(2, 6)]
     d += [dict(id='DV%d' % n, ligne=0, famille='', codeFamille='', vide=True, remplissage=True, codes={}) for n in range(1, 6)]
+if 'D51' not in ids('droite'):                           # 3e série : jeux de 6 et de 8 paumelles alu, hauteur 2050 (saisie manuelle)
+    d = F['droite']; k = next(k for k, i in enumerate(d) if i['id'] == 'DV1')
+    d[k:k] = [dict(id='D51', ligne=0, famille='Jeu 6 paumelles alu', codeFamille='', longueur=None, calcule=False, edi='42EAD', codes=dict(zip(FIN, ['8167', '007616', '000790', '000431', '000791']))),
+              dict(id='D52', ligne=0, famille='Jeu 8 paumelles alu', codeFamille='', longueur=None, calcule=False, edi='42EAD8', codes=dict(zip(FIN, ['8171', '007620', '001134', '001133', '001135'])))]
 for cote in ('gauche', 'droite'):                       # ordre d'affichage : numéros de ligne consécutifs (les « id » ne changent pas)
     n = min(i['ligne'] for i in F[cote] if i['ligne'])
     for i in F[cote]: i['ligne'] = n; n += 1
