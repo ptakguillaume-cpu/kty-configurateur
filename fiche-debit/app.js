@@ -154,7 +154,7 @@ function construireProfils(cote, titre) {
   for (const g of groupes(FICHE[cote])) {
     const lignesG = [];
     g.items.forEach((it, i) => {
-      if (it.remplissage) { tbody.append(h('tr', { 'data-id': it.id, class: 'remplissage', hidden: true }, h('td', { colspan: 2 }), h('td', { class: 'code' }), h('td', { class: 'lg' }), h('td', { class: 'q' }))); return; }
+      if (it.remplissage) return;                                       // (anciennes lignes de remplissage : les tableaux s'étirent maintenant pour remplir la page)
       const tr = h('tr', { 'data-id': it.id, class: ((i === 0 && !FINS.has(it.id) ? 'groupe ' : '') + (RECTANGLES[it.id] || '')).trim() });
       if (i === 0 && LIBELLE_LARGE.has(it.id)) {
         tr.append(h('td', { class: 'fam large' + (g.famille.length > 22 ? ' long' : ''), colspan: 2, rowspan: g.items.length, text: g.famille }));
