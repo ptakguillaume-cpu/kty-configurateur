@@ -86,6 +86,12 @@ assert.equal(tr({}).option, 0); assert.equal(tr({ VSA: '' }).option, 0); assert.
 { // huisseries double alu type B : +2 couvre-joints plats (2,5 m) chacune, sans effet sur le Jeu 6 bois
   const e = etatInitial(); const a = calculer(e); e.qte = { D47: '2', D50: '1' }; const b2 = calculer(e);
   assert.equal(b2.cj[0], a.cj[0] + 6, '3 huisseries double alu = 6 couvre-joints'); assert.equal(b2.J42, a.J42, 'Jeu 6 bois inchangé'); }
+{ // huisseries double alu type B : le jeu de paumelles (6 = SV, 8 = isolant) se remplit avec leur nombre
+  const e = etatInitial(); e.qte = { D47: '2', D49: '1' };
+  assert.equal(calculer(e).qte.D51, undefined, 'sans choix : rien');
+  e.options.paumellesAlu = 'sv'; let r = calculer(e); assert.equal(r.qte.D51, 3, 'SV : Jeu 6 = 3'); assert.equal(r.qte.D52, undefined);
+  e.options.paumellesAlu = 'iso'; r = calculer(e); assert.equal(r.qte.D52, 3, 'isolant : Jeu 8 = 3'); assert.equal(r.qte.D51, undefined);
+  e.qte.D52 = '1'; assert.equal(calculer(e).qte.D52, 4, 'la saisie à la main s\'ajoute'); }
 console.log('Traverses selon le type de cloison : OK');
 const vide = calculer(etatInitial());
 assert.deepEqual([vide.clips, vide.equerres, vide.mousse, vide.J41, vide.J42, ...vide.cj], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'une fiche vide ne doit rien calculer');

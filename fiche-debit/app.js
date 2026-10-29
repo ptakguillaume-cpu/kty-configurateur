@@ -2,7 +2,7 @@ import { FICHE as FICHE_CLASSIC } from './donnees.js';
 import { FICHE_RDB1 } from './donnees-rdb1.js';
 import { CATALOGUE } from './catalogue.js';
 import {
-  etatInitial, calculer, ROLES_CLASSIC, ROLES_RDB1, abreger, couleurJonc, libelleFinition,
+  etatInitial, calculer, ajoutAuto, ROLES_CLASSIC, ROLES_RDB1, abreger, couleurJonc, libelleFinition,
   LG_COUVRE_JOINT, LARGEURS_CA_SIMPLE, LARGEURS_CA_DOUBLE, FINITIONS, TYPES_CLOISON, traversesCloison,
 } from './calcul.js';
 import { creerXlsx } from './xlsx.js';
@@ -137,6 +137,8 @@ const remplir = () => synchros.forEach(f => f());
 // ---------- tableaux de profils ----------
 let champMontant = null;
 const montantsAuto = () => nombre(etat.options.montantsTraverses);   // montants de 2500 des traverses, ajoutés automatiquement à la ligne Montant 2500
+const autoLigne = id => ajoutAuto(etat, GAMME.roles, id);            // idem pour toutes les lignes à ajout automatique (traverses, jeux de paumelles des huisseries double alu type B)
+const LIGNES_AUTO = new Set([GAMME.roles.montants[0], GAMME.roles.jeu6Alu, GAMME.roles.jeu8Alu].filter(Boolean));
 const lignes = {};                                // id -> { item, tr, codeTd, calc }
 function groupes(items) {
   const g = [];
@@ -188,11 +190,11 @@ function construireProfils(cote, titre) {
             () => (etat.manuel[k] || ''), v => { etat.manuel[k] = nombre(v); }));
         }
       } else {
-        const montant = it.id === GAMME.roles.montants[0];            // ligne Montant 2500 : la case affiche le total, traverses comprises
+        const montant = LIGNES_AUTO.has(it.id);                       // lignes à ajout automatique (Montant 2500, Jeu 6 / Jeu 8 alu) : la case affiche le total
         const saisie = lier(h('input', { type: 'text', inputmode: 'decimal', 'aria-label': `${it.libelle || it.famille} ${lg}`, autocomplete: 'off' }),
-          () => { const a = montant ? montantsAuto() : 0; return a ? fmt(nombre(etat.qte[it.id]) + a) : etat.qte[it.id]; },
+          () => { const a = montant ? autoLigne(it.id) : 0; return a ? fmt(nombre(etat.qte[it.id]) + a) : etat.qte[it.id]; },
           v => {
-            const a = montant ? montantsAuto() : 0;
+            const a = montant ? autoLigne(it.id) : 0;
             if (a) { const x = Math.max(0, nombre(v) - a); if (x) etat.qte[it.id] = String(x); else delete etat.qte[it.id]; }
             else if (v === '') delete etat.qte[it.id]; else etat.qte[it.id] = v;
           });
@@ -200,7 +202,7 @@ function construireProfils(cote, titre) {
       }
       tr.append(codeTd, h('td', { class: lg.length > 6 ? 'lg long' : 'lg', text: lg }), qTd);
       tbody.append(tr);
-      lignes[it.id] = { item: it, tr, codeTd, calc, qTd, saisie: it.id === GAMME.roles.montants[0] ? champMontant : null };
+      lignes[it.id] = { item: it, tr, codeTd, calc, qTd, saisie: LIGNES_AUTO.has(it.id) ? champMontant : null };
     });
     if (g.items.some(x => x.seulement)) groupesCond.push({ rows: lignesG, items: g.items, cells: [...lignesG[0].querySelectorAll(':scope > td.img, :scope > td.fam')] });
   }
@@ -374,8 +376,8 @@ function maj() {
     L.codeTd.title = code ? (DESIGNATION.get(code) || '') : `Pas de code en ${nomFin} pour cette ligne`;
     const q = r.qte[id] || 0;
     if (L.saisie) {                                          // ligne Montant 2500 : info « dont N pour traverses » au survol
-      const a = montantsAuto();
-      L.saisie.title = a ? `dont ${a} pour les traverses (ajoutés automatiquement)` : '';
+      const a = autoLigne(id);
+      L.saisie.title = a ? (id === GAMME.roles.montants[0] ? `dont ${a} pour les traverses (ajoutés automatiquement)` : `dont ${a} d'après les huisseries double alu type B (ajoutés automatiquement)`) : '';
       if (document.activeElement !== L.saisie) L.saisie.value = a ? fmt(nombre(etat.qte[id]) + a) : (etat.qte[id] ?? '');
     }
     if (L.calc) { L.calc.textContent = fmt(q); L.calc.classList.toggle('zero', !q); }
@@ -453,6 +455,9 @@ function ouvrirCloison() {
     { id: 'boisTH', nom: 'Portes bois toute hauteur', aide: 'Jeu 4 paumelles bois TH, ajouté à la liste des produits', lire: () => produitBoisTH()?.qte },
   ];
   const champsPortes = Object.fromEntries(PORTES.map(p => [p.id, h('input', { type: 'text', inputmode: 'numeric', 'aria-label': `Jeux de paumelles : ${p.nom}`, autocomplete: 'off', placeholder: '0', value: p.lire() || '' })]));
+  const alu = h('select', { 'aria-label': 'Portes alu des huisseries double alu type B' }, h('option', { value: '', text: 'Je saisis les jeux moi-même' }),
+    h('option', { value: 'sv', text: 'Portes alu SV (simple vitrage) : Jeu 6 paumelles' }), h('option', { value: 'iso', text: 'Portes alu isolant : Jeu 8 paumelles' }));
+  alu.value = etat.options.paumellesAlu || '';
   const lignesPortes = PORTES.map(p => h('label', { class: 'ligne-cloison' }, h('span', { class: 'nom', text: p.nom }), champsPortes[p.id], h('span', { class: 'aide', text: p.aide })));
   const champs = Object.fromEntries(TYPES_CLOISON.map(t => [t.id, h('input', { type: 'text', inputmode: 'numeric', 'aria-label': `Nombre de modules ${t.nom}`, autocomplete: 'off', placeholder: '0', value: c0.modules[t.id] || '' })]));
   const h2500 = h('input', { type: 'checkbox', id: 'cloison2500' }); h2500.checked = !!c0.h2500;
@@ -471,6 +476,7 @@ function ouvrirCloison() {
     const r = traversesCloison(etat.cloison);
     if (r.lignes.length) { etat.options.traverses = String(r.option || ''); etat.options.montantsTraverses = etat.cloison.h2500 ? '' : String(r.montants || ''); }
     if (avecPortes) {                                                  // seules les cases remplies sont écrites
+      etat.options.paumellesAlu = alu.value;
       for (const id of ['D45', 'D46']) { const v = champsPortes[id].value.replace(/[^0-9]/g, ''); if (v) etat.qte[id] = v; }
       const v = champsPortes.boisTH.value.replace(/[^0-9]/g, '');
       if (v) { const p = produitBoisTH(); const ref = CODES_BOIS_TH[etat.entete.finition] || ''; if (p) { p.qte = v; p.ref = ref || p.ref; } else ajouterProduit({ ref, designation: 'Jeu 4 pau. porte bois toute hauteur', qte: v }); rendreProduits(); }
@@ -487,7 +493,10 @@ function ouvrirCloison() {
       h('label', { class: 'case' }, h2500, ' Cloison de 2500 de haut'),
       h('p', { class: 'aide', text: 'Sinon, les montants de 2500 des traverses sont ajoutés automatiquement à la ligne Montant 2500 : ne les saisissez plus vous-même. Si la cloison fait 2500 de haut, ils sont comptés à part : cochez la case, l\'outil ajoute alors toutes les équerres des traverses.' }),
       avecPortes ? [h('h3', { text: 'Portes : nombre de jeux de paumelles' }),
-        h('p', { class: 'aide', text: 'Les jeux de paumelles alu sont retirés du Jeu 3 paumelles bois (calculé avec les huisseries). Remplace l\'option « Portes CA » : remplissez bien cette partie en début de fiche.' }), ...lignesPortes] : null,
+        h('p', { class: 'aide', text: 'Les jeux de paumelles alu sont retirés du Jeu 3 paumelles bois (calculé avec les huisseries). Remplace l\'option « Portes CA » : remplissez bien cette partie en début de fiche.' }), ...lignesPortes,
+        h('h3', { text: 'Huisseries double alu type B' }),
+        h('p', { class: 'aide', text: 'Quand vous saisissez la quantité de ces huisseries dans la grille, le jeu de paumelles correspondant se remplit tout seul : Jeu 6 en simple vitrage, Jeu 8 en isolant. Si vous mélangez les deux sur une fiche, choisissez « Je saisis les jeux moi-même ».' }),
+        h('label', {}, 'Portes alu ', alu)] : null,
       resume,
       h('div', { class: 'actions', style: 'margin-top:14px' }, h('button', { type: 'button', class: 'bouton principal', text: 'Valider', onclick: valider }), h('button', { type: 'button', class: 'bouton', text: 'Passer', onclick: fermer }))));
   document.body.append(f); document.body.style.overflow = 'hidden'; rafraichir(); Object.values(champs)[1].focus();

@@ -17,6 +17,7 @@ export function etatInitial() {
     options: {
       doublage: [{ nb: '', lg: 2.5 }, { nb: '', lg: 2.5 }],   // « D et M et MS de doublage »
       renfort: [{ nb: '', lg: 2.7 }, { nb: '', lg: 5.75 }],   // « M et MS renforcer »
+      paumellesAlu: '',                                       // huisseries double alu type B : '' (saisie à la main), 'sv' (Jeu 6 paumelles) ou 'iso' (Jeu 8 paumelles)
       montantsTraverses: '',                                  // montants de 2500 des traverses, ajoutés à la ligne Montant 2500 (fenêtre « type de cloison », modifiable)
       traverses: '',                                          // « Nb de montants pour traverse / DL » (vide, comme après « effacer »)
       caSimple: { nb: '', largeur: 930 },
@@ -64,7 +65,7 @@ const plage = (p, a, b) => Array.from({ length: b - a + 1 }, (_, i) => p + (a + 
 export const ROLES_CLASSIC = {
   montants: [...plage('G', 6, 10), 'G9b'], meneaux: plage('G', 22, 26), angleDepartMultiple: plage('G', 32, 36), departMultipleCJ: plage('G', 37, 41),
   departs: plage('D', 4, 8), montantsSpeciaux: plage('D', 17, 21), omega: ['D9', null, 'D10', null, 'D11'], omegaOrigine: ['D9', 'D10', 'D10', 'D10', 'D11'],
-  huisSimples: plage('D', 34, 36), huisDV: plage('D', 37, 40), huisDVAlu: plage('D', 47, 50), angle90: plage('D', 14, 16), angleCarre: plage('G', 27, 31),
+  huisSimples: plage('D', 34, 36), huisDV: plage('D', 37, 40), huisDVAlu: plage('D', 47, 50), jeu6Alu: 'D51', jeu8Alu: 'D52', angle90: plage('D', 14, 16), angleCarre: plage('G', 27, 31),
   couvreJoint: [...plage('G', 11, 15), 'G14b'], paumelles: ['D41', 'D42'], jeuxAlu: ['D45', 'D46'],
 };
 // RDB1 : mêmes règles que la Classic, chaque ligne étant rattachée à son équivalent selon sa place sur la fiche
@@ -76,9 +77,18 @@ export const ROLES_RDB1 = {
   angle90: [], angleCarre: ['G23', 'G25'], couvreJoint: plage('G', 10, 14), paumelles: ['D40', 'D41'], jeuxAlu: [], huisDVAlu: [],
 };
 
+// Quantités ajoutées automatiquement à certaines lignes (en plus de la saisie) : montants de 2500 des traverses, jeux de paumelles des huisseries double alu type B
+export function ajoutAuto(etat, roles, id) {
+  const o = etat.options;
+  if (!id) return 0;
+  if (id === roles.montants[0]) return num(o.montantsTraverses);
+  if ((o.paumellesAlu === 'sv' && id === roles.jeu6Alu) || (o.paumellesAlu === 'iso' && id === roles.jeu8Alu)) return (roles.huisDVAlu || []).reduce((s, i) => s + num(etat.qte[i]), 0);
+  return 0;
+}
+
 export function calculer(etat, { legacy = false, roles = ROLES_CLASSIC } = {}) {
   const o = etat.options;
-  const q = id => (id ? num(etat.qte[id]) + (id === roles.montants[0] ? num(o.montantsTraverses) : 0) : 0);   // + montants de 2500 des traverses
+  const q = id => (id ? num(etat.qte[id]) + ajoutAuto(etat, roles, id) : 0);   // + ajouts automatiques (traverses, paumelles des huisseries double alu)
   const somme = ids => ids.reduce((s, id) => s + q(id), 0);
 
   // --- Couvre-joint plat ---
@@ -130,7 +140,7 @@ export function calculer(etat, { legacy = false, roles = ROLES_CLASSIC } = {}) {
   // --- Quantités finales par ligne ---
   const qte = {};
   for (const id of Object.keys(etat.qte)) if (num(etat.qte[id])) qte[id] = num(etat.qte[id]);
-  if (q(roles.montants[0])) qte[roles.montants[0]] = q(roles.montants[0]);
+  for (const id of [roles.montants[0], roles.jeu6Alu, roles.jeu8Alu]) if (id && q(id)) qte[id] = q(id);
   roles.couvreJoint.forEach((id, k) => { qte[id] = cj[k]; });
   qte[roles.paumelles[0]] = J41; qte[roles.paumelles[1]] = J42;
 
