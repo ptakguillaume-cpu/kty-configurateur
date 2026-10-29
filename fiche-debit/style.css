@@ -132,7 +132,7 @@ tr.tete-groupe td { background: var(--gris-clair); }
 .resultats .edi { color: #5b6470; font-size: 12px; }
 .resultats button { min-height: 36px; }
 
-table.profils td.lg.long { font-size: 10px; letter-spacing: -0.3px; white-space: nowrap; }
+table.profils td.lg.long { font-size: 9px; letter-spacing: -0.3px; white-space: nowrap; }
 @media print { table.profils td.lg.long { font-size: 6.2pt; letter-spacing: -0.2px; } }
 
 /* blocs parclose : un seul rectangle (traits intérieurs masqués) */
