@@ -60,3 +60,12 @@ Le jonc anodisé donne « Jonc gris RAL 7035 » (134) : voulu, la fiche l'affich
 (Comparaison faite en tenant compte des zéros de tête : voir le rapport de l'étape 1, section 5.)
 
 Donc les codes faux viennent surtout de **l'onglet CODE incomplet** (508 codes sur 1 925), pas de ces tableaux.
+
+
+## Règles ajoutées après la mise en service (voir PASSATION.md pour l'utilisation)
+- **Traverses** : 2 équerres par traverse ; 2 traverses par montant de 2500 ; équerres ajoutées = 2 × (traverses − montants des traverses) ; cloison de 2500 de haut : 2 équerres × traverses. Traverses par module : PTH / VTH 0 ; PTH imposte, VTH imposte, VSA 1 ; VSA imposte 2.
+- **Montants de 2500 des traverses** ajoutés à la ligne Montant 2500 (comptent donc 2 couvre-joints plats et 2 équerres chacun).
+- **Couvre-joint plat 3700** : 6e longueur du calcul (en dernier pour ne pas décaler les fiches enregistrées), 12 clips ; montant 3700 compté comme un montant.
+- **Huisseries double alu type B** : +2 couvre-joints plats en 2,5 m chacune (comme les type A), sans effet sur les jeux de paumelles bois.
+- **Jeux de paumelles** : Jeu 3 bois = huisseries simples − portes CA − jeux alu (Jeu 3 et Jeu 4 alu), et 0 s'il n'y a aucune huisserie simple dans la grille ; Jeu 6 bois = huisseries doubles de type A − portes CA double. Jeu 6 alu (SV) ou Jeu 8 alu (isolant) = somme des huisseries double alu type B (+ saisie).
+- Ces règles ne s'appliquent pas au mode « formules d'origine du XLS » (les 25 cas de comparaison avec l'Excel restent identiques).
