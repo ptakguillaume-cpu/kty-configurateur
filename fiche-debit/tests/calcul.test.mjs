@@ -83,6 +83,9 @@ assert.equal(tr({}).option, 0); assert.equal(tr({ VSA: '' }).option, 0); assert.
   const r = calculer(e); assert.equal(r.J41, 0, 'Jeu 3 bois = 0 sans huisserie simple'); assert.equal(r.qte.D41, 0);
   e.qte.D34 = '5'; assert.equal(calculer(e).J41, 5 - 1 - 3, 'avec des huisseries simples, le calcul reste celui de la fiche');
   assert.equal(calculer({ ...e, qte: { D45: '2' } }, { legacy: true }).J41, -3, 'XLS d\'origine : pas de remise à 0'); }
+{ // huisseries double alu type B : +2 couvre-joints plats (2,5 m) chacune, sans effet sur le Jeu 6 bois
+  const e = etatInitial(); const a = calculer(e); e.qte = { D47: '2', D50: '1' }; const b2 = calculer(e);
+  assert.equal(b2.cj[0], a.cj[0] + 6, '3 huisseries double alu = 6 couvre-joints'); assert.equal(b2.J42, a.J42, 'Jeu 6 bois inchangé'); }
 console.log('Traverses selon le type de cloison : OK');
 const vide = calculer(etatInitial());
 assert.deepEqual([vide.clips, vide.equerres, vide.mousse, vide.J41, vide.J42, ...vide.cj], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'une fiche vide ne doit rien calculer');

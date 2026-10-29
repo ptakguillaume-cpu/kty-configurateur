@@ -16,12 +16,14 @@ const GAMMES = {
     images: {                                         // dessins de profils de la fiche (repris du XLS), par première ligne de famille
       G4: 'lisse', G6: 'montant', G11: 'couvre-joint', G18: 'parclose-simple', G21: 'parclose-double', G22: 'meneau', G27: 'angle-carre',
       G32: 'angle-depart-multiple', G37: 'depart-multiple-cj',
-      D4: 'depart', D9: 'omega', D12: 'jonc', D14: 'angle-90', D17: 'montant-special', D22: 'capot', D27: 'angle-libre', D32: 'angle-doublage', D34: 'huisserie', D37: 'huisserie',
+      D4: 'depart', D9: 'omega', D12: 'jonc', D14: 'angle-90', D17: 'montant-special', D22: 'capot', D27: 'angle-libre', D32: 'angle-doublage', D34: 'huisserie', D37: 'huisserie', D47: 'huisserie',
     },
+    finsApres: ['D33', 'D42', 'D45', 'D46', 'D51', 'D52', 'G17', 'G18', 'G20', 'G21'],              // lignes qui suivent une ligne du même ensemble (Angle / Plat de doublage, jeux de paumelles) : trait fin au-dessus
+    deplacementAnodise: { ids: ['D27', 'D28', 'D29', 'D30', 'D31'], avant: 'D32' },     // en anodisé, le bloc « Angle libre » passe en bas du tableau de gauche (les autres finitions ne changent pas)
     rectangles: { G16: 'pc1', G17: 'pc2', G18: 'pc3', G19: 'pc1', G20: 'pc2', G21: 'pc3' },   // blocs parclose : un seul rectangle (comme l'Excel d'origine)
     imageSpan: { D32: 2 },                            // un même dessin pour « Angle de doublage » et « Plat de doublage »
     sansImagePropre: ['D33'],
-    libelleLarge: ['D41', 'D42', 'D45', 'D46'],       // jeux de paumelles : libellé sur les 2 colonnes, sans dessin (comme le XLS)
+    libelleLarge: ['D41', 'D42', 'D45', 'D46', 'D51', 'D52'],       // jeux de paumelles : libellé sur les 2 colonnes, sans dessin (comme le XLS)
     cercle: ['G16', 'G18', 'G19', 'G21'],             // macro « cercle rouge » du XLS
   },
   rdb1: {
@@ -32,14 +34,14 @@ const GAMMES = {
       D2: 'rdb1-depart', D7: 'rdb1-omega', D12: 'rdb1-jonc', D14: 'rdb1-mousse', D17: 'rdb1-montant-special', D21: 'rdb1-capot-classic', D26: 'rdb1-angle-libre',
       D31: 'rdb1-doublage', D33: 'rdb1-huisserie-simple', D36: 'rdb1-huisserie-double',
     },
-    imageSpan: { D31: 2 }, rectangles: {}, sansImagePropre: ['D32'], libelleLarge: ['D40', 'D41', 'D42', 'D43'], cercle: [],
+    imageSpan: { D31: 2 }, finsApres: ['D32', 'D41', 'D42', 'D43'], rectangles: {}, sansImagePropre: ['D32'], libelleLarge: ['D40', 'D41', 'D42', 'D43'], cercle: [],
   },
 };
 let gammeId = 'classic';
 try { const h0 = (location.hash || '').replace('#', ''), s = GAMMES[h0] ? h0 : localStorage.getItem(CLE_GAMME); if (GAMMES[s]) gammeId = s; } catch { /* stockage indisponible : gamme Classic */ }
 const GAMME = GAMMES[gammeId], FICHE = GAMME.fiche;
 const CLE = GAMME.cleBrouillon, IMAGES = GAMME.images, IMAGE_SPAN = GAMME.imageSpan;
-const RECTANGLES = GAMME.rectangles, SANS_IMAGE_PROPRE = new Set(GAMME.sansImagePropre), LIBELLE_LARGE = new Set(GAMME.libelleLarge), AVEC_CERCLE = new Set(GAMME.cercle);
+const FINS = new Set(GAMME.finsApres), RECTANGLES = GAMME.rectangles, SANS_IMAGE_PROPRE = new Set(GAMME.sansImagePropre), LIBELLE_LARGE = new Set(GAMME.libelleLarge), AVEC_CERCLE = new Set(GAMME.cercle);
 const NOM_FINITION = { '9005 MAT': '9005 MAT', '7016 FT': '7016 FT', 'BLANC 9016': 'BLANC 9016', 'ANODISÉ': 'ANODISÉ', RAL: 'RAL (à définir ou demandé)' };
 const FINITION_CATALOGUE = { '9005 MAT': '9005 MAT', '7016 FT': 'RAL7016FT', 'BLANC 9016': 'BLANC 9016', 'ANODISÉ': 'ANODISÉ', RAL: 'RAL À DÉFINIR' };
 let DESIGNATION = new Map();                          // référence -> désignation (reconstruit depuis la bibliothèque)
@@ -146,11 +148,14 @@ function groupes(items) {
   return g;
 }
 
+const groupesCond = [], tbodies = {};              // groupes dont des lignes ne s'affichent que pour certaines finitions
 function construireProfils(cote, titre) {
-  const tbody = h('tbody');
+  const tbody = h('tbody'); tbodies[cote] = tbody;
   for (const g of groupes(FICHE[cote])) {
+    const lignesG = [];
     g.items.forEach((it, i) => {
-      const tr = h('tr', { 'data-id': it.id, class: ((i === 0 ? 'groupe ' : '') + (RECTANGLES[it.id] || '')).trim() });
+      if (it.remplissage) return;                                       // (anciennes lignes de remplissage : les tableaux s'étirent maintenant pour remplir la page)
+      const tr = h('tr', { 'data-id': it.id, class: ((i === 0 && !FINS.has(it.id) ? 'groupe ' : '') + (RECTANGLES[it.id] || '')).trim() });
       if (i === 0 && LIBELLE_LARGE.has(it.id)) {
         tr.append(h('td', { class: 'fam large' + (g.famille.length > 22 ? ' long' : ''), colspan: 2, rowspan: g.items.length, text: g.famille }));
       } else if (i === 0 && it.vide && it.titre) {
@@ -168,6 +173,7 @@ function construireProfils(cote, titre) {
         if (g.famille === 'Jonc') fam.append(h('small', { id: 'couleurJonc' }));
         tr.append(fam);
       }
+      lignesG.push(tr);
       if (it.vide) { tr.append(h('td', { class: 'code', text: it.texteCode || '' }), h('td', { class: 'lg' }), h('td', { class: 'q' })); tbody.append(tr); return; }
       const codeTd = h('td', { class: 'code' });
       const lg = it.longueur ? String(it.longueur) : it.largeur ? String(it.largeur) : (it.texteLong || it.edi || '');
@@ -196,6 +202,7 @@ function construireProfils(cote, titre) {
       tbody.append(tr);
       lignes[it.id] = { item: it, tr, codeTd, calc, qTd, saisie: it.id === GAMME.roles.montants[0] ? champMontant : null };
     });
+    if (g.items.some(x => x.seulement)) groupesCond.push({ rows: lignesG, items: g.items, cells: [...lignesG[0].querySelectorAll(':scope > td.img, :scope > td.fam')] });
   }
   return h('table', { class: 'profils' },
     h('colgroup', {}, ['21%', '22%', '16%', '16%', '25%'].map(w => h('col', { style: `width:${w}` }))),
@@ -270,7 +277,7 @@ function rendreProduits() {
       h('td', { class: 'sup' }, h('button', { type: 'button', class: 'retirer', title: 'Retirer cette ligne', 'aria-label': 'Retirer', text: '×', onclick: () => { etat.produits.splice(i, 1); rendreProduits(); maj(); } })));
     corps.append(tr); lignesProduits.push({ p, tr });
   });
-  for (let i = etat.produits.length; i < PRODUITS_VIDES_MIN; i++) corps.append(h('tr', {}, h('td'), h('td', { colspan: 2 }), h('td', { class: 'n' }), h('td', { class: 'sup' })));
+  for (let i = etat.produits.length; i < PRODUITS_VIDES_MIN; i++) corps.append(h('tr', { class: 'vide-produit' }, h('td'), h('td', { colspan: 2 }), h('td', { class: 'n' }), h('td', { class: 'sup' })));
 }
 
 // ---------- mise à jour ----------
@@ -335,7 +342,28 @@ function construireRevision() {                           // bandeau imprimé en
     h('span', { class: 'legende' }, h('i', { class: 'chg-ajout', text: 'ajouté' }), h('i', { class: 'chg-modif', text: 'modifié (avant X)' }), h('i', { class: 'chg-retrait', text: 'retiré (avant X)' })));
 }
 
+// Lignes « anodisé seulement » (n'existent plus dans les autres finitions) et lignes de remplissage : les deux tableaux gardent la même hauteur
+function majLignesConditionnelles() {
+  const fin = etat.entete.finition, dep = GAMME.deplacementAnodise;
+  if (dep && lignes[dep.avant]) {                                           // déplace les lignes (avec leurs cases de saisie) d'un tableau à l'autre
+    const rows = dep.ids.map(id => lignes[id].tr);
+    if (fin === 'ANODISÉ') { const ancre = tbodies.gauche.querySelector('tr.remplissage'); rows.forEach(tr => tbodies.gauche.insertBefore(tr, ancre)); }
+    else rows.forEach(tr => tbodies.droite.insertBefore(tr, lignes[dep.avant].tr));
+  }
+  for (const L of Object.values(lignes)) if (L.item.seulement) L.tr.hidden = !L.item.seulement.includes(fin);
+  for (const G of groupesCond) {
+    const visibles = G.rows.filter(tr => !tr.hidden);
+    G.rows.forEach(tr => tr.classList.remove('groupe'));
+    if (!visibles.length) continue;
+    visibles[0].prepend(...G.cells); G.cells.forEach(c => { c.rowSpan = visibles.length; }); visibles[0].classList.add('groupe');
+  }
+  const reel = cote => tbodies[cote] ? [...tbodies[cote].children].filter(tr => !tr.classList.contains('remplissage') && !tr.hidden).length : 0;
+  const L = reel('gauche'), M = reel('droite'), T = Math.max(GAMME.id === 'classic' ? 41 : 0, L, M);
+  for (const [cote, n] of [['gauche', T - L], ['droite', T - M]]) [...(tbodies[cote]?.querySelectorAll('tr.remplissage') || [])].forEach((tr, i) => { tr.hidden = i >= n; });
+  document.body.classList.toggle('grille-dense', GAMME.id === 'classic' && T > 41);          // plus de lignes : un peu plus serrées pour tenir sur une page
+}
 function maj() {
+  majLignesConditionnelles();
   const r = calculerFiche();
   const e = etat.entete, fin = e.finition, alertes = [...r.alertes.map(t => ({ t }))];
   const nomFin = libelleFinition(e);
@@ -363,6 +391,8 @@ function maj() {
   $('champRal').hidden = fin !== 'RAL';
   document.querySelectorAll('.devis button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === e.mode)));
   rowLaquage.hidden = fin !== 'RAL';
+  const videsProduits = [...document.querySelectorAll('tr.vide-produit')];       // la ligne « Forfait laquage » (RAL) prend la place d'une ligne vide : la fiche reste sur une page
+  videsProduits.forEach((tr, i) => { tr.hidden = fin === 'RAL' && i >= videsProduits.length - 2; });
   const accVals = valeursAccessoires(r);
   for (const { a, tr, cellule, codeTd } of Object.values(lignesAcc)) {
     codeTd.textContent = a.code;
@@ -578,7 +608,7 @@ function exporterExcel() {
   const parLigne = cote => Object.fromEntries(FICHE[cote].map(i => [i.ligne, i]));
   const g = parLigne('gauche'), d = parLigne('droite');
   const cell = (it, id) => {
-    if (!it || it.vide) return ['', '', '', ''];
+    if (!it || it.vide || (it.seulement && !it.seulement.includes(e.finition))) return ['', '', '', ''];
     const q = r.qte[it.id] || 0, code = it.codes[e.finition];
     return [`${it.libelle || it.famille} ${it.codeFamille}`.trim(), { v: code || '—', texte: true }, it.longueur || (it.largeur ? 'larg. ' + it.largeur : it.texteLong || it.edi || ''), q || ''];
   };
