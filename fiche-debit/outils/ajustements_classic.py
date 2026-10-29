@@ -3,7 +3,8 @@ Usage : python3 fiche-debit/outils/ajustements_classic.py   (depuis la racine du
  - ajoute le montant 00MON de 3700 (001452, brut) et le couvre-joint plat de 3700 (001711…001713, 8069 ; 7016 FT à compléter dans la bibliothèque) ;
  - retire le bloc « Clip de lisse » de gauche (il passe dans le tableau des accessoires) ;
  - 2e série : retire la ligne vide du jonc, ajoute les huisseries double alu carré type B (1270 à 1870), rend les lignes « anodisé seulement » conditionnelles, ajoute des lignes de remplissage ;
- - remplace « Jeu 2 paumelles clarit » et « Serrure clarit » par « Jeu 3 paumelles alu » et « Jeu 4 paumelles alu toute hauteur ».
+ - remplace « Jeu 2 paumelles clarit » et « Serrure clarit » par « Jeu 3 paumelles alu » et « Jeu 4 paumelles alu ».
+Les codes du montant spécial renforcé sont remplacés par les nouveaux (006600…006605) pour toutes les finitions.
 Les identifiants de lignes existants ne changent pas (les fiches enregistrées restent lisibles) ; seul l'ordre d'affichage (« ligne ») est renuméroté."""
 import json, os
 D = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'donnees.js')
@@ -23,7 +24,7 @@ if 'D45' not in ids('droite'):
     d = F['droite']; k = next(k for k, i in enumerate(d) if i['id'] == 'D43')
     new = [dict(id='D45', ligne=0, famille='Jeu 3 paumelles alu', codeFamille='', longueur=None, calcule=False, edi='42EAS',
                 codes={'9005 MAT': '8158', '7016 FT': '007607', 'BLANC 9016': '000375', 'ANODISÉ': '000421', 'RAL': '000416'}),
-           dict(id='D46', ligne=0, famille='Jeu 4 paumelles alu TH', codeFamille='', longueur=None, calcule=False, edi='42EAS4TH',
+           dict(id='D46', ligne=0, famille='Jeu 4 paumelles alu', codeFamille='', longueur=None, calcule=False, edi='42EAS4TH',
                 codes={'9005 MAT': '8163', '7016 FT': '007612', 'BLANC 9016': '000743', 'ANODISÉ': '000970', 'RAL': '000916'})]
     d[k:k + 2] = new
 if 'A45' not in [a['id'] for a in F['accessoires']]:
@@ -48,6 +49,9 @@ if 'D51' not in ids('droite'):                           # 3e série : jeux de 6
     d = F['droite']; k = next(k for k, i in enumerate(d) if i['id'] == 'DV1')
     d[k:k] = [dict(id='D51', ligne=0, famille='Jeu 6 paumelles alu', codeFamille='', longueur=None, calcule=False, edi='42EAD', codes=dict(zip(FIN, ['8167', '007616', '000790', '000431', '000791']))),
               dict(id='D52', ligne=0, famille='Jeu 8 paumelles alu', codeFamille='', longueur=None, calcule=False, edi='42EAD8', codes=dict(zip(FIN, ['8171', '007620', '001134', '001133', '001135'])))]
+NOUVEAUX_MSR = {'D17': '006600', 'D18': '006602', 'D19': '006603', 'D20': '006604', 'D21': '006605'}       # « Montant spécial renforcé » 00MSPR (PDF nouveau code produit, brut) : remplace les anciens 000239…000245
+for i in F['droite']:
+    if i['id'] in NOUVEAUX_MSR: i['codes'] = {f: NOUVEAUX_MSR[i['id']] for f in FIN}
 for cote in ('gauche', 'droite'):                       # ordre d'affichage : numéros de ligne consécutifs (les « id » ne changent pas)
     n = min(i['ligne'] for i in F[cote] if i['ligne'])
     for i in F[cote]: i['ligne'] = n; n += 1

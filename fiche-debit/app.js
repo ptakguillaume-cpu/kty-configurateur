@@ -443,7 +443,7 @@ function majTraverses() {
     : `${detailCloison(c)} : ${pluriel(c.traverses, 'traverse')} (${pluriel(c.montants, 'montant')} de 2500${etat.cloison.h2500 ? ', comptés à part' : ', ajoutés à la ligne Montant 2500'}) → +${c.equerres} équerres.`;
 }
 // Petit formulaire « type de cloison » : proposé à chaque nouvelle fiche, ou depuis les options
-// Portes (Classic) : nombre de jeux de paumelles tapé dans le formulaire ; ils remplissent les lignes Jeu 3 alu / Jeu 4 alu TH, et le Jeu 4 bois TH (absent du tableau) va dans la liste des produits
+// Portes (Classic) : nombre de jeux de paumelles tapé dans le formulaire ; ils remplissent les lignes Jeu 3 alu / Jeu 4 alu, et le Jeu 4 bois TH (absent du tableau) va dans la liste des produits
 const CODES_BOIS_TH = { '9005 MAT': '8164', '7016 FT': '007613', 'BLANC 9016': '000481', 'ANODISÉ': '000901', 'RAL': '000486' };
 const produitBoisTH = () => etat.produits.find(p => Object.values(CODES_BOIS_TH).includes(p.ref));
 function ouvrirCloison() {
@@ -451,7 +451,7 @@ function ouvrirCloison() {
   const avecPortes = GAMME.id === 'classic';
   const PORTES = [
     { id: 'D45', nom: 'Portes alu SV (simple vitrage)', aide: 'Jeu 3 paumelles alu', lire: () => etat.qte.D45 },
-    { id: 'D46', nom: 'Portes alu isolant (et CA toute hauteur)', aide: 'Jeu 4 paumelles alu TH', lire: () => etat.qte.D46 },
+    { id: 'D46', nom: 'Portes alu isolant (et CA toute hauteur)', aide: 'Jeu 4 paumelles alu', lire: () => etat.qte.D46 },
     { id: 'boisTH', nom: 'Portes bois toute hauteur', aide: 'Jeu 4 paumelles bois TH, ajouté à la liste des produits', lire: () => produitBoisTH()?.qte },
   ];
   const champsPortes = Object.fromEntries(PORTES.map(p => [p.id, h('input', { type: 'text', inputmode: 'numeric', 'aria-label': `Jeux de paumelles : ${p.nom}`, autocomplete: 'off', placeholder: '0', value: p.lire() || '' })]));
