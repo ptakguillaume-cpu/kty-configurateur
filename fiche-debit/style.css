@@ -270,3 +270,9 @@ td.chg-retrait .auto, td.chg-retrait .calc { color: transparent; }          /* l
     .liste td, .liste th, .acc-table td { font-size: 8pt !important; }
     .acc-table td.n .auto, .acc-table td.n input { font-size: 10pt !important; }
 }
+
+/* ---------- impression : la fiche remplit toute la hauteur de la page (les tableaux s'étirent), quelle que soit la police de l'ordinateur ---------- */
+@media print {
+    .fiche { min-height: 195.5mm; display: flex; flex-direction: column; }
+    .fiche > .corps { flex: 1 1 auto; }
+}
