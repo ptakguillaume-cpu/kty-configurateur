@@ -16,7 +16,7 @@ const GAMMES = {
     images: {                                         // dessins de profils de la fiche (repris du XLS), par première ligne de famille
       G4: 'lisse', G6: 'montant', G11: 'couvre-joint', G18: 'parclose-simple', G21: 'parclose-double', G22: 'meneau', G27: 'angle-carre',
       G32: 'angle-depart-multiple', G37: 'depart-multiple-cj',
-      D4: 'depart', D9: 'omega', D12: 'jonc', D14: 'angle-90', D17: 'montant-special', D22: 'capot', D27: 'angle-libre', D32: 'angle-doublage', D34: 'huisserie', D37: 'huisserie',
+      D4: 'depart', D9: 'omega', D12: 'jonc', D14: 'angle-90', D17: 'montant-special', D22: 'capot', D27: 'angle-libre', D32: 'angle-doublage', D34: 'huisserie', D37: 'huisserie', D47: 'huisserie',
     },
     rectangles: { G16: 'pc1', G17: 'pc2', G18: 'pc3', G19: 'pc1', G20: 'pc2', G21: 'pc3' },   // blocs parclose : un seul rectangle (comme l'Excel d'origine)
     imageSpan: { D32: 2 },                            // un même dessin pour « Angle de doublage » et « Plat de doublage »
@@ -146,10 +146,13 @@ function groupes(items) {
   return g;
 }
 
+const groupesCond = [], tbodies = {};              // groupes dont des lignes ne s'affichent que pour certaines finitions
 function construireProfils(cote, titre) {
-  const tbody = h('tbody');
+  const tbody = h('tbody'); tbodies[cote] = tbody;
   for (const g of groupes(FICHE[cote])) {
+    const lignesG = [];
     g.items.forEach((it, i) => {
+      if (it.remplissage) { tbody.append(h('tr', { 'data-id': it.id, class: 'remplissage', hidden: true }, h('td', { colspan: 2 }), h('td', { class: 'code' }), h('td', { class: 'lg' }), h('td', { class: 'q' }))); return; }
       const tr = h('tr', { 'data-id': it.id, class: ((i === 0 ? 'groupe ' : '') + (RECTANGLES[it.id] || '')).trim() });
       if (i === 0 && LIBELLE_LARGE.has(it.id)) {
         tr.append(h('td', { class: 'fam large' + (g.famille.length > 22 ? ' long' : ''), colspan: 2, rowspan: g.items.length, text: g.famille }));
@@ -168,6 +171,7 @@ function construireProfils(cote, titre) {
         if (g.famille === 'Jonc') fam.append(h('small', { id: 'couleurJonc' }));
         tr.append(fam);
       }
+      lignesG.push(tr);
       if (it.vide) { tr.append(h('td', { class: 'code', text: it.texteCode || '' }), h('td', { class: 'lg' }), h('td', { class: 'q' })); tbody.append(tr); return; }
       const codeTd = h('td', { class: 'code' });
       const lg = it.longueur ? String(it.longueur) : it.largeur ? String(it.largeur) : (it.texteLong || it.edi || '');
@@ -196,6 +200,7 @@ function construireProfils(cote, titre) {
       tbody.append(tr);
       lignes[it.id] = { item: it, tr, codeTd, calc, qTd, saisie: it.id === GAMME.roles.montants[0] ? champMontant : null };
     });
+    if (g.items.some(x => x.seulement)) groupesCond.push({ rows: lignesG, items: g.items, cells: [...lignesG[0].querySelectorAll(':scope > td.img, :scope > td.fam')] });
   }
   return h('table', { class: 'profils' },
     h('colgroup', {}, ['21%', '22%', '16%', '16%', '25%'].map(w => h('col', { style: `width:${w}` }))),
@@ -270,7 +275,7 @@ function rendreProduits() {
       h('td', { class: 'sup' }, h('button', { type: 'button', class: 'retirer', title: 'Retirer cette ligne', 'aria-label': 'Retirer', text: '×', onclick: () => { etat.produits.splice(i, 1); rendreProduits(); maj(); } })));
     corps.append(tr); lignesProduits.push({ p, tr });
   });
-  for (let i = etat.produits.length; i < PRODUITS_VIDES_MIN; i++) corps.append(h('tr', {}, h('td'), h('td', { colspan: 2 }), h('td', { class: 'n' }), h('td', { class: 'sup' })));
+  for (let i = etat.produits.length; i < PRODUITS_VIDES_MIN; i++) corps.append(h('tr', { class: 'vide-produit' }, h('td'), h('td', { colspan: 2 }), h('td', { class: 'n' }), h('td', { class: 'sup' })));
 }
 
 // ---------- mise à jour ----------
@@ -335,7 +340,23 @@ function construireRevision() {                           // bandeau imprimé en
     h('span', { class: 'legende' }, h('i', { class: 'chg-ajout', text: 'ajouté' }), h('i', { class: 'chg-modif', text: 'modifié (avant X)' }), h('i', { class: 'chg-retrait', text: 'retiré (avant X)' })));
 }
 
+// Lignes « anodisé seulement » (n'existent plus dans les autres finitions) et lignes de remplissage : les deux tableaux gardent la même hauteur
+function majLignesConditionnelles() {
+  const fin = etat.entete.finition;
+  for (const L of Object.values(lignes)) if (L.item.seulement) L.tr.hidden = !L.item.seulement.includes(fin);
+  for (const G of groupesCond) {
+    const visibles = G.rows.filter(tr => !tr.hidden);
+    G.rows.forEach(tr => tr.classList.remove('groupe'));
+    if (!visibles.length) continue;
+    visibles[0].prepend(...G.cells); G.cells.forEach(c => { c.rowSpan = visibles.length; }); visibles[0].classList.add('groupe');
+  }
+  const reel = cote => tbodies[cote] ? [...tbodies[cote].children].filter(tr => !tr.classList.contains('remplissage') && !tr.hidden).length : 0;
+  const L = reel('gauche'), M = reel('droite'), T = Math.max(GAMME.id === 'classic' ? 41 : 0, L, M);
+  for (const [cote, n] of [['gauche', T - L], ['droite', T - M]]) [...(tbodies[cote]?.querySelectorAll('tr.remplissage') || [])].forEach((tr, i) => { tr.hidden = i >= n; });
+  document.body.classList.toggle('grille-dense', GAMME.id === 'classic' && T > 41);          // plus de lignes : un peu plus serrées pour tenir sur une page
+}
 function maj() {
+  majLignesConditionnelles();
   const r = calculerFiche();
   const e = etat.entete, fin = e.finition, alertes = [...r.alertes.map(t => ({ t }))];
   const nomFin = libelleFinition(e);
@@ -363,6 +384,8 @@ function maj() {
   $('champRal').hidden = fin !== 'RAL';
   document.querySelectorAll('.devis button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === e.mode)));
   rowLaquage.hidden = fin !== 'RAL';
+  const videsProduits = [...document.querySelectorAll('tr.vide-produit')];       // la ligne « Forfait laquage » (RAL) prend la place d'une ligne vide : la fiche reste sur une page
+  videsProduits.forEach((tr, i) => { tr.hidden = fin === 'RAL' && i >= videsProduits.length - 2; });
   const accVals = valeursAccessoires(r);
   for (const { a, tr, cellule, codeTd } of Object.values(lignesAcc)) {
     codeTd.textContent = a.code;
@@ -578,7 +601,7 @@ function exporterExcel() {
   const parLigne = cote => Object.fromEntries(FICHE[cote].map(i => [i.ligne, i]));
   const g = parLigne('gauche'), d = parLigne('droite');
   const cell = (it, id) => {
-    if (!it || it.vide) return ['', '', '', ''];
+    if (!it || it.vide || (it.seulement && !it.seulement.includes(e.finition))) return ['', '', '', ''];
     const q = r.qte[it.id] || 0, code = it.codes[e.finition];
     return [`${it.libelle || it.famille} ${it.codeFamille}`.trim(), { v: code || '—', texte: true }, it.longueur || (it.largeur ? 'larg. ' + it.largeur : it.texteLong || it.edi || ''), q || ''];
   };

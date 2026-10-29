@@ -64,7 +64,7 @@ const plage = (p, a, b) => Array.from({ length: b - a + 1 }, (_, i) => p + (a + 
 export const ROLES_CLASSIC = {
   montants: [...plage('G', 6, 10), 'G9b'], meneaux: plage('G', 22, 26), angleDepartMultiple: plage('G', 32, 36), departMultipleCJ: plage('G', 37, 41),
   departs: plage('D', 4, 8), montantsSpeciaux: plage('D', 17, 21), omega: ['D9', null, 'D10', null, 'D11'], omegaOrigine: ['D9', 'D10', 'D10', 'D10', 'D11'],
-  huisSimples: plage('D', 34, 36), huisDV: plage('D', 37, 40), angle90: plage('D', 14, 16), angleCarre: plage('G', 27, 31),
+  huisSimples: plage('D', 34, 36), huisDV: plage('D', 37, 40), huisDVAlu: plage('D', 47, 50), angle90: plage('D', 14, 16), angleCarre: plage('G', 27, 31),
   couvreJoint: [...plage('G', 11, 15), 'G14b'], paumelles: ['D41', 'D42'], jeuxAlu: ['D45', 'D46'],
 };
 // RDB1 : mêmes règles que la Classic, chaque ligne étant rattachée à son équivalent selon sa place sur la fiche
@@ -73,7 +73,7 @@ export const ROLES_RDB1 = {
   montants: ['G5', 'G6', 'G7', null, 'G9'], meneaux: [null, null, 'G18', null, 'G20'], angleDepartMultiple: [null, null, null, null, null],
   departMultipleCJ: [null, null, 'G31', null, 'G33'], departs: ['D2', 'D3', 'D4', null, 'D6'], montantsSpeciaux: [null, null, 'D17', null, 'D19'],
   omega: ['D7', null, 'D9', null, 'D11'], omegaOrigine: ['D7', null, 'D9', null, 'D11'], huisSimples: ['D33', 'D34', 'D35'], huisDV: ['D36', 'D37', 'D38', 'D39'],
-  angle90: [], angleCarre: ['G23', 'G25'], couvreJoint: plage('G', 10, 14), paumelles: ['D40', 'D41'], jeuxAlu: [],
+  angle90: [], angleCarre: ['G23', 'G25'], couvreJoint: plage('G', 10, 14), paumelles: ['D40', 'D41'], jeuxAlu: [], huisDVAlu: [],
 };
 
 export function calculer(etat, { legacy = false, roles = ROLES_CLASSIC } = {}) {
@@ -84,6 +84,7 @@ export function calculer(etat, { legacy = false, roles = ROLES_CLASSIC } = {}) {
   // --- Couvre-joint plat ---
   const huisSimples = somme(roles.huisSimples);
   const huisDV = somme(roles.huisDV);
+  const huisDVAlu = somme(roles.huisDVAlu || []);                 // huisseries double alu carré type B : +2 couvre-joints plats comme les type A, sans effet sur les jeux de paumelles bois
   const omega = roles.omega.map(q);                              // lignes 2,5 / 3,05 / 5,75 uniquement (points A, B)
   const omegaOrigine = roles.omegaOrigine.map(q);                // XLS : E12 et E14 retirent J10 à tort
   const doublage = legacy ? o.doublage.slice(0, 1) : o.doublage;
@@ -100,7 +101,7 @@ export function calculer(etat, { legacy = false, roles = ROLES_CLASSIC } = {}) {
       if (egal(l.lg, cible)) t += num(l.nb) * 2;
     }
     t -= (legacy ? omegaOrigine[k] : omega[k]) || 0;
-    if (k === 0) t += huisSimples + huisDV * 2 + (legacy ? 2 : 0);
+    if (k === 0) t += huisSimples + huisDV * 2 + huisDVAlu * 2 + (legacy ? 2 : 0);
     if (!legacy) t += num(etat.manuel[k]);
     return t;
   });

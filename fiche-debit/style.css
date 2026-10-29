@@ -246,7 +246,9 @@ tr.fantome td.n { text-decoration: none; }
 @media print {
     .zero { color: transparent !important; }      /* les « 0 » calculés ne s'impriment pas (ils restent visibles à l'écran) */
     .revision { font-size: 7.5pt; padding: 0.3mm 1.5mm; margin-bottom: 1mm; border-width: 0.3mm; }
-    body.avec-suivi { --h: 3.95mm; --h-acc: 5mm; }          /* un peu plus compact pour garder la fiche sur une page */
+    body.grille-dense { --h: 3.85mm; }
+    body.avec-suivi { --h: 3.95mm; --h-acc: 5mm; }
+    body.grille-dense.avec-suivi { --h: 3.65mm; --h-acc: 5mm; }          /* un peu plus compact pour garder la fiche sur une page */
     .avant { font-size: 4.6pt; }
     td.chg-retrait .avant { font-size: 6pt; }
     * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
