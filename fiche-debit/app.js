@@ -47,6 +47,11 @@ const FINITION_CATALOGUE = { '9005 MAT': '9005 MAT', '7016 FT': 'RAL7016FT', 'BL
 let DESIGNATION = new Map();                          // référence -> désignation (reconstruit depuis la bibliothèque)
 const PRODUITS_VIDES_MIN = gammeId === 'classic' ? 15 : 18;   // lignes vides affichées pour garder l'aspect de la feuille (3 de moins en Classic : 3 clips de lisse de plus dans les accessoires)
 
+// Affichage des codes comme sur les fiches Excel d'origine (sans zéros devant quand l'Excel les affichait sans ; « aff » est ajouté aux données par outils/affichage_codes.py).
+// Les codes enregistrés restent complets ; un code modifié dans la bibliothèque s'affiche tel quel.
+const sans0 = t => String(t).replace(/^0+/, '') || '0';
+const affCode = (x, fin, code) => { const a = fin ? x.aff && x.aff[fin] : x.aff; return code && a && sans0(a) === sans0(code) ? a : code; };
+
 // ---------- utilitaires ----------
 function h(tag, props = {}, ...enfants) {
   const e = document.createElement(tag);
@@ -256,7 +261,7 @@ function construirePanneau() {
     if (bloc) cellules.push(h('td', { class: 'img', rowspan: bloc.lignes }, bloc.img ? h('img', { src: `images/${bloc.img}.png`, alt: '' }) : null));
     const repere = /^Joint 6 mm/.test(a.libelle) ? 'orange' : /^Joint 8 mm/.test(a.libelle) ? 'vert' : '';      // repères de couleur des joints (10 et 12 mm : aucun)
     cellules.push(h('td', { colspan: SANS_IMAGE.has(a.id) ? 2 : 1, class: repere ? 'repere-' + repere : '', text: a.libelle, title: DESIGNATION.get(a.code) || '' }));
-    const codeTd = h('td', { class: 'code-p', text: a.code });
+    const codeTd = h('td', { class: 'code-p', text: affCode(a, null, a.code) });
     const nTd = h('td', { class: 'n' }, cellule);
     cellules.push(codeTd, h('td', { text: a.edi }), nTd, h('td', { class: 'sup' }));
     const tr = h('tr', { class: 'acc' }, cellules);
@@ -371,7 +376,7 @@ function maj() {
   const nomFin = libelleFinition(e);
   for (const [id, L] of Object.entries(lignes)) {
     const code = L.item.codes[fin];
-    L.codeTd.textContent = code ?? '—';
+    L.codeTd.textContent = affCode(L.item, fin, code) ?? '—';
     L.codeTd.classList.toggle('absent', !code);
     L.codeTd.title = code ? (DESIGNATION.get(code) || '') : `Pas de code en ${nomFin} pour cette ligne`;
     const q = r.qte[id] || 0;
@@ -397,7 +402,7 @@ function maj() {
   videsProduits.forEach((tr, i) => { tr.hidden = fin === 'RAL' && i >= videsProduits.length - 2; });
   const accVals = valeursAccessoires(r);
   for (const { a, tr, cellule, codeTd } of Object.values(lignesAcc)) {
-    codeTd.textContent = a.code;
+    codeTd.textContent = affCode(a, null, a.code);
     const q = accVals[a.id];
     if (a.auto) { cellule.textContent = q ? fmt(q) : '0'; cellule.classList.toggle('zero', !q); }
     tr.classList.toggle('rempli', q > 0);
@@ -619,7 +624,7 @@ function exporterExcel() {
   const cell = (it, id) => {
     if (!it || it.vide || (it.seulement && !it.seulement.includes(e.finition))) return ['', '', '', ''];
     const q = r.qte[it.id] || 0, code = it.codes[e.finition];
-    return [`${it.libelle || it.famille} ${it.codeFamille}`.trim(), { v: code || '—', texte: true }, it.longueur || (it.largeur ? 'larg. ' + it.largeur : it.texteLong || it.edi || ''), q || ''];
+    return [`${it.libelle || it.famille} ${it.codeFamille}`.trim(), { v: affCode(it, e.finition, code) || '—', texte: true }, it.longueur || (it.largeur ? 'larg. ' + it.largeur : it.texteLong || it.edi || ''), q || ''];
   };
   for (const n of [...new Set([...FICHE.gauche, ...FICHE.droite].map(i => i.ligne))].sort((p, q) => p - q)) {
     if ((!g[n] || g[n].vide) && (!d[n] || d[n].vide)) continue;
@@ -631,7 +636,7 @@ function exporterExcel() {
   if (e.finition === 'RAL') L.push([{ v: '500', texte: true }, 'Forfait laquage', 'OUI', 1]);
   for (const a of FICHE.accessoires) {
     const q = a.auto === 'clip' ? r.clips : a.auto === 'equerre' ? r.equerres : a.auto === 'mousse' ? r.mousse : nombre(etat.accessoires[a.id]);
-    L.push([{ v: a.code, texte: true }, a.libelle, a.edi, q || '']);
+    L.push([{ v: affCode(a, null, a.code), texte: true }, a.libelle, a.edi, q || '']);
   }
   if (etat.revision.base) {
     const diff = comparer(etat.revision.base, instantaneCourant(r));
@@ -643,7 +648,7 @@ function exporterExcel() {
       for (const [id, ch] of Object.entries(diff.lignes)) {
         const it = items[id]; L.push([`${it.libelle || it.famille} ${it.longueur || it.largeur || ''}`.trim(), { v: it.codes[e.finition] || '—', texte: true }, libelleType[ch.type], ch.avant, ch.apres]);
       }
-      for (const [id, ch] of Object.entries(diff.acc)) { const a = FICHE.accessoires.find(x => x.id === id); L.push([a.libelle, { v: a.code, texte: true }, libelleType[ch.type], ch.avant, ch.apres]); }
+      for (const [id, ch] of Object.entries(diff.acc)) { const a = FICHE.accessoires.find(x => x.id === id); L.push([a.libelle, { v: affCode(a, null, a.code), texte: true }, libelleType[ch.type], ch.avant, ch.apres]); }
       for (const [k, ch] of Object.entries(diff.produits)) { const p = etat.produits.find(x => clePdt(x) === k); L.push([p.designation, { v: p.ref, texte: true }, libelleType[ch.type], ch.avant, ch.apres]); }
       for (const x of diff.retires) L.push([x.designation, { v: x.ref, texte: true }, libelleType.retrait, x.avant, 0]);
     }

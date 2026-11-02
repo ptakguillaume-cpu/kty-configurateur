@@ -45,6 +45,9 @@ Bon à savoir :
 - Bouton **« + Huisseries… »** : ajoute les huisseries double alu carré type B (1270 à 1870) et les huisseries TH carré (SV / DV, avec ou sans traverse, sur mesure : la dimension se précise dans la désignation), avec le code de la finition. Les huisseries doubles ajoutent aussi leur jeu de paumelles (Jeu 6 pour les type B ; Jeu 8 alu isolant, alu toute hauteur ou bois toute hauteur selon le choix « Portes des huisseries doubles TH »).
 - La liste est organisée **par blocs de porte** : une huisserie ouvre un bloc (la première en tête de liste), puis paumelles, vantail, reste. Les lignes déjà présentes ne bougent pas.
 
+## Affichage des codes
+Les codes s'affichent **comme sur l'Excel d'origine** : sans zéros devant (959, 7, 782…) sauf là où l'Excel les gardait (huisseries 007245…, quelques codes 7016 FT et anodisé). Seul l'affichage change : les codes enregistrés, la bibliothèque et le catalogue gardent les codes complets (000959). Un code corrigé dans la bibliothèque s'affiche tel que saisi.
+
 ## Enregistrer, imprimer
 - **Enregistrer sous… / Excel** : sur Chrome et Edge, vraie fenêtre « Enregistrer sous » (dossier et nom au choix) ; sur Firefox et Safari, le fichier va dans Téléchargements. PDF : imprimer, imprimante « Enregistrer au format PDF ».
 - La fiche tient sur **une page A4 paysage** en blanc, anodisé et RAL, avec une petite marge de sécurité en bas. Les « 0 » calculés ne s'impriment pas.
@@ -62,7 +65,7 @@ Bon à savoir :
 ## Mettre à jour (personne technique)
 0. Pour changer des codes, **ne pas passer par là** : utiliser la Bibliothèque des codes (ci-dessus). Les étapes suivantes servent à changer les codes *de départ* livrés avec l'outil.
 1. Catalogue : modifier `fiche-debit/catalogue.json` (un code = un texte exact, zéros de tête compris : `007280`, `8001` et `7346` sont trois codes différents).
-2. Régénérer les données : `python3 fiche-debit/outils/generer_donnees.py fiche.xlsx fiche-debit/catalogue.json fiche-debit`, **puis** `python3 fiche-debit/outils/ajustements_classic.py` (réapplique les ajustements de la Classic : 3700, clips, paumelles alu, huisseries type B, montant spécial renforcé… ; sans danger si relancé)
+2. Régénérer les données : `python3 fiche-debit/outils/generer_donnees.py fiche.xlsx fiche-debit/catalogue.json fiche-debit`, **puis** `python3 fiche-debit/outils/ajustements_classic.py` **puis** `python3 fiche-debit/outils/affichage_codes.py fiche_classic.xlsx base.xlsx a7016.xlsx a9005.xlsx` (affichage des codes comme sur l'Excel d'origine : sans zéros devant quand l'Excel les affichait sans, avec zéros pour les huisseries et quelques codes 7016 FT / anodisé ; les codes enregistrés restent complets) (réapplique les ajustements de la Classic : 3700, clips, paumelles alu, huisseries type B, montant spécial renforcé… ; sans danger si relancé)
 3. Régénérer le fichier autonome : `python3 fiche-debit/outils/construire_autonome.py`
 4. Vérifier : `node fiche-debit/tests/calcul.test.mjs fiche-debit/tests/cas_xls.json` `node fiche-debit/tests/bibliotheque.test.mjs` et `node fiche-debit/tests/revision.test.mjs`
 
