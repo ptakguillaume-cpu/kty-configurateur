@@ -235,7 +235,7 @@ function construirePanneau() {
   const bouton = mode => h('button', { type: 'button', 'aria-pressed': 'false', 'data-mode': mode, text: mode, onclick: () => { e().mode = mode; maj(); } });
   const devis = h('div', { class: 'devis' }, bouton('DEVIS'), h('span', { text: 'OU' }), bouton('COMMANDE'));
   const tete = h('div', { class: 'entete-panneau' },
-    h('div', { class: 'gamme' }, h('b', { text: 'KTY' }), h('span', { text: `GAMME ${GAMME.nom.toUpperCase()}   FAX : 04 78 67 02 73` }), lier(h('input', { type: 'text', 'aria-label': 'Page', placeholder: 'Page', style: 'width:60px' }), () => e().page, v => { e().page = v; })),
+    h('div', { class: 'gamme' }, h('b', { text: 'KTY' }), h('span', { class: 'titre-gamme' }, h('span', { class: 'gamme-nom' }, 'GAMME ', h('span', { class: 'rouge', text: GAMME.nom.toUpperCase() })), h('span', { class: 'fax', text: 'FAX : 04 78 67 02 73' })), lier(h('input', { type: 'text', 'aria-label': 'Page', placeholder: 'Page', style: 'width:60px' }), () => e().page, v => { e().page = v; })),
     champEntete('Société :', lier(h('input', { type: 'text', autocomplete: 'off' }), () => e().societe, v => { e().societe = v; })),
     champEntete('Réf chantier :', lier(h('input', { type: 'text', autocomplete: 'off' }), () => e().chantier, v => { e().chantier = v; })),
     champEntete('Niveau :', lier(h('input', { type: 'text', autocomplete: 'off', placeholder: 'ex. R+1' }), () => e().niveau, v => { e().niveau = v; })),
