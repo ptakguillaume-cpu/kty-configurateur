@@ -82,6 +82,10 @@ tr.tete-groupe td { background: var(--gris-clair); }
 .entete-panneau { padding: 4px 8px; display: grid; grid-template-columns: auto 1fr; gap: 3px 8px; align-items: center; border-bottom: 1px solid var(--trait); }
 .entete-panneau .gamme { grid-column: 1 / -1; display: flex; justify-content: space-between; gap: 8px; font-size: 11px; font-weight: 700; padding-bottom: 3px; border-bottom: 1px solid var(--gris); }
 .entete-panneau .gamme b { font-size: 20px; letter-spacing: 1px; }
+.entete-panneau .titre-gamme { display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.1; }
+.entete-panneau .gamme-nom { font-size: 17px; font-weight: 800; letter-spacing: 0.5px; }
+.entete-panneau .gamme-nom .rouge { color: var(--rouge); }
+.entete-panneau .fax { font-size: 11px; font-weight: 700; }
 .entete-panneau label { font-weight: 700; text-decoration: underline; font-size: 12px; }
 .entete-panneau input, .entete-panneau select { width: 100%; min-height: 28px; border: 0; border-bottom: 1px solid var(--gris); background: transparent; font: inherit; font-weight: 700; text-align: center; }
 .entete-panneau input:focus, .entete-panneau select:focus { outline: 2px solid var(--accent); }
@@ -276,4 +280,10 @@ td.chg-retrait .auto, td.chg-retrait .calc { color: transparent; }          /* l
 @media print {
     .fiche { min-height: 195.5mm; display: flex; flex-direction: column; }
     .fiche > .corps { flex: 1 1 auto; }
+}
+
+/* en-tête : « GAMME CLASSIC / RDB1 » en plus gros, nom de la gamme en rouge */
+@media print {
+    .entete-panneau .gamme-nom { font-size: 14pt !important; }
+    .entete-panneau .fax { font-size: 8pt !important; }
 }
