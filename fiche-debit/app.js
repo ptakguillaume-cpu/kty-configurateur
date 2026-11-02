@@ -16,10 +16,9 @@ const GAMMES = {
     images: {                                         // dessins de profils de la fiche (repris du XLS), par première ligne de famille
       G4: 'lisse', G6: 'montant', G11: 'couvre-joint', G18: 'parclose-simple', G21: 'parclose-double', G22: 'meneau', G27: 'angle-carre',
       G32: 'angle-depart-multiple', G37: 'depart-multiple-cj',
-      D4: 'depart', D9: 'omega', D12: 'jonc', D14: 'angle-90', D17: 'montant-special', D22: 'capot', D27: 'angle-libre', D32: 'angle-doublage', D34: 'huisserie', D37: 'huisserie', D47: 'huisserie',
+      D4: 'depart', D9: 'omega', D12: 'jonc', D14: 'angle-90', D17: 'montant-special', D22: 'capot', D29: 'angle-libre', D32: 'angle-doublage', D34: 'huisserie', D37: 'huisserie', D47: 'huisserie',
     },
     finsApres: ['D33', 'D42', 'D45', 'D46', 'D51', 'D52', 'G17', 'G18', 'G20', 'G21'],              // lignes qui suivent une ligne du même ensemble (Angle / Plat de doublage, jeux de paumelles) : trait fin au-dessus
-    deplacementAnodise: { ids: ['D27', 'D28', 'D29', 'D30', 'D31'], avant: 'D32' },     // en anodisé, le bloc « Angle libre » passe en bas du tableau de gauche (les autres finitions ne changent pas)
     rectangles: { G16: 'pc1', G17: 'pc2', G18: 'pc3', G19: 'pc1', G20: 'pc2', G21: 'pc3' },   // blocs parclose : un seul rectangle (comme l'Excel d'origine)
     imageSpan: { D32: 2 },                            // un même dessin pour « Angle de doublage » et « Plat de doublage »
     sansImagePropre: ['D33'],
@@ -90,6 +89,12 @@ function cloisonLue(c) {                          // accepte aussi l'ancien form
 }
 // Fiches Classic enregistrées avant le déplacement des clips de lisse (vers les accessoires) et le remplacement des paumelles clarit / serrure (vers la liste des produits)
 const ANCIENNES_LIGNES = {
+  D15: { designation: 'Angle 90° lg 3250', codes: { '9005 MAT': '8003', '7016 FT': '007346', 'BLANC 9016': '000078', 'ANODISÉ': '000073', 'RAL': '000083' } },
+  D23: { designation: 'Capot de finition lg 2700', codes: { 'ANODISÉ': '000212' } },
+  D25: { designation: 'Capot de finition lg 3250', codes: { 'ANODISÉ': '000214' } },
+  D27: { designation: 'Angle libre lg 2550', codes: { 'ANODISÉ': '000693' } },
+  D28: { designation: 'Angle libre lg 2700', codes: { 'ANODISÉ': '000422' } },
+  D30: { designation: 'Angle libre lg 3250', codes: { 'ANODISÉ': '000695' } },
   D43: { designation: 'Jeu 2 paumelles clarit', codes: { '9005 MAT': '8156', '7016 FT': '007604', 'BLANC 9016': '000138', 'ANODISÉ': '000136', 'RAL': '000354' } },
   D44: { designation: 'Serrure clarit avec cylindre', codes: { '9005 MAT': '8282', 'BLANC 9016': '000771' } },
 };

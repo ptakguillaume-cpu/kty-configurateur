@@ -8,7 +8,7 @@ Choix de la gamme : liste « Gamme Classic / Gamme RDB1 » en haut de la fiche. 
 - Les « trous » de l'Excel sont conservés : pas de montant anodisé en 2500 et 2700, pas de capot Classic anodisé en 2500, pas de code RAL pour le jonc, serrure clarit seulement en blanc 9016 et 9005 MAT (« 7000 » = pas de code).
 - Les dessins de profils (découpés sur la fiche imprimée), l'impression A4 paysage sur une page, les cases grises/blanches, le cadre INFO.
 - Codes mal saisis dans l'Excel (`oo7301` avec des lettres) : corrigés en `007301`.
-- 2 codes de l'Excel absents du PDF « nouveau Code Produit » : `001239` (meneau 5820 blanc) et `000126` (meneau 5820 anodisé), ajoutés au catalogue et signalés.
+- Bons de commande RDB1 de mai 2026 (versions récentes) : le meneau 5800 (001239, 000126, 8203) et le clip de lisse 25 (008001) n'y figurent plus ; ils sont retirés de la fiche (`outils/ajustements_rdb1.py`).
 - Longueurs affichées quand les fiches se contredisent : meneau 5800 (5780 sur blanc et anodisé), huisserie simple 737 / 837 / 937 (730 / 830 / 930 sur l'anodisé).
 
 ## Calculs : mêmes règles que la Classic
