@@ -5,6 +5,7 @@ Usage : python3 fiche-debit/outils/ajustements_classic.py   (depuis la racine du
  - 2e série : retire la ligne vide du jonc, ajoute les huisseries double alu carré type B (1270 à 1870), rend les lignes « anodisé seulement » conditionnelles, ajoute des lignes de remplissage ;
  - remplace « Jeu 2 paumelles clarit » et « Serrure clarit » par « Jeu 3 paumelles alu » et « Jeu 4 paumelles alu ».
 Les codes du montant spécial renforcé sont remplacés par les nouveaux (006600…006605) pour toutes les finitions.
+4e série (bons de commande Classic de mai 2026) : supprime l'angle 90° 3250 et les 5 lignes « anodisé seulement », retire les codes anodisé absents du bon de commande, ajoute le jonc 7016 FT (000180).
 Les identifiants de lignes existants ne changent pas (les fiches enregistrées restent lisibles) ; seul l'ordre d'affichage (« ligne ») est renuméroté."""
 import json, os
 D = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'donnees.js')
@@ -52,6 +53,15 @@ if 'D51' not in ids('droite'):                           # 3e série : jeux de 6
 NOUVEAUX_MSR = {'D17': '006600', 'D18': '006602', 'D19': '006603', 'D20': '006604', 'D21': '006605'}       # « Montant spécial renforcé » 00MSPR (PDF nouveau code produit, brut) : remplace les anciens 000239…000245
 for i in F['droite']:
     if i['id'] in NOUVEAUX_MSR: i['codes'] = {f: NOUVEAUX_MSR[i['id']] for f in FIN}
+if any(i['id'] == 'D15' for i in F['droite']):            # 4e série : alignement sur les bons de commande de mai 2026 (Classic)
+    d = F['droite']; g = F['gauche']
+    d[:] = [i for i in d if i['id'] not in ('D15', 'D23', 'D25', 'D27', 'D28', 'D30')]     # Angle 90° 3250 ; capot 2700 / 3250 et angle libre 2550 / 2700 / 3250 (n'existent plus)
+    for i in d + g: i.pop('seulement', None)
+    SANS_ANODISE = {'D9', 'D22', 'G22', 'G23', 'G25', 'G27', 'G28', 'G30', 'G32', 'G33', 'G35', 'G37', 'G38', 'G40'}   # lignes sans code anodisé sur le bon de commande
+    for i in d + g:
+        if i['id'] in SANS_ANODISE: i['codes'].pop('ANODISÉ', None)
+    for i in d:
+        if i['id'] == 'D12': i['codes']['7016 FT'] = '000180'      # jonc gris RAL 7015 foncé
 for cote in ('gauche', 'droite'):                       # ordre d'affichage : numéros de ligne consécutifs (les « id » ne changent pas)
     n = min(i['ligne'] for i in F[cote] if i['ligne'])
     for i in F[cote]: i['ligne'] = n; n += 1
