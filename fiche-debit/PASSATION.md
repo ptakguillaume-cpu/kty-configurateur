@@ -5,7 +5,7 @@ Le fichier **`autonome/Fiche-de-debit-Classic.html`** contient tout (gammes Clas
 - Double-clic pour l'ouvrir (Chrome ou Edge conseillés). **Pas d'internet, pas de compte, pas de serveur.**
 - Il peut être copié sur un PC, un partage réseau, une clé USB ou envoyé par mail.
 - **PDF / Imprimer** : A4 paysage, une page. **Excel** et **Enregistrer sous…** : fichiers à classer comme n'importe quel document.
-- Chaque fiche est un fichier `.json` à rouvrir avec « Ouvrir… ». Le brouillon automatique reste dans le navigateur de l'appareil (il est perdu si on change de navigateur ou de dossier : ne pas s'y fier, enregistrer la fiche).
+- Chaque fiche est un fichier **`.kty`** (c'est du texte JSON ; les anciens fichiers `.json` s'ouvrent toujours) à rouvrir avec « Ouvrir… ». Avec l'application **installée** (Chrome ou Edge sur PC), un **double-clic sur un fichier `.kty`** l'ouvre directement (la première fois : clic droit, « Ouvrir avec », choisir « Fiche de débit », « Toujours »). Si la fiche est d'une autre gamme, l'outil change de gamme tout seul. Le brouillon automatique reste dans le navigateur de l'appareil (il est perdu si on change de navigateur ou de dossier : ne pas s'y fier, enregistrer la fiche).
 
 ## Changer un code sans toucher au programme : la « Bibliothèque des codes »
 Bouton **« Bibliothèque des codes »** en haut de la fiche. Trois onglets :
