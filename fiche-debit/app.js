@@ -403,8 +403,6 @@ function maj() {
   $('champRal').hidden = fin !== 'RAL';
   document.querySelectorAll('.devis button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === e.mode)));
   rowLaquage.hidden = fin !== 'RAL';
-  const videsProduits = [...document.querySelectorAll('tr.vide-produit')];       // la ligne « Forfait laquage » (RAL) prend la place d'une ligne vide : la fiche reste sur une page
-  videsProduits.forEach((tr, i) => { tr.hidden = fin === 'RAL' && i >= videsProduits.length - 2; });
   const accVals = valeursAccessoires(r);
   for (const { a, tr, cellule, codeTd } of Object.values(lignesAcc)) {
     codeTd.textContent = affCode(a, null, a.code);
@@ -414,6 +412,9 @@ function maj() {
   }
   for (const { p, tr } of lignesProduits) tr.classList.toggle('rempli', nombre(p.qte) !== 0);
   majRevision(r); majTraverses();
+  // Lignes vides de la liste : la ligne « Forfait laquage » (RAL, 2 lignes) et les produits retirés affichés par le suivi (1 ligne chacun, plus 1 pour le bandeau de modification) prennent leur place, pour que la fiche reste sur une page
+  const vides = [...document.querySelectorAll('tr.vide-produit')], pris = (fin === 'RAL' ? 2 : 0) + $('fantomes').children.length + (document.body.classList.contains('avec-suivi') ? 1 : 0);
+  vides.forEach((tr, i) => { tr.hidden = i >= vides.length - pris; });
   if (fin === 'RAL' && !e.ral) alertes.push({ t: 'Finition RAL : indiquez le RAL demandé dans l\'en-tête (sinon « RAL À DÉFINIR » est imprimé).', info: true });
   if (message) alertes.push({ t: message, info: true });
   const zone = $('alertes');
