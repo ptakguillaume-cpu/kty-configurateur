@@ -338,7 +338,7 @@ td.chg-retrait .auto, td.chg-retrait .calc { color: transparent; }          /* l
     </section>
 </main>
 
-<input type="file" id="fichierOuvrir" accept=".json,application/json" hidden>
+<input type="file" id="fichierOuvrir" accept=".kty,.json,application/json,application/x-kty-fiche" hidden>
 <script>
 (function () {
 "use strict";
@@ -1588,7 +1588,7 @@ function ouvrirHuisseries() {
 
 // ---------- fichiers : enregistrer, ouvrir, Excel, imprimer ----------
 const nomFichier = () => `${GAMME.prefixeFichier} ${etat.entete.chantier} ${etat.entete.niveau}`.replace(/\s+/g, ' ').trim().replace(/[\\/:*?"<>|]/g, '-');
-const TYPES_FICHIER = { json: ['Fiche KTY (.json)', 'application/json'], xlsx: ['Classeur Excel (.xlsx)', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'] };
+const TYPES_FICHIER = { kty: ['Fiche KTY (.kty)', 'application/x-kty-fiche'], json: ['Fiche KTY (.json)', 'application/json'], xlsx: ['Classeur Excel (.xlsx)', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'] };
 async function telecharger(blob, nom) {
   const ext = nom.split('.').pop().toLowerCase();
   if (window.showSaveFilePicker && TYPES_FICHIER[ext]) {            // Chrome / Edge : vraie fenêtre « Enregistrer sous » (dossier et nom au choix)
@@ -1650,21 +1650,32 @@ function rappelIdentite() { if (!etat.entete.societe || !etat.entete.chantier) a
 function enregistrer() {
   rappelIdentite();
   const contenu = JSON.stringify({ format: 'kty-fiche-debit', version: 1, gamme: gammeId, enregistre: new Date().toISOString(), etat }, null, 1);
-  telecharger(new Blob([contenu], { type: 'application/json' }), nomFichier() + '.json');
+  telecharger(new Blob([contenu], { type: 'application/x-kty-fiche' }), nomFichier() + '.kty');          // extension .kty : double-clic ouvre l'application installée (Chrome / Edge)
+}
+// Ouvre le contenu d'un fichier de fiche (.kty ou .json). Si la fiche est d'une autre gamme, on change de gamme puis on la rouvre (le contenu passe par sessionStorage).
+function ouvrirTexte(texte, nom) {
+  try {
+    const d = JSON.parse(texte);
+    if (d.format !== 'kty-fiche-debit' || !d.etat) throw new Error('format');
+    const g = d.gamme || 'classic';
+    if (g !== gammeId) {
+      if (!GAMMES[g]) throw new Error('gamme');
+      sauver(); try { sessionStorage.setItem('kty_a_ouvrir', JSON.stringify({ texte, nom })); localStorage.setItem(CLE_GAMME, g); } catch { alert(`Cette fiche est de la gamme ${GAMMES[g].nom}. Choisissez d'abord cette gamme en haut de la page, puis rouvrez le fichier.`); return; }
+      history.replaceState(null, '', location.pathname + location.search); location.reload(); return;
+    }
+    etat = fusion(d.etat); remplir(); rendreProduits(); chercher(); maj();
+    annoncer(`Fiche ouverte : ${nom}`);
+  } catch { alert('Ce fichier n\'est pas une fiche de débit enregistrée par cet outil.'); }
 }
 function ouvrir(fichier) {
   const lecteur = new FileReader();
-  lecteur.onload = () => {
-    try {
-      const d = JSON.parse(String(lecteur.result));
-      if (d.format !== 'kty-fiche-debit' || !d.etat) throw new Error('format');
-      if ((d.gamme || 'classic') !== gammeId) { alert(`Cette fiche est une fiche de la gamme ${GAMMES[d.gamme || 'classic']?.nom || d.gamme}. Choisissez d'abord cette gamme en haut de la page, puis rouvrez le fichier.`); return; }
-      etat = fusion(d.etat); remplir(); rendreProduits(); chercher(); maj();
-      annoncer(`Fiche ouverte : ${fichier.name}`);
-    } catch { alert('Ce fichier n\'est pas une fiche de débit enregistrée par cet outil.'); }
-  };
+  lecteur.onload = () => ouvrirTexte(String(lecteur.result), fichier.name);
   lecteur.readAsText(fichier);
 }
+// Double-clic sur un fichier .kty avec l'application installée (Chrome / Edge) : le fichier arrive ici (voir « file_handlers » dans manifest.json)
+if ('launchQueue' in window) window.launchQueue.setConsumer(async params => {
+  for (const poignee of params.files || []) { try { const f = await poignee.getFile(); ouvrirTexte(await f.text(), f.name); } catch { alert('Impossible d\'ouvrir ce fichier.'); } }
+});
 function nouvelle() {
   if (!confirm('Vous allez effacer la fiche.\nVeuillez confirmer cette action.')) return;
   etat = etatInitial(); remplir(); rendreProduits(); chercher(); maj();
@@ -1697,6 +1708,7 @@ choixGamme.addEventListener('change', () => {
   history.replaceState(null, '', location.pathname + location.search); location.reload();
 });
 document.querySelector('.barre h1 span').textContent = `gamme ${GAMME.nom}`;
+try { const att = sessionStorage.getItem('kty_a_ouvrir'); if (att) { sessionStorage.removeItem('kty_a_ouvrir'); const { texte, nom } = JSON.parse(att); setTimeout(() => ouvrirTexte(texte, nom), 0); } } catch { /* ignoré */ }
 document.title = `Fiche de débit ${GAMME.nom}`;
 $('btnOuvrir').addEventListener('click', () => $('fichierOuvrir').click());
 $('fichierOuvrir').addEventListener('change', ev => { if (ev.target.files[0]) ouvrir(ev.target.files[0]); ev.target.value = ''; });
