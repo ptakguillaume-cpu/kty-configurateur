@@ -3,7 +3,7 @@ import { FICHE_RDB1 } from './donnees-rdb1.js';
 import { CATALOGUE } from './catalogue.js';
 import {
   etatInitial, calculer, ajoutAuto, ROLES_CLASSIC, ROLES_RDB1, abreger, couleurJonc, libelleFinition,
-  LG_COUVRE_JOINT, LARGEURS_CA_SIMPLE, LARGEURS_CA_DOUBLE, FINITIONS, TYPES_CLOISON, traversesCloison,
+  LG_COUVRE_JOINT, definirRefsGoulotte, nbGoulottes, LARGEURS_CA_SIMPLE, LARGEURS_CA_DOUBLE, FINITIONS, TYPES_CLOISON, traversesCloison,
 } from './calcul.js';
 import { creerXlsx } from './xlsx.js';
 import { creerBibliotheque } from './bibliotheque.js';
@@ -72,6 +72,7 @@ const sansAccent = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
 let INDEX = [];                                       // index de recherche des produits
 function reconstruireCatalogue(liste) {
   DESIGNATION = new Map(liste.map(c => [c[0], c[1]]));
+  definirRefsGoulotte(liste.filter(c => c[2] === '05GOU').map(c => c[0]));
   INDEX = liste.map(c => ({ ref: c[0], des: c[1], edi: c[2], fin: c[3], hors: c[4], texte: sansAccent(`${c[0]} ${c[1]} ${c[2]}`), mots: sansAccent(`${c[0]} ${c[1]} ${c[2]}`).split(/[^a-z0-9]+/).filter(Boolean), des0: sansAccent(c[1]).split(/[^a-z0-9]+/).filter(Boolean).join(' ') }));
 }
 let pret = false;

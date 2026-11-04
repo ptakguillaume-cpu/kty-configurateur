@@ -98,3 +98,16 @@ assert.deepEqual([vide.clips, vide.equerres, vide.mousse, vide.J41, vide.J42, ..
 assert.deepEqual(vide.alertes, []);
 console.log('Fiche vide : tout à zéro : OK');
 if (ko) process.exit(1);
+
+// Goulottes : 2 équerres chacune (3000 ou 5000), couvercles exclus ; mode legacy inchangé
+{
+  const { calculer: c, estGoulotte, definirRefsGoulotte } = await import('../calcul.js');
+  definirRefsGoulotte(['007428']);
+  const base = { ...etatInitial(), produits: [] };
+  const e0 = c(base).equerres;
+  const avec = { ...base, produits: [{ ref: '007428', designation: 'Goulotte électrique lg.3000mm', qte: 4 }, { ref: '007395', designation: 'Couvercle goulotte plat 3m00', qte: 4 }] };
+  console.assert(estGoulotte(avec.produits[0]) && !estGoulotte(avec.produits[1]), 'estGoulotte');
+  console.assert(c(avec).equerres === e0 + 8, 'goulottes +8 équerres');
+  console.assert(c(avec, { legacy: true }).equerres === c(base, { legacy: true }).equerres, 'legacy inchangé');
+  console.log('Goulottes → équerres : OK');
+}

@@ -437,6 +437,13 @@ function ajoutAuto(etat, roles, id) {
   return 0;
 }
 
+// Goulottes électriques de la liste des produits : 2 équerres chacune (goulottes de 3000 ou 5000 ; couvercles, embouts et cloisons de séparation exclus).
+// L'application fournit les références du catalogue (famille 05GOU) ; à défaut, on reconnaît la désignation (« Goul. élec. … », « Goulotte électrique … »).
+let REFS_GOULOTTE = new Set();
+const definirRefsGoulotte = refs => { REFS_GOULOTTE = new Set(refs); };
+const estGoulotte = p => REFS_GOULOTTE.has(String(p.ref || '').trim()) || (/^goul/i.test(p.designation || '') && !/couv|embout|cloison|tresse|\b38\b/i.test(p.designation || ''));
+const nbGoulottes = etat => (etat.produits || []).filter(estGoulotte).reduce((s, p) => s + num(p.qte), 0);
+
 function calculer(etat, { legacy = false, roles = ROLES_CLASSIC } = {}) {
   const o = etat.options;
   const q = id => (id ? num(etat.qte[id]) + ajoutAuto(etat, roles, id) : 0);   // + ajouts automatiques (traverses, paumelles des huisseries double alu)
@@ -474,7 +481,7 @@ function calculer(etat, { legacy = false, roles = ROLES_CLASSIC } = {}) {
   // --- Équerres ---
   const departsLisse = num(o.departsLisse);
   const baseEquerres = somme(roles.montants) + somme(roles.angleDepartMultiple) + somme(roles.departMultipleCJ) + somme(roles.departs) + somme(roles.angle90) + somme(roles.montantsSpeciaux);
-  const equerres = baseEquerres * 2 + num(o.traverses) * 2 + somme(roles.meneaux) * 6 + somme(roles.angleCarre) * 4 + U9 - departsLisse * 2;
+  const equerres = baseEquerres * 2 + num(o.traverses) * 2 + somme(roles.meneaux) * 6 + somme(roles.angleCarre) * 4 + U9 - departsLisse * 2 + (legacy ? 0 : 2 * nbGoulottes(etat));
 
   // --- Mousse de départ (mètres, arrondis à 5 m par longueur) ---
   const mousseParLg = LG_COUVRE_JOINT.map((lg, k) => plafond(lg * 2 * q(roles.departs[k]), 5));
@@ -536,7 +543,7 @@ function libelleFinition(entete) {
   return entete.finition === 'RAL' ? (entete.ral || 'RAL À DÉFINIR') : entete.finition;
 }
 
-return { LG_COUVRE_JOINT, CLIPS_PAR_COUVRE_JOINT, LARGEURS_CA_SIMPLE, LARGEURS_CA_DOUBLE, FINITIONS, etatInitial, TYPES_CLOISON, traversesCloison, ROLES_CLASSIC, ROLES_RDB1, ajoutAuto, calculer, abreger, couleurJonc, libelleFinition };
+return { LG_COUVRE_JOINT, CLIPS_PAR_COUVRE_JOINT, LARGEURS_CA_SIMPLE, LARGEURS_CA_DOUBLE, FINITIONS, etatInitial, TYPES_CLOISON, traversesCloison, ROLES_CLASSIC, ROLES_RDB1, ajoutAuto, definirRefsGoulotte, estGoulotte, nbGoulottes, calculer, abreger, couleurJonc, libelleFinition };
 })();
 const __m_xlsx = (() => {
 // Écriture minimale d'un fichier .xlsx (zip sans compression), sans bibliothèque, utilisable hors connexion.
@@ -994,7 +1001,7 @@ const __m_app = (() => {
 const { FICHE: FICHE_CLASSIC } = __m_donnees;
 const { FICHE_RDB1 } = __m_donnees_rdb1;
 const { CATALOGUE } = __m_catalogue;
-const { etatInitial, calculer, ajoutAuto, ROLES_CLASSIC, ROLES_RDB1, abreger, couleurJonc, libelleFinition, LG_COUVRE_JOINT, LARGEURS_CA_SIMPLE, LARGEURS_CA_DOUBLE, FINITIONS, TYPES_CLOISON, traversesCloison } = __m_calcul;
+const { etatInitial, calculer, ajoutAuto, ROLES_CLASSIC, ROLES_RDB1, abreger, couleurJonc, libelleFinition, LG_COUVRE_JOINT, definirRefsGoulotte, nbGoulottes, LARGEURS_CA_SIMPLE, LARGEURS_CA_DOUBLE, FINITIONS, TYPES_CLOISON, traversesCloison } = __m_calcul;
 const { creerXlsx } = __m_xlsx;
 const { creerBibliotheque } = __m_bibliotheque;
 const { instantane, comparer, clePdt, libelleType } = __m_revision;
@@ -1062,6 +1069,7 @@ const sansAccent = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
 let INDEX = [];                                       // index de recherche des produits
 function reconstruireCatalogue(liste) {
   DESIGNATION = new Map(liste.map(c => [c[0], c[1]]));
+  definirRefsGoulotte(liste.filter(c => c[2] === '05GOU').map(c => c[0]));
   INDEX = liste.map(c => ({ ref: c[0], des: c[1], edi: c[2], fin: c[3], hors: c[4], texte: sansAccent(`${c[0]} ${c[1]} ${c[2]}`), mots: sansAccent(`${c[0]} ${c[1]} ${c[2]}`).split(/[^a-z0-9]+/).filter(Boolean), des0: sansAccent(c[1]).split(/[^a-z0-9]+/).filter(Boolean).join(' ') }));
 }
 let pret = false;

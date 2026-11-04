@@ -86,6 +86,13 @@ export function ajoutAuto(etat, roles, id) {
   return 0;
 }
 
+// Goulottes électriques de la liste des produits : 2 équerres chacune (goulottes de 3000 ou 5000 ; couvercles, embouts et cloisons de séparation exclus).
+// L'application fournit les références du catalogue (famille 05GOU) ; à défaut, on reconnaît la désignation (« Goul. élec. … », « Goulotte électrique … »).
+let REFS_GOULOTTE = new Set();
+export const definirRefsGoulotte = refs => { REFS_GOULOTTE = new Set(refs); };
+export const estGoulotte = p => REFS_GOULOTTE.has(String(p.ref || '').trim()) || (/^goul/i.test(p.designation || '') && !/couv|embout|cloison|tresse|\b38\b/i.test(p.designation || ''));
+export const nbGoulottes = etat => (etat.produits || []).filter(estGoulotte).reduce((s, p) => s + num(p.qte), 0);
+
 export function calculer(etat, { legacy = false, roles = ROLES_CLASSIC } = {}) {
   const o = etat.options;
   const q = id => (id ? num(etat.qte[id]) + ajoutAuto(etat, roles, id) : 0);   // + ajouts automatiques (traverses, paumelles des huisseries double alu)
@@ -123,7 +130,7 @@ export function calculer(etat, { legacy = false, roles = ROLES_CLASSIC } = {}) {
   // --- Équerres ---
   const departsLisse = num(o.departsLisse);
   const baseEquerres = somme(roles.montants) + somme(roles.angleDepartMultiple) + somme(roles.departMultipleCJ) + somme(roles.departs) + somme(roles.angle90) + somme(roles.montantsSpeciaux);
-  const equerres = baseEquerres * 2 + num(o.traverses) * 2 + somme(roles.meneaux) * 6 + somme(roles.angleCarre) * 4 + U9 - departsLisse * 2;
+  const equerres = baseEquerres * 2 + num(o.traverses) * 2 + somme(roles.meneaux) * 6 + somme(roles.angleCarre) * 4 + U9 - departsLisse * 2 + (legacy ? 0 : 2 * nbGoulottes(etat));
 
   // --- Mousse de départ (mètres, arrondis à 5 m par longueur) ---
   const mousseParLg = LG_COUVRE_JOINT.map((lg, k) => plafond(lg * 2 * q(roles.departs[k]), 5));
