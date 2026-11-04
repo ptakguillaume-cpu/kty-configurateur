@@ -247,7 +247,7 @@ function construirePanneau() {
   const corpsProduits = h('tbody', { id: 'produits' });
   const corpsFantomes = h('tbody', { id: 'fantomes' });            // produits retirés depuis la version figée
   const produits = h('table', { class: 'liste' },
-    h('colgroup', {}, h('col', { class: 'c1' }), h('col', { class: 'c2' }), h('col', { class: 'c3' }), h('col', { class: 'c4' }), h('col', { style: 'width:28px', class: 'sup' })),
+    h('colgroup', {}, h('col', { class: 'c1' }), h('col', { class: 'c2' }), h('col', { class: 'c3' }), h('col', { class: 'c4' }), h('col', { style: 'width:56px', class: 'sup' })),
     h('thead', {}, h('tr', {}, h('th', { text: 'CODE' }), h('th', { colspan: 2, text: 'Désignation' }), h('th', { text: 'Qts' }), h('th', { class: 'sup' }))),
     corpsProduits, corpsFantomes);
 
@@ -280,14 +280,23 @@ function construirePanneau() {
   return h('div', { class: 'panneau' }, tete, produits, accessoires);
 }
 
+// Début des blocs de porte : une huisserie, ou la ligne qui suit une béquille.
+const debutBloc = (L, i) => i === 0 || rangProduit(L[i].designation) === 0 && !ESTBEQUILLE.test(L[i - 1].designation) || ESTBEQUILLE.test(L[i - 1].designation);
+function dupliquerBloc(i) {
+  const L = etat.produits; let fin = i + 1;
+  while (fin < L.length && !debutBloc(L, fin)) fin++;
+  L.splice(fin, 0, ...L.slice(i, fin).map(x => ({ ref: x.ref, designation: x.designation, qte: x.qte })));
+  rendreProduits(); maj(); annoncer(`Porte copiée (${fin - i} ligne${fin - i > 1 ? 's' : ''}) : changez la taille ou la quantité.`);
+}
 function rendreProduits() {
   const corps = $('produits'); corps.replaceChildren(); lignesProduits = [];
   etat.produits.forEach((p, i) => {
+    const copier = debutBloc(etat.produits, i) ? h('button', { type: 'button', class: 'retirer copier', title: 'Copier cette porte (toutes les lignes du bloc)', 'aria-label': 'Copier la porte', text: '⧉', onclick: () => dupliquerBloc(i) }) : null;
     const tr = h('tr', {},
       h('td', {}, h('input', { type: 'text', class: 'code-p', value: p.ref, 'aria-label': 'Code', autocomplete: 'off', oninput: ev => { p.ref = ev.target.value; maj(); } })),
       h('td', { colspan: 2 }, h('input', { type: 'text', value: p.designation, 'aria-label': 'Désignation', autocomplete: 'off', oninput: ev => { p.designation = ev.target.value; maj(); } })),
       h('td', { class: 'n' }, h('input', { type: 'text', inputmode: 'decimal', value: p.qte, 'aria-label': 'Quantité', autocomplete: 'off', oninput: ev => { suivreCouvercles(p, ev.target.value); p.qte = ev.target.value; maj(); } })),
-      h('td', { class: 'sup' }, h('button', { type: 'button', class: 'retirer', title: 'Retirer cette ligne', 'aria-label': 'Retirer', text: '×', onclick: () => { etat.produits.splice(i, 1); rendreProduits(); maj(); } })));
+      h('td', { class: 'sup' }, copier, h('button', { type: 'button', class: 'retirer', title: 'Retirer cette ligne', 'aria-label': 'Retirer', text: '×', onclick: () => { etat.produits.splice(i, 1); rendreProduits(); maj(); } })));
     corps.append(tr); lignesProduits.push({ p, tr });
   });
   for (let i = etat.produits.length; i < PRODUITS_VIDES_MIN; i++) corps.append(h('tr', { class: 'vide-produit' }, h('td'), h('td', { colspan: 2 }), h('td', { class: 'n' }), h('td', { class: 'sup' })));

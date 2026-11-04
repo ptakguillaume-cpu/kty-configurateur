@@ -101,8 +101,9 @@ tr.tete-groupe td { background: var(--gris-clair); }
 .liste input:focus { outline: 2px solid var(--accent); outline-offset: -2px; background: #fff; }
 .liste td.n input { text-align: center; font-weight: 700; }
 .liste .code-p { font-weight: 700; font-variant-numeric: tabular-nums; }
-.liste td.sup { width: 28px; padding: 0; }
+.liste td.sup { width: 56px; padding: 0; white-space: nowrap; }
 .liste .retirer { all: unset; cursor: pointer; width: 28px; height: 28px; text-align: center; color: var(--rouge); font-weight: 700; }
+.liste .copier { color: #1f5fa8; }
 .liste tr.acc td { background: #fafafa; }
 .liste tr.acc td.n { background: transparent; }
 .liste tr.acc .auto { display: flex; align-items: center; justify-content: center; font-weight: 700; background: transparent; height: calc(var(--h) - 2px); }
