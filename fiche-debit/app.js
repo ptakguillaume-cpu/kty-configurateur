@@ -500,14 +500,17 @@ function ouvrirCloison() {
       : `${pluriel(r.traverses, 'traverse')}, ${pluriel(r.montants, 'montant')} de 2500 : l'outil ajoute ${r.equerres} équerres.`;
   };
   const valider = () => {
+    const avant = Object.values(c0.modules || {}).some(v => nombre(v) > 0);
     etat.cloison = lire();
     const r = traversesCloison(etat.cloison);
+    if (!r.lignes.length && avant) { etat.options.traverses = ''; etat.options.montantsTraverses = ''; }      // tout remis à 0 : on retire aussi ce que le formulaire avait ajouté
     if (r.lignes.length) { etat.options.traverses = String(r.option || ''); etat.options.montantsTraverses = etat.cloison.h2500 ? '' : String(r.montants || ''); }
-    if (avecPortes) {                                                  // seules les cases remplies sont écrites
+    if (avecPortes) {                                                  // case vidée ou à 0 = on retire la valeur
       etat.options.paumellesAlu = alu.value;
-      for (const id of ['D45', 'D46']) { const v = champsPortes[id].value.replace(/[^0-9]/g, ''); if (v) etat.qte[id] = v; }
-      const v = champsPortes.boisTH.value.replace(/[^0-9]/g, '');
-      if (v) { const p = produitBoisTH(); const ref = CODES_BOIS_TH[etat.entete.finition] || ''; if (p) { p.qte = v; p.ref = ref || p.ref; } else ajouterProduit({ ref, designation: 'Jeu 4 pau. porte bois toute hauteur', qte: v }); rendreProduits(); }
+      for (const id of ['D45', 'D46']) { const v = champsPortes[id].value.replace(/[^0-9]/g, ''); if (nombre(v) > 0) etat.qte[id] = v; else delete etat.qte[id]; }
+      const v = champsPortes.boisTH.value.replace(/[^0-9]/g, ''), p = produitBoisTH();
+      if (nombre(v) > 0) { const ref = CODES_BOIS_TH[etat.entete.finition] || ''; if (p) { p.qte = v; p.ref = ref || p.ref; } else ajouterProduit({ ref, designation: 'Jeu 4 pau. porte bois toute hauteur', qte: v }); rendreProduits(); }
+      else if (p) { etat.produits.splice(etat.produits.indexOf(p), 1); rendreProduits(); }
     }
     fermer(); remplir(); maj();
   };
