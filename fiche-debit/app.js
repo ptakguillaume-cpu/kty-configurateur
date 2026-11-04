@@ -646,8 +646,7 @@ const VITRAGE_ISO = [['005505', 'Vitrage isolant 33/2silence-8-44/2silence plus 
 const PORTES_TYPES = [
   { id: 'sv', nom: 'Vantail SV', extra: [] },
   { id: 'svIso', nom: 'Vantail SV + vitrage isolant (005505) + plinthe automatique (000379)', extra: VITRAGE_ISO },
-  { id: 'dv', nom: 'Huisserie double : vantail DV + semi-fixe (simple vitrage, jeu de 6 paumelles)', dv: true, paum: 'alu6', extra: [] },
-  { id: 'dvIso', nom: 'Huisserie double : vantail DV + semi-fixe + vitrage isolant (jeu de 8 paumelles)', dv: true, paum: 'aluIso', extra: VITRAGE_ISO, extraQte: 2 },
+  { id: 'dv', nom: 'Huisserie double : vantail DV + semi-fixe (jeu de 6 paumelles)', dv: true, paum: 'alu6', extra: [] },
 ];
 const SEMI_FIXES_STD = [428, 528, 728, 828, 928];                 // semi-fixes au catalogue ; sinon dimension spéciale (sur mesure)
 const CLE_BEQUILLE = 'kty_porte_bequille';
@@ -665,7 +664,6 @@ function ouvrirPorteComplete() {
   const majSemi = () => { const w = nombre(larg.value) - 14 - nombre(vantailDV.value); infoDV.textContent = typeCourant().dv ? ` Semi-fixe : ${w} mm${SEMI_FIXES_STD.includes(w) ? '' : ' (sur mesure)'}` : ''; };
   type.addEventListener('change', majLarg); larg.addEventListener('change', majSemi); vantailDV.addEventListener('change', majSemi);
   const sens = h('select', { 'aria-label': 'Sens' }, h('option', { value: 'droit', text: 'Poussant droit (PD)' }), h('option', { value: 'gauche', text: 'Poussant gauche (PG)' }));
-  const forme = h('select', { 'aria-label': 'Forme de huisserie' }, h('option', { value: 'classic', text: 'Huisserie Classic AB' }), h('option', { value: 'carre', text: 'Huisserie Classic carrée AB' }));
   const beqs = INDEX.filter(c => /^b[ée]quille double/i.test(c.des) && !/rosace\b.*\bpaire|^rosace/i.test(c.des)).filter((c, i, a) => a.findIndex(x => x.ref === c.ref) === i);
   const beq = h('select', { 'aria-label': 'Béquille' }, h('option', { value: '', text: '— sans béquille —' }), beqs.map(c => h('option', { value: c.ref, text: `${c.ref} — ${abreger(c.des)}` })));
   try { const m = localStorage.getItem(CLE_BEQUILLE); if (m && beqs.some(c => c.ref === m)) beq.value = m; } catch { /* stockage indisponible */ }
@@ -675,10 +673,8 @@ function ouvrirPorteComplete() {
   const fermer = () => { f.remove(); document.body.style.overflow = ''; };
   const ajouter = () => {
     const t = typeCourant(), l = larg.value, n = String(Math.max(1, Math.round(nombre(qte.value)) || 1));
-    const huRe = new RegExp(`fdf\\s?2050\\s?[x×]\\s?${l}`, 'i'), sensRe = new RegExp(`p[o0]ussant ${sens.value}`, 'i'), sensInverseRe = new RegExp(`p[o0]ussant ${sens.value === 'droit' ? 'gauche' : 'droit'}`, 'i');   // le semi-fixe est de sens inverse du vantail
-    const hu = trouverCatalogue(d => /^huisserie classic/i.test(d) && (t.dv ? /type b\b/i : /^(?!.*type [ab]\b)/i).test(d) && (forme.value === 'carre' ? /carr/i : /^(?!.*carr)/i).test(d) && huRe.test(d));
+    const sensRe = new RegExp(`p[o0]ussant ${sens.value}`, 'i'), sensInverseRe = new RegExp(`p[o0]ussant ${sens.value === 'droit' ? 'gauche' : 'droit'}`, 'i');   // le semi-fixe est de sens inverse du vantail
     const lignes = [], manque = [], dimV = t.dv ? nombre(vantailDV.value) : nombre(l) - 9;
-    if (!hu) manque.push(`huisserie ${l}`);
     const va = trouverCatalogue(d => new RegExp(`^vantail serrure ${t.dv ? 'dv' : 'sv\\b'}`, 'i').test(d) && new RegExp(`2036\\s?[x×]+\\s?${dimV}`).test(d) && sensRe.test(d));
     if (!va) manque.push(`vantail ${dimV}`);
     let sf = null, dimSF = 0;
@@ -690,21 +686,20 @@ function ouvrirPorteComplete() {
     const pa = t.paum ? PAUMELLES_DOUBLES[t.paum] : null, codePa = pa ? pa.codes[etat.entete.finition] || '' : '';
     if (pa && !codePa) manque.push('jeu de paumelles');
     if (manque.length) { info.textContent = `Pas de code au catalogue pour cette finition : ${manque.join(', ')}. Rien n'a été ajouté (choisissez une autre finition ou ajoutez à la main).`; return; }
-    lignes.push({ ref: hu.ref, designation: abreger(hu.des), qte: n });
     if (pa) lignes.push({ ref: codePa, designation: pa.des, qte: n });
     lignes.push({ ref: va.ref, designation: abreger(va.des), qte: n });
     if (sf) lignes.push({ ref: sf.ref, designation: abreger(sf.des) + (SEMI_FIXES_STD.includes(dimSF) ? '' : ` (2036x${dimSF})`), qte: n });
     for (const [ref, des] of t.extra) lignes.push({ ref, designation: abreger(INDEX.find(c => c.ref === ref)?.des || des), qte: String(nombre(n) * (t.extraQte || 1)) });
     const b = beqs.find(c => c.ref === beq.value);
     if (b) { lignes.push({ ref: b.ref, designation: abreger(b.des), qte: n }); try { localStorage.setItem(CLE_BEQUILLE, b.ref); } catch { /* stockage indisponible */ } }
-    lignes.forEach(ajouterProduit); rendreProduits(); maj();
+    etat.produits.push(...lignes); rendreProduits(); maj();                        // à la suite, dans l'ordre de la porte (l'huisserie est dans le tableau)
     info.textContent = `Ajouté (${n} porte${n > 1 ? 's' : ''}) : ${lignes.map(x => x.ref).join(' + ')}. Vous pouvez en ajouter d'autres.`;
   };
   const f = h('div', { class: 'fenetre cloison hors-impression', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Porte complète', onkeydown: ev => { if (ev.key === 'Escape') fermer(); } },
     h('div', { class: 'fenetre-contenu', style: 'max-width:600px' },
       h('div', { class: 'fenetre-tete' }, h('h2', { text: 'Porte complète' })),
-      h('p', { class: 'aide', text: 'Ajoute d\'un coup l\'huisserie, le vantail, les options du type choisi et la béquille, dans un bloc de porte. Le jeu de paumelles reste calculé avec les huisseries.' }),
-      h('label', {}, 'Type ', type), h('label', {}, 'Huisserie ', forme, ' ', larg, ' ', vantailDV, infoDV), h('label', {}, 'Sens ', sens), h('label', {}, 'Béquille ', beq), h('label', {}, 'Nombre de portes ', qte),
+      h('p', { class: 'aide', text: 'Ajoute d\'un coup le vantail (et le semi-fixe), les options du type choisi et la béquille, dans un bloc de porte. L\'huisserie se choisit dans le tableau ; sa largeur sert ici à trouver la bonne taille de vantail.' }),
+      h('label', {}, 'Type ', type), h('label', {}, 'Largeur de l\'huisserie (déjà choisie dans le tableau) ', larg, ' ', vantailDV, infoDV), h('label', {}, 'Sens ', sens), h('label', {}, 'Béquille ', beq), h('label', {}, 'Nombre de portes ', qte),
       info,
       h('div', { class: 'actions', style: 'margin-top:14px' }, h('button', { type: 'button', class: 'bouton principal', text: 'Ajouter', onclick: ajouter }), h('button', { type: 'button', class: 'bouton', text: 'Terminé', onclick: fermer }))));
   document.body.append(f); document.body.style.overflow = 'hidden'; type.focus();
