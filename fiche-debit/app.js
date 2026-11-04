@@ -500,14 +500,17 @@ function ouvrirCloison() {
       : `${pluriel(r.traverses, 'traverse')}, ${pluriel(r.montants, 'montant')} de 2500 : l'outil ajoute ${r.equerres} équerres.`;
   };
   const valider = () => {
+    const avant = Object.values(c0.modules || {}).some(v => nombre(v) > 0);
     etat.cloison = lire();
     const r = traversesCloison(etat.cloison);
+    if (!r.lignes.length && avant) { etat.options.traverses = ''; etat.options.montantsTraverses = ''; }      // tout remis à 0 : on retire aussi ce que le formulaire avait ajouté
     if (r.lignes.length) { etat.options.traverses = String(r.option || ''); etat.options.montantsTraverses = etat.cloison.h2500 ? '' : String(r.montants || ''); }
-    if (avecPortes) {                                                  // seules les cases remplies sont écrites
+    if (avecPortes) {                                                  // case vidée ou à 0 = on retire la valeur
       etat.options.paumellesAlu = alu.value;
-      for (const id of ['D45', 'D46']) { const v = champsPortes[id].value.replace(/[^0-9]/g, ''); if (v) etat.qte[id] = v; }
-      const v = champsPortes.boisTH.value.replace(/[^0-9]/g, '');
-      if (v) { const p = produitBoisTH(); const ref = CODES_BOIS_TH[etat.entete.finition] || ''; if (p) { p.qte = v; p.ref = ref || p.ref; } else ajouterProduit({ ref, designation: 'Jeu 4 pau. porte bois toute hauteur', qte: v }); rendreProduits(); }
+      for (const id of ['D45', 'D46']) { const v = champsPortes[id].value.replace(/[^0-9]/g, ''); if (nombre(v) > 0) etat.qte[id] = v; else delete etat.qte[id]; }
+      const v = champsPortes.boisTH.value.replace(/[^0-9]/g, ''), p = produitBoisTH();
+      if (nombre(v) > 0) { const ref = CODES_BOIS_TH[etat.entete.finition] || ''; if (p) { p.qte = v; p.ref = ref || p.ref; } else ajouterProduit({ ref, designation: 'Jeu 4 pau. porte bois toute hauteur', qte: v }); rendreProduits(); }
+      else if (p) { etat.produits.splice(etat.produits.indexOf(p), 1); rendreProduits(); }
     }
     fermer(); remplir(); maj();
   };
@@ -672,7 +675,7 @@ function ouvrirPorteComplete() {
   const fermer = () => { f.remove(); document.body.style.overflow = ''; };
   const ajouter = () => {
     const t = typeCourant(), l = larg.value, n = String(Math.max(1, Math.round(nombre(qte.value)) || 1));
-    const huRe = new RegExp(`fdf\\s?2050\\s?[x×]\\s?${l}`, 'i'), sensRe = new RegExp(`p[o0]ussant ${sens.value}`, 'i');
+    const huRe = new RegExp(`fdf\\s?2050\\s?[x×]\\s?${l}`, 'i'), sensRe = new RegExp(`p[o0]ussant ${sens.value}`, 'i'), sensInverseRe = new RegExp(`p[o0]ussant ${sens.value === 'droit' ? 'gauche' : 'droit'}`, 'i');   // le semi-fixe est de sens inverse du vantail
     const hu = trouverCatalogue(d => /^huisserie classic/i.test(d) && (t.dv ? /type b\b/i : /^(?!.*type [ab]\b)/i).test(d) && (forme.value === 'carre' ? /carr/i : /^(?!.*carr)/i).test(d) && huRe.test(d));
     const lignes = [], manque = [], dimV = t.dv ? nombre(vantailDV.value) : nombre(l) - 9;
     if (!hu) manque.push(`huisserie ${l}`);
@@ -681,7 +684,7 @@ function ouvrirPorteComplete() {
     let sf = null, dimSF = 0;
     if (t.dv) {
       dimSF = nombre(l) - 14 - dimV;
-      sf = trouverCatalogue(d => /^semi-fixe dv/i.test(d) && sensRe.test(d) && (SEMI_FIXES_STD.includes(dimSF) ? new RegExp(`2036\\s?[x×]+\\s?${dimSF}`) : /dim\.?\s?sp|dim sp/i).test(d));
+      sf = trouverCatalogue(d => /^semi-fixe dv/i.test(d) && sensInverseRe.test(d) && (SEMI_FIXES_STD.includes(dimSF) ? new RegExp(`2036\\s?[x×]+\\s?${dimSF}`) : /dim\.?\s?sp|dim sp/i).test(d));
       if (!sf) manque.push(`semi-fixe ${dimSF}`);
     }
     const pa = t.paum ? PAUMELLES_DOUBLES[t.paum] : null, codePa = pa ? pa.codes[etat.entete.finition] || '' : '';
