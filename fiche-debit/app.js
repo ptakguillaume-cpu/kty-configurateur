@@ -286,7 +286,7 @@ function rendreProduits() {
     const tr = h('tr', {},
       h('td', {}, h('input', { type: 'text', class: 'code-p', value: p.ref, 'aria-label': 'Code', autocomplete: 'off', oninput: ev => { p.ref = ev.target.value; maj(); } })),
       h('td', { colspan: 2 }, h('input', { type: 'text', value: p.designation, 'aria-label': 'Désignation', autocomplete: 'off', oninput: ev => { p.designation = ev.target.value; maj(); } })),
-      h('td', { class: 'n' }, h('input', { type: 'text', inputmode: 'decimal', value: p.qte, 'aria-label': 'Quantité', autocomplete: 'off', oninput: ev => { p.qte = ev.target.value; maj(); } })),
+      h('td', { class: 'n' }, h('input', { type: 'text', inputmode: 'decimal', value: p.qte, 'aria-label': 'Quantité', autocomplete: 'off', oninput: ev => { suivreCouvercles(p, ev.target.value); p.qte = ev.target.value; maj(); } })),
       h('td', { class: 'sup' }, h('button', { type: 'button', class: 'retirer', title: 'Retirer cette ligne', 'aria-label': 'Retirer', text: '×', onclick: () => { etat.produits.splice(i, 1); rendreProduits(); maj(); } })));
     corps.append(tr); lignesProduits.push({ p, tr });
   });
@@ -543,7 +543,7 @@ function chercher() {
   if (!trouves.length) { zone.append(h('li', { text: 'Aucun produit trouvé.' })); return; }
   for (const c of trouves.slice(0, 40)) {
     zone.append(h('li', {}, h('b', { text: c.ref }), h('span', { text: c.des + (c.hors ? ' (hors catalogue)' : '') }), h('span', { class: 'edi', text: c.edi }),
-      h('button', { type: 'button', class: 'bouton', text: 'Ajouter', onclick: () => { ajouterProduit({ ref: c.ref, designation: abreger(c.des), qte: '1' }); rendreProduits(); annoncer(`Ajouté : ${c.ref}`); } })));
+      h('button', { type: 'button', class: 'bouton', text: 'Ajouter', onclick: () => { const ajoute = { ref: c.ref, designation: abreger(c.des), qte: '1' }; ajouterProduit(ajoute); const cv = c.edi === '05GOU' ? ajouterCouvercles(c, ajoute) : ''; rendreProduits(); annoncer(`Ajouté : ${c.ref}${cv}`); } })));
   }
   if (trouves.length > 40) zone.append(h('li', { class: 'edi', text: `… ${trouves.length - 40} autres résultats : précisez la recherche.` }));
 }
@@ -552,6 +552,23 @@ function chercher() {
 // Une béquille ferme le bloc (les lignes au-dessus se figent, la suite repart en dessous). Une huisserie ouvre un nouveau bloc (la toute première se place en tête de liste) ; les autres produits rejoignent le dernier bloc, à leur place. Les lignes déjà là ne bougent pas.
 const rangProduit = d => /paum|^jeu\b/i.test(d) ? 1 : /^huis/i.test(d) ? 0 : /^vantail/i.test(d) ? 2 : 3;      // d'après le début de la désignation (« Jeu 3 pau. … sur Huis. bois » est bien une paumelle)
 const ESTBEQUILLE = /^b[ée]quille/i;                                // une béquille termine la porte : les vantaux saisis ensuite forment un nouveau bloc, en dessous
+// Goulotte ajoutée : on ajoute aussi ses 2 couvercles plats (même longueur, même finition). Ils suivent la quantité de la goulotte tant qu'on n'a pas changé la leur (lien gardé en mémoire seulement).
+function ajouterCouvercles(g, ligneG) {
+  const lg = /5000|5m00/.test(g.des) ? '5' : '3';
+  const cv = INDEX.find(c => c.edi === '05CGP' && c.fin === g.fin && (lg === '5' ? /5000|5m00/ : /3000|3m00/).test(c.des));
+  if (!cv) return ' (pas de couvercle plat dans le catalogue pour cette finition : à ajouter à la main)';
+  const q = { ref: cv.ref, designation: abreger(cv.des), qte: '2' };
+  Object.defineProperty(q, '_suit', { value: ligneG });                       // non énumérable : jamais enregistré
+  ajouterProduit(q);
+  return ` + 2 × ${cv.ref} (couvercle plat)`;
+}
+function suivreCouvercles(g, nouvelle) {
+  const ancien = nombre(g.qte);
+  for (const { p: q, tr } of lignesProduits) {
+    if (q._suit !== g || nombre(q.qte) !== 2 * ancien) continue;
+    q.qte = String(2 * nombre(nouvelle)); const i = tr.querySelector('td.n input'); if (i) i.value = q.qte;
+  }
+}
 function ajouterProduit(p) {
   const r = rangProduit(p.designation), L = etat.produits;
   if (r === 0) { if (L.some(x => rangProduit(x.designation) === 0)) L.push(p); else L.unshift(p); return; }
