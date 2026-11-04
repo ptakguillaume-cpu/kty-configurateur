@@ -247,7 +247,7 @@ function construirePanneau() {
   const corpsProduits = h('tbody', { id: 'produits' });
   const corpsFantomes = h('tbody', { id: 'fantomes' });            // produits retirés depuis la version figée
   const produits = h('table', { class: 'liste' },
-    h('colgroup', {}, h('col', { class: 'c1' }), h('col', { class: 'c2' }), h('col', { class: 'c3' }), h('col', { class: 'c4' }), h('col', { style: 'width:28px', class: 'sup' })),
+    h('colgroup', {}, h('col', { class: 'c1' }), h('col', { class: 'c2' }), h('col', { class: 'c3' }), h('col', { class: 'c4' }), h('col', { style: 'width:56px', class: 'sup' })),
     h('thead', {}, h('tr', {}, h('th', { text: 'CODE' }), h('th', { colspan: 2, text: 'Désignation' }), h('th', { text: 'Qts' }), h('th', { class: 'sup' }))),
     corpsProduits, corpsFantomes);
 
@@ -280,14 +280,23 @@ function construirePanneau() {
   return h('div', { class: 'panneau' }, tete, produits, accessoires);
 }
 
+// Début des blocs de porte : une huisserie, ou la ligne qui suit une béquille.
+const debutBloc = (L, i) => i === 0 || rangProduit(L[i].designation) === 0 && !ESTBEQUILLE.test(L[i - 1].designation) || ESTBEQUILLE.test(L[i - 1].designation);
+function dupliquerBloc(i) {
+  const L = etat.produits; let fin = i + 1;
+  while (fin < L.length && !debutBloc(L, fin)) fin++;
+  L.splice(fin, 0, ...L.slice(i, fin).map(x => ({ ref: x.ref, designation: x.designation, qte: x.qte })));
+  rendreProduits(); maj(); annoncer(`Porte copiée (${fin - i} ligne${fin - i > 1 ? 's' : ''}) : changez la taille ou la quantité.`);
+}
 function rendreProduits() {
   const corps = $('produits'); corps.replaceChildren(); lignesProduits = [];
   etat.produits.forEach((p, i) => {
+    const copier = debutBloc(etat.produits, i) ? h('button', { type: 'button', class: 'retirer copier', title: 'Copier cette porte (toutes les lignes du bloc)', 'aria-label': 'Copier la porte', text: '⧉', onclick: () => dupliquerBloc(i) }) : null;
     const tr = h('tr', {},
       h('td', {}, h('input', { type: 'text', class: 'code-p', value: p.ref, 'aria-label': 'Code', autocomplete: 'off', oninput: ev => { p.ref = ev.target.value; maj(); } })),
       h('td', { colspan: 2 }, h('input', { type: 'text', value: p.designation, 'aria-label': 'Désignation', autocomplete: 'off', oninput: ev => { p.designation = ev.target.value; maj(); } })),
       h('td', { class: 'n' }, h('input', { type: 'text', inputmode: 'decimal', value: p.qte, 'aria-label': 'Quantité', autocomplete: 'off', oninput: ev => { suivreCouvercles(p, ev.target.value); p.qte = ev.target.value; maj(); } })),
-      h('td', { class: 'sup' }, h('button', { type: 'button', class: 'retirer', title: 'Retirer cette ligne', 'aria-label': 'Retirer', text: '×', onclick: () => { etat.produits.splice(i, 1); rendreProduits(); maj(); } })));
+      h('td', { class: 'sup' }, copier, h('button', { type: 'button', class: 'retirer', title: 'Retirer cette ligne', 'aria-label': 'Retirer', text: '×', onclick: () => { etat.produits.splice(i, 1); rendreProduits(); maj(); } })));
     corps.append(tr); lignesProduits.push({ p, tr });
   });
   for (let i = etat.produits.length; i < PRODUITS_VIDES_MIN; i++) corps.append(h('tr', { class: 'vide-produit' }, h('td'), h('td', { colspan: 2 }), h('td', { class: 'n' }), h('td', { class: 'sup' })));
@@ -416,6 +425,13 @@ function maj() {
   // Lignes vides de la liste : la ligne « Forfait laquage » (RAL, 2 lignes) et les produits retirés affichés par le suivi (1 ligne chacun, plus 1 pour le bandeau de modification) prennent leur place, pour que la fiche reste sur une page
   const vides = [...document.querySelectorAll('tr.vide-produit')], pris = (fin === 'RAL' ? 2 : 0) + $('fantomes').children.length + (document.body.classList.contains('avec-suivi') ? 1 : 0);
   vides.forEach((tr, i) => { tr.hidden = i >= vides.length - pris; });
+  {                                                                // lisses et clips de lisse doivent aller ensemble (rappel, pas bloquant)
+    const somme = (src, ids) => ids.reduce((t, i) => t + nombre(src[i]), 0);
+    const lisses = somme(r.qte, gammeId === 'classic' ? ['G4', 'G5'] : ['G2', 'G3', 'G4']);
+    const clips = gammeId === 'classic' ? somme(etat.accessoires, ['A45', 'A46', 'A47']) : somme(r.qte, ['G41', 'G42']);
+    if (lisses > 0 && clips === 0) alertes.push({ t: 'Des lisses sont saisies mais aucun clip de lisse : pensez à en ajouter.', info: true });
+    if (clips > 0 && lisses === 0) alertes.push({ t: 'Des clips de lisse sont saisis mais aucune lisse : vérifiez.', info: true });
+  }
   if (fin === 'RAL' && !e.ral) alertes.push({ t: 'Finition RAL : indiquez le RAL demandé dans l\'en-tête (sinon « RAL À DÉFINIR » est imprimé).', info: true });
   if (message) alertes.push({ t: message, info: true });
   const zone = $('alertes');
@@ -620,6 +636,77 @@ function ouvrirHuisseries() {
   document.body.append(f); document.body.style.overflow = 'hidden'; portes.focus();
 }
 
+
+// ---------- porte complète (Classic) : huisserie + vantail (+ vitrage isolant + plinthe) + béquille en un clic ----------
+// Vantail = largeur de l'huisserie − 9 mm (737 → 728, 837 → 828, 937 → 928). Codes cherchés dans le catalogue, d'après la finition de la fiche.
+const VITRAGE_ISO = [['005505', 'Vitrage isolant 33/2silence-8-44/2silence plus value'], ['000379', 'Plinthe automatique']];
+const PORTES_TYPES = [
+  { id: 'sv', nom: 'Vantail SV', extra: [] },
+  { id: 'svIso', nom: 'Vantail SV + vitrage isolant (005505) + plinthe automatique (000379)', extra: VITRAGE_ISO },
+  { id: 'dv', nom: 'Huisserie double : vantail DV + semi-fixe (simple vitrage, jeu de 6 paumelles)', dv: true, paum: 'alu6', extra: [] },
+  { id: 'dvIso', nom: 'Huisserie double : vantail DV + semi-fixe + vitrage isolant (jeu de 8 paumelles)', dv: true, paum: 'aluIso', extra: VITRAGE_ISO, extraQte: 2 },
+];
+const SEMI_FIXES_STD = [428, 528, 728, 828, 928];                 // semi-fixes au catalogue ; sinon dimension spéciale (sur mesure)
+const CLE_BEQUILLE = 'kty_porte_bequille';
+function trouverCatalogue(test) { const fin = FINITION_CATALOGUE[etat.entete.finition]; return INDEX.find(c => (c.fin === fin) && test(c.des)); }
+function ouvrirPorteComplete() {
+  const larg = h('select', { 'aria-label': 'Largeur de l\'huisserie' });
+  const vantailDV = h('select', { 'aria-label': 'Largeur du vantail' }, [728, 828, 928].map(l => h('option', { value: l, text: `Vantail ${l}` })));
+  const infoDV = h('span', { class: 'aide' });
+  const type = h('select', { 'aria-label': 'Type de porte' }, PORTES_TYPES.map(t => h('option', { value: t.id, text: t.nom })));
+  const typeCourant = () => PORTES_TYPES.find(x => x.id === type.value);
+  const majLarg = () => {
+    const dv = typeCourant().dv; larg.replaceChildren(...(dv ? [1270, 1470, 1670, 1870] : [737, 837, 937]).map(l => h('option', { value: l, text: dv ? `Huisserie ${l} (type B)` : `Huisserie ${l} (vantail ${l - 9})` })));
+    vantailDV.hidden = infoDV.hidden = !dv; majSemi();
+  };
+  const majSemi = () => { const w = nombre(larg.value) - 14 - nombre(vantailDV.value); infoDV.textContent = typeCourant().dv ? ` Semi-fixe : ${w} mm${SEMI_FIXES_STD.includes(w) ? '' : ' (sur mesure)'}` : ''; };
+  type.addEventListener('change', majLarg); larg.addEventListener('change', majSemi); vantailDV.addEventListener('change', majSemi);
+  const sens = h('select', { 'aria-label': 'Sens' }, h('option', { value: 'droit', text: 'Poussant droit (PD)' }), h('option', { value: 'gauche', text: 'Poussant gauche (PG)' }));
+  const forme = h('select', { 'aria-label': 'Forme de huisserie' }, h('option', { value: 'classic', text: 'Huisserie Classic AB' }), h('option', { value: 'carre', text: 'Huisserie Classic carrée AB' }));
+  const beqs = INDEX.filter(c => /^b[ée]quille double/i.test(c.des) && !/rosace\b.*\bpaire|^rosace/i.test(c.des)).filter((c, i, a) => a.findIndex(x => x.ref === c.ref) === i);
+  const beq = h('select', { 'aria-label': 'Béquille' }, h('option', { value: '', text: '— sans béquille —' }), beqs.map(c => h('option', { value: c.ref, text: `${c.ref} — ${abreger(c.des)}` })));
+  try { const m = localStorage.getItem(CLE_BEQUILLE); if (m && beqs.some(c => c.ref === m)) beq.value = m; } catch { /* stockage indisponible */ }
+  const qte = h('input', { type: 'text', inputmode: 'numeric', value: '1', 'aria-label': 'Nombre de portes', style: 'width:60px' });
+  const info = h('p', { class: 'bib-message', text: `Finition de la fiche : ${libelleFinition(etat.entete)}. Choisissez la porte puis « Ajouter ».` });
+  majLarg();
+  const fermer = () => { f.remove(); document.body.style.overflow = ''; };
+  const ajouter = () => {
+    const t = typeCourant(), l = larg.value, n = String(Math.max(1, Math.round(nombre(qte.value)) || 1));
+    const huRe = new RegExp(`fdf\\s?2050\\s?[x×]\\s?${l}`, 'i'), sensRe = new RegExp(`p[o0]ussant ${sens.value}`, 'i');
+    const hu = trouverCatalogue(d => /^huisserie classic/i.test(d) && (t.dv ? /type b\b/i : /^(?!.*type [ab]\b)/i).test(d) && (forme.value === 'carre' ? /carr/i : /^(?!.*carr)/i).test(d) && huRe.test(d));
+    const lignes = [], manque = [], dimV = t.dv ? nombre(vantailDV.value) : nombre(l) - 9;
+    if (!hu) manque.push(`huisserie ${l}`);
+    const va = trouverCatalogue(d => new RegExp(`^vantail serrure ${t.dv ? 'dv' : 'sv\\b'}`, 'i').test(d) && new RegExp(`2036\\s?[x×]+\\s?${dimV}`).test(d) && sensRe.test(d));
+    if (!va) manque.push(`vantail ${dimV}`);
+    let sf = null, dimSF = 0;
+    if (t.dv) {
+      dimSF = nombre(l) - 14 - dimV;
+      sf = trouverCatalogue(d => /^semi-fixe dv/i.test(d) && sensRe.test(d) && (SEMI_FIXES_STD.includes(dimSF) ? new RegExp(`2036\\s?[x×]+\\s?${dimSF}`) : /dim\.?\s?sp|dim sp/i).test(d));
+      if (!sf) manque.push(`semi-fixe ${dimSF}`);
+    }
+    const pa = t.paum ? PAUMELLES_DOUBLES[t.paum] : null, codePa = pa ? pa.codes[etat.entete.finition] || '' : '';
+    if (pa && !codePa) manque.push('jeu de paumelles');
+    if (manque.length) { info.textContent = `Pas de code au catalogue pour cette finition : ${manque.join(', ')}. Rien n'a été ajouté (choisissez une autre finition ou ajoutez à la main).`; return; }
+    lignes.push({ ref: hu.ref, designation: abreger(hu.des), qte: n });
+    if (pa) lignes.push({ ref: codePa, designation: pa.des, qte: n });
+    lignes.push({ ref: va.ref, designation: abreger(va.des), qte: n });
+    if (sf) lignes.push({ ref: sf.ref, designation: abreger(sf.des) + (SEMI_FIXES_STD.includes(dimSF) ? '' : ` (2036x${dimSF})`), qte: n });
+    for (const [ref, des] of t.extra) lignes.push({ ref, designation: abreger(INDEX.find(c => c.ref === ref)?.des || des), qte: String(nombre(n) * (t.extraQte || 1)) });
+    const b = beqs.find(c => c.ref === beq.value);
+    if (b) { lignes.push({ ref: b.ref, designation: abreger(b.des), qte: n }); try { localStorage.setItem(CLE_BEQUILLE, b.ref); } catch { /* stockage indisponible */ } }
+    lignes.forEach(ajouterProduit); rendreProduits(); maj();
+    info.textContent = `Ajouté (${n} porte${n > 1 ? 's' : ''}) : ${lignes.map(x => x.ref).join(' + ')}. Vous pouvez en ajouter d'autres.`;
+  };
+  const f = h('div', { class: 'fenetre cloison hors-impression', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Porte complète', onkeydown: ev => { if (ev.key === 'Escape') fermer(); } },
+    h('div', { class: 'fenetre-contenu', style: 'max-width:600px' },
+      h('div', { class: 'fenetre-tete' }, h('h2', { text: 'Porte complète' })),
+      h('p', { class: 'aide', text: 'Ajoute d\'un coup l\'huisserie, le vantail, les options du type choisi et la béquille, dans un bloc de porte. Le jeu de paumelles reste calculé avec les huisseries.' }),
+      h('label', {}, 'Type ', type), h('label', {}, 'Huisserie ', forme, ' ', larg, ' ', vantailDV, infoDV), h('label', {}, 'Sens ', sens), h('label', {}, 'Béquille ', beq), h('label', {}, 'Nombre de portes ', qte),
+      info,
+      h('div', { class: 'actions', style: 'margin-top:14px' }, h('button', { type: 'button', class: 'bouton principal', text: 'Ajouter', onclick: ajouter }), h('button', { type: 'button', class: 'bouton', text: 'Terminé', onclick: fermer }))));
+  document.body.append(f); document.body.style.overflow = 'hidden'; type.focus();
+}
+
 // ---------- fichiers : enregistrer, ouvrir, Excel, imprimer ----------
 const nomFichier = () => `${GAMME.prefixeFichier} ${etat.entete.chantier} ${etat.entete.niveau}`.replace(/\s+/g, ' ').trim().replace(/[\\/:*?"<>|]/g, '-');
 const TYPES_FICHIER = { kty: ['Fiche KTY (.kty)', 'application/x-kty-fiche'], json: ['Fiche KTY (.json)', 'application/json'], xlsx: ['Classeur Excel (.xlsx)', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'] };
@@ -756,6 +843,8 @@ $('recherche').addEventListener('input', chercher);
 $('rechercheFinition').addEventListener('change', chercher);
 $('btnHuisseries').hidden = GAMME.id !== 'classic';
 $('btnHuisseries').addEventListener('click', ouvrirHuisseries);
+$('btnPorte').hidden = GAMME.id !== 'classic';
+$('btnPorte').addEventListener('click', ouvrirPorteComplete);
 $('btnLigneLibre').addEventListener('click', () => {
   etat.produits.push({ ref: '', designation: '', qte: '1' }); rendreProduits(); maj();
   const champs = document.querySelectorAll('#produits input.code-p'); champs[champs.length - 1]?.focus();
