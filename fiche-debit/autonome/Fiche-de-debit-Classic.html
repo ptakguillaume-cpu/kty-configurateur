@@ -295,6 +295,11 @@ td.chg-retrait .auto, td.chg-retrait .calc { color: transparent; }          /* l
     .entete-panneau .fax { font-size: 8pt !important; }
 }
 
+/* ---------- impression : finition / RAL en plus gros ---------- */
+@media print {
+    #finTxt { font-size: 14pt !important; font-weight: 800; line-height: 1.15; }
+}
+
 </style>
 </head>
 <body>
@@ -432,6 +437,13 @@ function ajoutAuto(etat, roles, id) {
   return 0;
 }
 
+// Goulottes électriques de la liste des produits : 2 équerres chacune (goulottes de 3000 ou 5000 ; couvercles, embouts et cloisons de séparation exclus).
+// L'application fournit les références du catalogue (famille 05GOU) ; à défaut, on reconnaît la désignation (« Goul. élec. … », « Goulotte électrique … »).
+let REFS_GOULOTTE = new Set();
+const definirRefsGoulotte = refs => { REFS_GOULOTTE = new Set(refs); };
+const estGoulotte = p => REFS_GOULOTTE.has(String(p.ref || '').trim()) || (/^goul/i.test(p.designation || '') && !/couv|embout|cloison|tresse|\b38\b/i.test(p.designation || ''));
+const nbGoulottes = etat => (etat.produits || []).filter(estGoulotte).reduce((s, p) => s + num(p.qte), 0);
+
 function calculer(etat, { legacy = false, roles = ROLES_CLASSIC } = {}) {
   const o = etat.options;
   const q = id => (id ? num(etat.qte[id]) + ajoutAuto(etat, roles, id) : 0);   // + ajouts automatiques (traverses, paumelles des huisseries double alu)
@@ -456,11 +468,17 @@ function calculer(etat, { legacy = false, roles = ROLES_CLASSIC } = {}) {
       const cible = legacy && k === 4 ? 3.25 : lg;
       if (egal(l.lg, cible)) t += num(l.nb) * 2;
     }
-    t -= (legacy ? omegaOrigine[k] : omega[k]) || 0;
+    if (legacy || k !== 2) t -= (legacy ? omegaOrigine[k] : omega[k]) || 0;   // Oméga 3050 : traité plus bas (ne retire que des plats déjà saisis)
     if (k === 0) t += huisSimples + huisDV * 2 + huisDVAlu * 2 + (legacy ? 2 : 0);
-    if (!legacy) t += num(etat.manuel[k]);
     return t;
   });
+  if (!legacy) {
+    // Oméga 3050 : retire d'abord des plats 3,05 déjà saisis, le reste des plats les plus proches qui ont une quantité ; jamais de négatif créé par l'oméga.
+    let reste = omega[2] || 0;
+    const ordre = [2, ...cj.map((_, k) => k).filter(k => k !== 2).sort((a, b) => Math.abs(LG_COUVRE_JOINT[a] - 3.05) - Math.abs(LG_COUVRE_JOINT[b] - 3.05))];
+    for (const k of ordre) { const pris = Math.min(reste, Math.max(cj[k], 0)); cj[k] -= pris; reste -= pris; }
+    cj.forEach((_, k) => { cj[k] += num(etat.manuel[k]); });
+  }
 
   // --- Clips : boîtes de 100 ---
   const clipsBruts = cj.reduce((s, v, k) => s + v * CLIPS_PAR_COUVRE_JOINT[k], 0);
@@ -469,7 +487,7 @@ function calculer(etat, { legacy = false, roles = ROLES_CLASSIC } = {}) {
   // --- Équerres ---
   const departsLisse = num(o.departsLisse);
   const baseEquerres = somme(roles.montants) + somme(roles.angleDepartMultiple) + somme(roles.departMultipleCJ) + somme(roles.departs) + somme(roles.angle90) + somme(roles.montantsSpeciaux);
-  const equerres = baseEquerres * 2 + num(o.traverses) * 2 + somme(roles.meneaux) * 6 + somme(roles.angleCarre) * 4 + U9 - departsLisse * 2;
+  const equerres = baseEquerres * 2 + num(o.traverses) * 2 + somme(roles.meneaux) * 6 + somme(roles.angleCarre) * 4 + U9 - departsLisse * 2 + (legacy ? 0 : 2 * nbGoulottes(etat));
 
   // --- Mousse de départ (mètres, arrondis à 5 m par longueur) ---
   const mousseParLg = LG_COUVRE_JOINT.map((lg, k) => plafond(lg * 2 * q(roles.departs[k]), 5));
@@ -531,7 +549,7 @@ function libelleFinition(entete) {
   return entete.finition === 'RAL' ? (entete.ral || 'RAL À DÉFINIR') : entete.finition;
 }
 
-return { LG_COUVRE_JOINT, CLIPS_PAR_COUVRE_JOINT, LARGEURS_CA_SIMPLE, LARGEURS_CA_DOUBLE, FINITIONS, etatInitial, TYPES_CLOISON, traversesCloison, ROLES_CLASSIC, ROLES_RDB1, ajoutAuto, calculer, abreger, couleurJonc, libelleFinition };
+return { LG_COUVRE_JOINT, CLIPS_PAR_COUVRE_JOINT, LARGEURS_CA_SIMPLE, LARGEURS_CA_DOUBLE, FINITIONS, etatInitial, TYPES_CLOISON, traversesCloison, ROLES_CLASSIC, ROLES_RDB1, ajoutAuto, definirRefsGoulotte, estGoulotte, nbGoulottes, calculer, abreger, couleurJonc, libelleFinition };
 })();
 const __m_xlsx = (() => {
 // Écriture minimale d'un fichier .xlsx (zip sans compression), sans bibliothèque, utilisable hors connexion.
@@ -989,7 +1007,7 @@ const __m_app = (() => {
 const { FICHE: FICHE_CLASSIC } = __m_donnees;
 const { FICHE_RDB1 } = __m_donnees_rdb1;
 const { CATALOGUE } = __m_catalogue;
-const { etatInitial, calculer, ajoutAuto, ROLES_CLASSIC, ROLES_RDB1, abreger, couleurJonc, libelleFinition, LG_COUVRE_JOINT, LARGEURS_CA_SIMPLE, LARGEURS_CA_DOUBLE, FINITIONS, TYPES_CLOISON, traversesCloison } = __m_calcul;
+const { etatInitial, calculer, ajoutAuto, ROLES_CLASSIC, ROLES_RDB1, abreger, couleurJonc, libelleFinition, LG_COUVRE_JOINT, definirRefsGoulotte, nbGoulottes, LARGEURS_CA_SIMPLE, LARGEURS_CA_DOUBLE, FINITIONS, TYPES_CLOISON, traversesCloison } = __m_calcul;
 const { creerXlsx } = __m_xlsx;
 const { creerBibliotheque } = __m_bibliotheque;
 const { instantane, comparer, clePdt, libelleType } = __m_revision;
@@ -1057,6 +1075,7 @@ const sansAccent = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
 let INDEX = [];                                       // index de recherche des produits
 function reconstruireCatalogue(liste) {
   DESIGNATION = new Map(liste.map(c => [c[0], c[1]]));
+  definirRefsGoulotte(liste.filter(c => c[2] === '05GOU').map(c => c[0]));
   INDEX = liste.map(c => ({ ref: c[0], des: c[1], edi: c[2], fin: c[3], hors: c[4], texte: sansAccent(`${c[0]} ${c[1]} ${c[2]}`), mots: sansAccent(`${c[0]} ${c[1]} ${c[2]}`).split(/[^a-z0-9]+/).filter(Boolean), des0: sansAccent(c[1]).split(/[^a-z0-9]+/).filter(Boolean).join(' ') }));
 }
 let pret = false;
@@ -1533,13 +1552,14 @@ function chercher() {
 }
 
 // Liste CODE / Désignation organisée par blocs de porte : huisserie, puis paumelles, puis vantail, puis le reste (béquille…).
-// Une huisserie ouvre un nouveau bloc (la toute première se place en tête de liste) ; les autres produits rejoignent le dernier bloc, à leur place. Les lignes déjà là ne bougent pas.
+// Une béquille ferme le bloc (les lignes au-dessus se figent, la suite repart en dessous). Une huisserie ouvre un nouveau bloc (la toute première se place en tête de liste) ; les autres produits rejoignent le dernier bloc, à leur place. Les lignes déjà là ne bougent pas.
 const rangProduit = d => /paum|^jeu\b/i.test(d) ? 1 : /^huis/i.test(d) ? 0 : /^vantail/i.test(d) ? 2 : 3;      // d'après le début de la désignation (« Jeu 3 pau. … sur Huis. bois » est bien une paumelle)
+const ESTBEQUILLE = /^b[ée]quille/i;                                // une béquille termine la porte : les vantaux saisis ensuite forment un nouveau bloc, en dessous
 function ajouterProduit(p) {
   const r = rangProduit(p.designation), L = etat.produits;
   if (r === 0) { if (L.some(x => rangProduit(x.designation) === 0)) L.push(p); else L.unshift(p); return; }
-  let debut = -1;
-  L.forEach((x, i) => { if (rangProduit(x.designation) === 0) debut = i; });
+  let debut = -1;                                                  // début du bloc en cours : dernière huisserie ou dernière béquille (la béquille ferme le bloc de porte)
+  L.forEach((x, i) => { if (rangProduit(x.designation) === 0 || ESTBEQUILLE.test(x.designation)) debut = i; });
   let pos = debut + 1;
   for (let i = debut + 1; i < L.length; i++) if (rangProduit(L[i].designation) <= r) pos = i + 1;
   L.splice(pos, 0, p);

@@ -86,6 +86,13 @@ export function ajoutAuto(etat, roles, id) {
   return 0;
 }
 
+// Goulottes électriques de la liste des produits : 2 équerres chacune (goulottes de 3000 ou 5000 ; couvercles, embouts et cloisons de séparation exclus).
+// L'application fournit les références du catalogue (famille 05GOU) ; à défaut, on reconnaît la désignation (« Goul. élec. … », « Goulotte électrique … »).
+let REFS_GOULOTTE = new Set();
+export const definirRefsGoulotte = refs => { REFS_GOULOTTE = new Set(refs); };
+export const estGoulotte = p => REFS_GOULOTTE.has(String(p.ref || '').trim()) || (/^goul/i.test(p.designation || '') && !/couv|embout|cloison|tresse|\b38\b/i.test(p.designation || ''));
+export const nbGoulottes = etat => (etat.produits || []).filter(estGoulotte).reduce((s, p) => s + num(p.qte), 0);
+
 export function calculer(etat, { legacy = false, roles = ROLES_CLASSIC } = {}) {
   const o = etat.options;
   const q = id => (id ? num(etat.qte[id]) + ajoutAuto(etat, roles, id) : 0);   // + ajouts automatiques (traverses, paumelles des huisseries double alu)
@@ -110,11 +117,17 @@ export function calculer(etat, { legacy = false, roles = ROLES_CLASSIC } = {}) {
       const cible = legacy && k === 4 ? 3.25 : lg;
       if (egal(l.lg, cible)) t += num(l.nb) * 2;
     }
-    t -= (legacy ? omegaOrigine[k] : omega[k]) || 0;
+    if (legacy || k !== 2) t -= (legacy ? omegaOrigine[k] : omega[k]) || 0;   // Oméga 3050 : traité plus bas (ne retire que des plats déjà saisis)
     if (k === 0) t += huisSimples + huisDV * 2 + huisDVAlu * 2 + (legacy ? 2 : 0);
-    if (!legacy) t += num(etat.manuel[k]);
     return t;
   });
+  if (!legacy) {
+    // Oméga 3050 : retire d'abord des plats 3,05 déjà saisis, le reste des plats les plus proches qui ont une quantité ; jamais de négatif créé par l'oméga.
+    let reste = omega[2] || 0;
+    const ordre = [2, ...cj.map((_, k) => k).filter(k => k !== 2).sort((a, b) => Math.abs(LG_COUVRE_JOINT[a] - 3.05) - Math.abs(LG_COUVRE_JOINT[b] - 3.05))];
+    for (const k of ordre) { const pris = Math.min(reste, Math.max(cj[k], 0)); cj[k] -= pris; reste -= pris; }
+    cj.forEach((_, k) => { cj[k] += num(etat.manuel[k]); });
+  }
 
   // --- Clips : boîtes de 100 ---
   const clipsBruts = cj.reduce((s, v, k) => s + v * CLIPS_PAR_COUVRE_JOINT[k], 0);
@@ -123,7 +136,7 @@ export function calculer(etat, { legacy = false, roles = ROLES_CLASSIC } = {}) {
   // --- Équerres ---
   const departsLisse = num(o.departsLisse);
   const baseEquerres = somme(roles.montants) + somme(roles.angleDepartMultiple) + somme(roles.departMultipleCJ) + somme(roles.departs) + somme(roles.angle90) + somme(roles.montantsSpeciaux);
-  const equerres = baseEquerres * 2 + num(o.traverses) * 2 + somme(roles.meneaux) * 6 + somme(roles.angleCarre) * 4 + U9 - departsLisse * 2;
+  const equerres = baseEquerres * 2 + num(o.traverses) * 2 + somme(roles.meneaux) * 6 + somme(roles.angleCarre) * 4 + U9 - departsLisse * 2 + (legacy ? 0 : 2 * nbGoulottes(etat));
 
   // --- Mousse de départ (mètres, arrondis à 5 m par longueur) ---
   const mousseParLg = LG_COUVRE_JOINT.map((lg, k) => plafond(lg * 2 * q(roles.departs[k]), 5));
