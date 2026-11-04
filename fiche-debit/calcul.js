@@ -117,11 +117,17 @@ export function calculer(etat, { legacy = false, roles = ROLES_CLASSIC } = {}) {
       const cible = legacy && k === 4 ? 3.25 : lg;
       if (egal(l.lg, cible)) t += num(l.nb) * 2;
     }
-    t -= (legacy ? omegaOrigine[k] : omega[k]) || 0;
+    if (legacy || k !== 2) t -= (legacy ? omegaOrigine[k] : omega[k]) || 0;   // Oméga 3050 : traité plus bas (ne retire que des plats déjà saisis)
     if (k === 0) t += huisSimples + huisDV * 2 + huisDVAlu * 2 + (legacy ? 2 : 0);
-    if (!legacy) t += num(etat.manuel[k]);
     return t;
   });
+  if (!legacy) {
+    // Oméga 3050 : retire d'abord des plats 3,05 déjà saisis, le reste des plats les plus proches qui ont une quantité ; jamais de négatif créé par l'oméga.
+    let reste = omega[2] || 0;
+    const ordre = [2, ...cj.map((_, k) => k).filter(k => k !== 2).sort((a, b) => Math.abs(LG_COUVRE_JOINT[a] - 3.05) - Math.abs(LG_COUVRE_JOINT[b] - 3.05))];
+    for (const k of ordre) { const pris = Math.min(reste, Math.max(cj[k], 0)); cj[k] -= pris; reste -= pris; }
+    cj.forEach((_, k) => { cj[k] += num(etat.manuel[k]); });
+  }
 
   // --- Clips : boîtes de 100 ---
   const clipsBruts = cj.reduce((s, v, k) => s + v * CLIPS_PAR_COUVRE_JOINT[k], 0);

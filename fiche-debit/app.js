@@ -549,13 +549,14 @@ function chercher() {
 }
 
 // Liste CODE / Désignation organisée par blocs de porte : huisserie, puis paumelles, puis vantail, puis le reste (béquille…).
-// Une huisserie ouvre un nouveau bloc (la toute première se place en tête de liste) ; les autres produits rejoignent le dernier bloc, à leur place. Les lignes déjà là ne bougent pas.
+// Une béquille ferme le bloc (les lignes au-dessus se figent, la suite repart en dessous). Une huisserie ouvre un nouveau bloc (la toute première se place en tête de liste) ; les autres produits rejoignent le dernier bloc, à leur place. Les lignes déjà là ne bougent pas.
 const rangProduit = d => /paum|^jeu\b/i.test(d) ? 1 : /^huis/i.test(d) ? 0 : /^vantail/i.test(d) ? 2 : 3;      // d'après le début de la désignation (« Jeu 3 pau. … sur Huis. bois » est bien une paumelle)
+const ESTBEQUILLE = /^b[ée]quille/i;                                // une béquille termine la porte : les vantaux saisis ensuite forment un nouveau bloc, en dessous
 function ajouterProduit(p) {
   const r = rangProduit(p.designation), L = etat.produits;
   if (r === 0) { if (L.some(x => rangProduit(x.designation) === 0)) L.push(p); else L.unshift(p); return; }
-  let debut = -1;
-  L.forEach((x, i) => { if (rangProduit(x.designation) === 0) debut = i; });
+  let debut = -1;                                                  // début du bloc en cours : dernière huisserie ou dernière béquille (la béquille ferme le bloc de porte)
+  L.forEach((x, i) => { if (rangProduit(x.designation) === 0 || ESTBEQUILLE.test(x.designation)) debut = i; });
   let pos = debut + 1;
   for (let i = debut + 1; i < L.length; i++) if (rangProduit(L[i].designation) <= r) pos = i + 1;
   L.splice(pos, 0, p);

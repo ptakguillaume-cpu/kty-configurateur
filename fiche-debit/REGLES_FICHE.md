@@ -69,3 +69,9 @@ Donc les codes faux viennent surtout de **l'onglet CODE incomplet** (508 codes s
 - **Huisseries double alu type B** : +2 couvre-joints plats en 2,5 m chacune (comme les type A), sans effet sur les jeux de paumelles bois.
 - **Jeux de paumelles** : Jeu 3 bois = huisseries simples − portes CA − jeux alu (Jeu 3 et Jeu 4 alu), et 0 s'il n'y a aucune huisserie simple dans la grille ; Jeu 6 bois = huisseries doubles de type A − portes CA double. Jeu 6 alu (SV) ou Jeu 8 alu (isolant) = somme des huisseries double alu type B (+ saisie).
 - Ces règles ne s'appliquent pas au mode « formules d'origine du XLS » (les 25 cas de comparaison avec l'Excel restent identiques).
+
+## Règles ajoutées (MARRONIERS BOURGOIN V4)
+- **Goulottes** (famille 05GOU, 3000 ou 5000) : +2 équerres par goulotte de la liste des produits. Couvercles et embouts exclus. Mode « formules XLS » inchangé.
+- **Oméga 3050** : retire d'abord des couvre-joint plats 3,05 m déjà saisis, le reste des plats les plus proches ayant une quantité ; jamais de quantité négative créée par l'oméga. Oméga 2500 / 5750 inchangés.
+- **Liste des produits** : une béquille ferme le bloc de porte. Les vantaux/paumelles ajoutés ensuite forment un nouveau bloc en dessous (ils ne se mélangent plus aux précédents).
+- Impression : finition / RAL en 14 pt.

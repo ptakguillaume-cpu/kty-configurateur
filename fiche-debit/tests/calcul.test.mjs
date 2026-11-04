@@ -32,10 +32,11 @@ console.log(`${cas.length - ko}/${cas.length} cas identiques au XLS (formules d'
 const e = etatInitial(); e.qte = { G6: 10, D4: 2, D9: 1, D10: 1 };
 const n = calculer(e), l = calculer(e, { legacy: true });
 assert.equal(l.cj[0], 2 * 12 - 1 + 2, 'XLS : Oméga 2500 retiré, +2 constant');
-assert.equal(n.cj[0], 2 * 12 - 1, 'corrigé : le +2 devient un ajout manuel');
+assert.equal(n.cj[0], 2 * 12 - 1 - 1, 'corrigé : le +2 devient un ajout manuel ; Oméga 3050 sans plat 3,05 saisi retire du plat le plus proche saisi (2,5)');
+assert.equal(n.cj[2], 0, 'Oméga 3050 : jamais de négatif');
 assert.equal(n.cj[1], 0, 'point A : plus de retrait Oméga 3050 sur le 2,7 m'); assert.equal(l.cj[1], -1);
 assert.equal(n.cj[3], 0, 'point B : plus de retrait Oméga 3050 sur le 3,25 m'); assert.equal(l.cj[3], -1);
-e.manuel[0] = 2; assert.equal(calculer(e).cj[0], 2 * 12 - 1 + 2, 'ajout manuel D');
+e.manuel[0] = 2; assert.equal(calculer(e).cj[0], 2 * 12 - 2 + 2, 'ajout manuel D');
 const e2 = etatInitial(); e2.qte = { D21: 3 }; e2.options.renfort[0] = { nb: 1, lg: 5.75 };
 assert.equal(calculer(e2).cj[4], 2 * 3 + 2, 'point C : montants spéciaux testés sur 5,75'); assert.equal(calculer(e2, { legacy: true }).cj[4], 6);
 const e3 = etatInitial(); e3.qte = { G6: 1 }; e3.options.doublage = [{ nb: 1, lg: 2.5 }, { nb: 1, lg: 2.5 }];

@@ -468,11 +468,17 @@ function calculer(etat, { legacy = false, roles = ROLES_CLASSIC } = {}) {
       const cible = legacy && k === 4 ? 3.25 : lg;
       if (egal(l.lg, cible)) t += num(l.nb) * 2;
     }
-    t -= (legacy ? omegaOrigine[k] : omega[k]) || 0;
+    if (legacy || k !== 2) t -= (legacy ? omegaOrigine[k] : omega[k]) || 0;   // Oméga 3050 : traité plus bas (ne retire que des plats déjà saisis)
     if (k === 0) t += huisSimples + huisDV * 2 + huisDVAlu * 2 + (legacy ? 2 : 0);
-    if (!legacy) t += num(etat.manuel[k]);
     return t;
   });
+  if (!legacy) {
+    // Oméga 3050 : retire d'abord des plats 3,05 déjà saisis, le reste des plats les plus proches qui ont une quantité ; jamais de négatif créé par l'oméga.
+    let reste = omega[2] || 0;
+    const ordre = [2, ...cj.map((_, k) => k).filter(k => k !== 2).sort((a, b) => Math.abs(LG_COUVRE_JOINT[a] - 3.05) - Math.abs(LG_COUVRE_JOINT[b] - 3.05))];
+    for (const k of ordre) { const pris = Math.min(reste, Math.max(cj[k], 0)); cj[k] -= pris; reste -= pris; }
+    cj.forEach((_, k) => { cj[k] += num(etat.manuel[k]); });
+  }
 
   // --- Clips : boîtes de 100 ---
   const clipsBruts = cj.reduce((s, v, k) => s + v * CLIPS_PAR_COUVRE_JOINT[k], 0);
@@ -1546,13 +1552,14 @@ function chercher() {
 }
 
 // Liste CODE / Désignation organisée par blocs de porte : huisserie, puis paumelles, puis vantail, puis le reste (béquille…).
-// Une huisserie ouvre un nouveau bloc (la toute première se place en tête de liste) ; les autres produits rejoignent le dernier bloc, à leur place. Les lignes déjà là ne bougent pas.
+// Une béquille ferme le bloc (les lignes au-dessus se figent, la suite repart en dessous). Une huisserie ouvre un nouveau bloc (la toute première se place en tête de liste) ; les autres produits rejoignent le dernier bloc, à leur place. Les lignes déjà là ne bougent pas.
 const rangProduit = d => /paum|^jeu\b/i.test(d) ? 1 : /^huis/i.test(d) ? 0 : /^vantail/i.test(d) ? 2 : 3;      // d'après le début de la désignation (« Jeu 3 pau. … sur Huis. bois » est bien une paumelle)
+const ESTBEQUILLE = /^b[ée]quille/i;                                // une béquille termine la porte : les vantaux saisis ensuite forment un nouveau bloc, en dessous
 function ajouterProduit(p) {
   const r = rangProduit(p.designation), L = etat.produits;
   if (r === 0) { if (L.some(x => rangProduit(x.designation) === 0)) L.push(p); else L.unshift(p); return; }
-  let debut = -1;
-  L.forEach((x, i) => { if (rangProduit(x.designation) === 0) debut = i; });
+  let debut = -1;                                                  // début du bloc en cours : dernière huisserie ou dernière béquille (la béquille ferme le bloc de porte)
+  L.forEach((x, i) => { if (rangProduit(x.designation) === 0 || ESTBEQUILLE.test(x.designation)) debut = i; });
   let pos = debut + 1;
   for (let i = debut + 1; i < L.length; i++) if (rangProduit(L[i].designation) <= r) pos = i + 1;
   L.splice(pos, 0, p);
