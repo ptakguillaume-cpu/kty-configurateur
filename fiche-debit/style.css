@@ -57,6 +57,8 @@ table.profils .q { width: 24%; padding: 0; position: relative; }
 table.profils td.q { background: var(--case-vide); }
 table.profils tr.rempli td.q { background: #fff; }
 .q input:focus { background: #fff; }
+.acc td.n { position: relative; }
+.acc .manuel { position: absolute; right: 1px; top: 1px; width: 36px; height: 14px; font-size: 10px; font-weight: 400; color: #5b6470; border: 1px dashed #aab; border-radius: 3px; background: #fff; }
 .q .manuel { position: absolute; right: 1px; top: 1px; width: 36px; height: 14px; font-size: 10px; font-weight: 400; color: #5b6470; border: 1px dashed #aab; border-radius: 3px; background: #fff; }
 .cercle { display: inline-block !important; padding: 0 6px; line-height: 1.1; border: 1.5px solid transparent; border-radius: 50%; }
 tr.rempli .cercle { border-color: var(--rouge); }
@@ -190,7 +192,7 @@ table.profils tr.pc1 > td.img { text-align: left; }
     table.profils td, table.profils th { padding: 0 0.8mm; }
     table.profils .code, table.profils .lg { font-size: 7.5pt; }
     .q input, .q .calc { font-size: 8pt; }
-    .q .manuel { display: none; }
+    .q .manuel, .acc .manuel { display: none; }
     .entete-panneau input, .entete-panneau select { font-size: 9pt; min-height: 5mm; border-bottom: 0; appearance: none; -webkit-appearance: none; }
     .liste .retirer, .liste td.sup, .liste th.sup, .liste col.sup { display: none; }
     .ecran-seulement { display: none !important; }

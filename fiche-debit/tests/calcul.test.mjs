@@ -112,3 +112,17 @@ if (ko) process.exit(1);
   console.assert(c(avec, { legacy: true }).equerres === c(base, { legacy: true }).equerres, 'legacy inchangé');
   console.log('Goulottes → équerres : OK');
 }
+
+// Ajustements manuels (+ ou −) des quantités calculées ; sans effet en mode XLS
+{
+  const { calculer: c } = await import('../calcul.js');
+  const e = etatInitial(); e.qte = { G6: 10, D34: 2 };
+  const a = c(e), l = c(e, { legacy: true });
+  e.ajust = { equerres: -5, clips: 100, mousse: 3, p0: -1 };
+  const b = c(e);
+  console.assert(b.equerres === Math.max(a.equerres - 5, 0), 'ajust équerres');
+  console.assert(b.clips === a.clips + 100, 'ajust clips');
+  console.assert(b.J41 === a.J41 - 1, 'ajust jeu 3 bois');
+  console.assert(c(e, { legacy: true }).equerres === l.equerres, 'legacy inchangé');
+  console.log('Ajustements manuels : OK');
+}

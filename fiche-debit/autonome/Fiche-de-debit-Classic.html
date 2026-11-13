@@ -64,6 +64,8 @@ table.profils .q { width: 24%; padding: 0; position: relative; }
 table.profils td.q { background: var(--case-vide); }
 table.profils tr.rempli td.q { background: #fff; }
 .q input:focus { background: #fff; }
+.acc td.n { position: relative; }
+.acc .manuel { position: absolute; right: 1px; top: 1px; width: 36px; height: 14px; font-size: 10px; font-weight: 400; color: #5b6470; border: 1px dashed #aab; border-radius: 3px; background: #fff; }
 .q .manuel { position: absolute; right: 1px; top: 1px; width: 36px; height: 14px; font-size: 10px; font-weight: 400; color: #5b6470; border: 1px dashed #aab; border-radius: 3px; background: #fff; }
 .cercle { display: inline-block !important; padding: 0 6px; line-height: 1.1; border: 1.5px solid transparent; border-radius: 50%; }
 tr.rempli .cercle { border-color: var(--rouge); }
@@ -197,7 +199,7 @@ table.profils tr.pc1 > td.img { text-align: left; }
     table.profils td, table.profils th { padding: 0 0.8mm; }
     table.profils .code, table.profils .lg { font-size: 7.5pt; }
     .q input, .q .calc { font-size: 8pt; }
-    .q .manuel { display: none; }
+    .q .manuel, .acc .manuel { display: none; }
     .entete-panneau input, .entete-panneau select { font-size: 9pt; min-height: 5mm; border-bottom: 0; appearance: none; -webkit-appearance: none; }
     .liste .retirer, .liste td.sup, .liste th.sup, .liste col.sup { display: none; }
     .ecran-seulement { display: none !important; }
@@ -366,6 +368,7 @@ function etatInitial() {
     version: 1,
     entete: { societe: '', chantier: '', niveau: '', finition: 'BLANC 9016', ral: '', mode: 'DEVIS', page: '', remarque: '' },
     qte: {},                                    // quantités saisies, clé = id de ligne (G6, D4…)
+    ajust: {},                                    // ajustements manuels (+ ou −) des quantités calculées : clips, equerres, mousse, p0 / p1 (jeux de paumelles bois)
     manuel: [0, 0, 0, 0, 0, 0],                   // point D : ajout manuel sur chaque couvre-joint plat
     options: {
       doublage: [{ nb: '', lg: 2.5 }, { nb: '', lg: 2.5 }],   // « D et M et MS de doublage »
@@ -484,24 +487,25 @@ function calculer(etat, { legacy = false, roles = ROLES_CLASSIC } = {}) {
 
   // --- Clips : boîtes de 100 ---
   const clipsBruts = cj.reduce((s, v, k) => s + v * CLIPS_PAR_COUVRE_JOINT[k], 0);
-  const clips = plafond(clipsBruts, 100);
+  const aj = k => legacy ? 0 : num((etat.ajust || {})[k]);       // ajustements manuels (hors mode XLS)
+  const clips = Math.max(plafond(clipsBruts, 100) + aj('clips'), 0);
 
   // --- Équerres ---
   const departsLisse = num(o.departsLisse);
   const baseEquerres = somme(roles.montants) + somme(roles.angleDepartMultiple) + somme(roles.departMultipleCJ) + somme(roles.departs) + somme(roles.angle90) + somme(roles.montantsSpeciaux);
-  const equerres = baseEquerres * 2 + num(o.traverses) * 2 + somme(roles.meneaux) * 6 + somme(roles.angleCarre) * 4 + U9 - departsLisse * 2 + (legacy ? 0 : 2 * nbGoulottes(etat));
+  const equerres = baseEquerres * 2 + num(o.traverses) * 2 + somme(roles.meneaux) * 6 + somme(roles.angleCarre) * 4 + U9 - departsLisse * 2 + (legacy ? 0 : 2 * nbGoulottes(etat)) + aj('equerres');
 
   // --- Mousse de départ (mètres, arrondis à 5 m par longueur) ---
   const mousseParLg = LG_COUVRE_JOINT.map((lg, k) => plafond(lg * 2 * q(roles.departs[k]), 5));
-  const mousse = mousseParLg.reduce((s, v) => s + v, 0) - 5 * departsLisse;
+  const mousse = mousseParLg.reduce((s, v) => s + v, 0) - 5 * departsLisse + aj('mousse');
 
   // --- Jeux de paumelles ---
   const retraitSimple = LARGEURS_CA_SIMPLE.includes(num(o.caSimple.largeur)) ? num(o.caSimple.nb) : 0;
   const retraitDouble = LARGEURS_CA_DOUBLE.includes(num(o.caDouble.largeur)) ? num(o.caDouble.nb) : 0;
   const jeuxAlu = somme(roles.jeuxAlu || []);                    // portes alu (jeux 3 et 4) : retirées du Jeu 3 paumelles bois
   // Sans aucune huisserie simple dans la grille (huisseries TH ajoutées à la liste), le Jeu 3 bois ne compte rien : les jeux 4 bois TH le remplacent
-  const J41 = !legacy && huisSimples === 0 ? 0 : huisSimples - retraitSimple - jeuxAlu;
-  const J42 = huisDV - retraitDouble;
+  const J41 = (!legacy && huisSimples === 0 ? 0 : huisSimples - retraitSimple - jeuxAlu) + aj('p0');
+  const J42 = huisDV - retraitDouble + aj('p1');
 
   // --- Quantités finales par ligne ---
   const qte = {};
@@ -706,6 +710,8 @@ const FIN = ['9005 MAT', '7016 FT', 'BLANC 9016', 'ANODISÉ', 'RAL'];
 const FINITIONS_CATALOGUE = ['', '9005 MAT', 'RAL7016FT', 'BLANC 9016', 'ANODISÉ', 'RAL À DÉFINIR', 'BRUT'];
 
 // Excel enlève les zéros de tête des nombres : « 959 » est lu comme « 000959 » quand ce code existe.
+// Références qui peuvent exister en plusieurs lignes, chacune avec sa désignation (Z-DIV : dessus de traverse, cote variable)
+const REFS_MULTIPLES = new Set(['Z-DIV']);
 function normaliserCode(saisie, existe) {
   const s = String(saisie ?? '').trim().replace(/\s+/g, '');
   if (!s) return { code: '', corrige: false };
@@ -864,7 +870,7 @@ function creerBibliotheque({ FICHE, CATALOGUE, h, telecharger, surChangement, cl
       e.preventDefault();
       const ref = nRef.value.trim().replace(/\s+/g, '');
       if (!ref || !nDes.value.trim()) { annoncer('Indiquez au moins la référence et la désignation.'); rendre(); return; }
-      if (existe(ref)) { annoncer(`La référence ${ref} existe déjà : modifiez-la dans la liste.`); rendre(); return; }
+      if (existe(ref) && !REFS_MULTIPLES.has(ref.toUpperCase())) { annoncer(`La référence ${ref} existe déjà : modifiez-la dans la liste.`); rendre(); return; }
       bib.catalogue.push([ref, nDes.value.trim(), nEdi.value.trim().replace(/\s+/g, ''), nFin.value, 0]); sauver(); annoncer(`Produit ajouté : ${ref}`); rendre();
     });
     const rech = h('input', { type: 'search', placeholder: 'Chercher un produit : référence, désignation ou code EDI…', 'aria-label': 'Chercher dans le catalogue' });
@@ -1121,6 +1127,7 @@ function fusionBrute(brut) {
     ...b,
     entete: { ...b.entete, ...(brut.entete || {}) },
     qte: { ...(brut.qte || {}) },
+    ajust: Object.fromEntries(Object.entries(brut.ajust || {}).map(([k, v]) => [k, nombre(v)]).filter(([, v]) => v)),
     manuel: Array.isArray(brut.manuel) ? b.manuel.map((_, i) => nombre(brut.manuel[i])) : b.manuel,
     options: {
       ...b.options, ...o,
@@ -1154,6 +1161,8 @@ const remplir = () => synchros.forEach(f => f());
 let champMontant = null;
 const montantsAuto = () => nombre(etat.options.montantsTraverses);   // montants de 2500 des traverses, ajoutés automatiquement à la ligne Montant 2500
 const autoLigne = id => ajoutAuto(etat, GAMME.roles, id);            // idem pour toutes les lignes à ajout automatique (traverses, jeux de paumelles des huisseries double alu type B)
+const CLE_AJUST = { clip: 'clips', equerre: 'equerres', mousse: 'mousse' };
+const ajuster = (cle, v) => { const n = nombre(v); if (n) etat.ajust[cle] = n; else delete etat.ajust[cle]; };
 const LIGNES_AUTO = new Set([GAMME.roles.montants[0], GAMME.roles.jeu6Alu, GAMME.roles.jeu8Alu].filter(Boolean));
 const lignes = {};                                // id -> { item, tr, codeTd, calc }
 function groupes(items) {
@@ -1200,6 +1209,9 @@ function construireProfils(cote, titre) {
       if (it.calcule) {
         calc = h('span', { class: 'calc' });
         qTd.append(calc);
+        const pk = GAMME.roles.paumelles.indexOf(it.id);          // jeux de paumelles bois : ajustement manuel (+ ou −)
+        if (pk >= 0) qTd.append(lier(h('input', { class: 'manuel', type: 'text', inputmode: 'numeric', title: 'Ajustement manuel (+ ou −)', 'aria-label': 'Ajustement ' + (it.libelle || it.famille || lg), autocomplete: 'off', placeholder: '±' }),
+          () => (etat.ajust['p' + pk] || ''), v => { ajuster('p' + pk, v); }));
         if (it.id.startsWith('G')) {      // ajout manuel (point D) sur chaque longueur de couvre-joint plat
           const k = GAMME.roles.couvreJoint.indexOf(it.id);
           if (k >= 0) qTd.append(lier(h('input', { class: 'manuel', type: 'text', inputmode: 'numeric', title: 'Ajout manuel (+ ou −)', 'aria-label': 'Ajout manuel ' + lg, autocomplete: 'off', placeholder: '±' }),
@@ -1274,6 +1286,8 @@ function construirePanneau() {
     cellules.push(h('td', { colspan: SANS_IMAGE.has(a.id) ? 2 : 1, class: repere ? 'repere-' + repere : '', text: a.libelle, title: DESIGNATION.get(a.code) || '' }));
     const codeTd = h('td', { class: 'code-p', text: affCode(a, null, a.code) });
     const nTd = h('td', { class: 'n' }, cellule);
+    if (a.auto) nTd.append(lier(h('input', { class: 'manuel', type: 'text', inputmode: 'numeric', title: 'Ajustement manuel (+ ou −) : par exemple − le nombre d\'équerres déjà chez le client', 'aria-label': 'Ajustement ' + a.libelle, autocomplete: 'off', placeholder: '±' }),
+      () => (etat.ajust[CLE_AJUST[a.auto]] || ''), v => { ajuster(CLE_AJUST[a.auto], v); }));
     cellules.push(codeTd, h('td', { text: a.edi }), nTd, h('td', { class: 'sup' }));
     const tr = h('tr', { class: 'acc' }, cellules);
     corpsAcc.append(tr);
@@ -1304,7 +1318,17 @@ function rendreProduits() {
       h('td', { class: 'sup' }, copier, h('button', { type: 'button', class: 'retirer', title: 'Retirer cette ligne', 'aria-label': 'Retirer', text: '×', onclick: () => { etat.produits.splice(i, 1); rendreProduits(); maj(); } })));
     corps.append(tr); lignesProduits.push({ p, tr });
   });
-  for (let i = etat.produits.length; i < PRODUITS_VIDES_MIN; i++) corps.append(h('tr', { class: 'vide-produit' }, h('td'), h('td', { colspan: 2 }), h('td', { class: 'n' }), h('td', { class: 'sup' })));
+  // Lignes vides : on peut y écrire directement ; la première frappe crée la ligne de produit (quantité 1 si on commence par le code ou la désignation)
+  const creer = (champ, col) => ev => {
+    const p = { ref: '', designation: '', qte: champ === 'qte' ? ev.target.value : '1' }; if (champ !== 'qte') p[champ] = ev.target.value;
+    etat.produits.push(p); rendreProduits(); maj();
+    const i = lignesProduits[lignesProduits.length - 1]?.tr.querySelectorAll('input')[col]; if (i) { i.focus(); i.setSelectionRange?.(i.value.length, i.value.length); }
+  };
+  for (let i = etat.produits.length; i < PRODUITS_VIDES_MIN; i++) corps.append(h('tr', { class: 'vide-produit' },
+    h('td', {}, h('input', { type: 'text', class: 'code-p', 'aria-label': 'Code (ligne libre)', autocomplete: 'off', oninput: creer('ref', 0) })),
+    h('td', { colspan: 2 }, h('input', { type: 'text', 'aria-label': 'Désignation (ligne libre)', autocomplete: 'off', oninput: creer('designation', 1) })),
+    h('td', { class: 'n' }, h('input', { type: 'text', inputmode: 'decimal', 'aria-label': 'Quantité (ligne libre)', autocomplete: 'off', oninput: creer('qte', 2) })),
+    h('td', { class: 'sup' })));
 }
 
 // ---------- mise à jour ----------

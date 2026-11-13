@@ -13,6 +13,7 @@ export function etatInitial() {
     version: 1,
     entete: { societe: '', chantier: '', niveau: '', finition: 'BLANC 9016', ral: '', mode: 'DEVIS', page: '', remarque: '' },
     qte: {},                                    // quantités saisies, clé = id de ligne (G6, D4…)
+    ajust: {},                                    // ajustements manuels (+ ou −) des quantités calculées : clips, equerres, mousse, p0 / p1 (jeux de paumelles bois)
     manuel: [0, 0, 0, 0, 0, 0],                   // point D : ajout manuel sur chaque couvre-joint plat
     options: {
       doublage: [{ nb: '', lg: 2.5 }, { nb: '', lg: 2.5 }],   // « D et M et MS de doublage »
@@ -131,24 +132,25 @@ export function calculer(etat, { legacy = false, roles = ROLES_CLASSIC } = {}) {
 
   // --- Clips : boîtes de 100 ---
   const clipsBruts = cj.reduce((s, v, k) => s + v * CLIPS_PAR_COUVRE_JOINT[k], 0);
-  const clips = plafond(clipsBruts, 100);
+  const aj = k => legacy ? 0 : num((etat.ajust || {})[k]);       // ajustements manuels (hors mode XLS)
+  const clips = Math.max(plafond(clipsBruts, 100) + aj('clips'), 0);
 
   // --- Équerres ---
   const departsLisse = num(o.departsLisse);
   const baseEquerres = somme(roles.montants) + somme(roles.angleDepartMultiple) + somme(roles.departMultipleCJ) + somme(roles.departs) + somme(roles.angle90) + somme(roles.montantsSpeciaux);
-  const equerres = baseEquerres * 2 + num(o.traverses) * 2 + somme(roles.meneaux) * 6 + somme(roles.angleCarre) * 4 + U9 - departsLisse * 2 + (legacy ? 0 : 2 * nbGoulottes(etat));
+  const equerres = baseEquerres * 2 + num(o.traverses) * 2 + somme(roles.meneaux) * 6 + somme(roles.angleCarre) * 4 + U9 - departsLisse * 2 + (legacy ? 0 : 2 * nbGoulottes(etat)) + aj('equerres');
 
   // --- Mousse de départ (mètres, arrondis à 5 m par longueur) ---
   const mousseParLg = LG_COUVRE_JOINT.map((lg, k) => plafond(lg * 2 * q(roles.departs[k]), 5));
-  const mousse = mousseParLg.reduce((s, v) => s + v, 0) - 5 * departsLisse;
+  const mousse = mousseParLg.reduce((s, v) => s + v, 0) - 5 * departsLisse + aj('mousse');
 
   // --- Jeux de paumelles ---
   const retraitSimple = LARGEURS_CA_SIMPLE.includes(num(o.caSimple.largeur)) ? num(o.caSimple.nb) : 0;
   const retraitDouble = LARGEURS_CA_DOUBLE.includes(num(o.caDouble.largeur)) ? num(o.caDouble.nb) : 0;
   const jeuxAlu = somme(roles.jeuxAlu || []);                    // portes alu (jeux 3 et 4) : retirées du Jeu 3 paumelles bois
   // Sans aucune huisserie simple dans la grille (huisseries TH ajoutées à la liste), le Jeu 3 bois ne compte rien : les jeux 4 bois TH le remplacent
-  const J41 = !legacy && huisSimples === 0 ? 0 : huisSimples - retraitSimple - jeuxAlu;
-  const J42 = huisDV - retraitDouble;
+  const J41 = (!legacy && huisSimples === 0 ? 0 : huisSimples - retraitSimple - jeuxAlu) + aj('p0');
+  const J42 = huisDV - retraitDouble + aj('p1');
 
   // --- Quantités finales par ligne ---
   const qte = {};
