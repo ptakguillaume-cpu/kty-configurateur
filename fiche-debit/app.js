@@ -116,6 +116,7 @@ function fusionBrute(brut) {
     ...b,
     entete: { ...b.entete, ...(brut.entete || {}) },
     qte: { ...(brut.qte || {}) },
+    ajust: Object.fromEntries(Object.entries(brut.ajust || {}).map(([k, v]) => [k, nombre(v)]).filter(([, v]) => v)),
     manuel: Array.isArray(brut.manuel) ? b.manuel.map((_, i) => nombre(brut.manuel[i])) : b.manuel,
     options: {
       ...b.options, ...o,
@@ -149,6 +150,8 @@ const remplir = () => synchros.forEach(f => f());
 let champMontant = null;
 const montantsAuto = () => nombre(etat.options.montantsTraverses);   // montants de 2500 des traverses, ajoutés automatiquement à la ligne Montant 2500
 const autoLigne = id => ajoutAuto(etat, GAMME.roles, id);            // idem pour toutes les lignes à ajout automatique (traverses, jeux de paumelles des huisseries double alu type B)
+const CLE_AJUST = { clip: 'clips', equerre: 'equerres', mousse: 'mousse' };
+const ajuster = (cle, v) => { const n = nombre(v); if (n) etat.ajust[cle] = n; else delete etat.ajust[cle]; };
 const LIGNES_AUTO = new Set([GAMME.roles.montants[0], GAMME.roles.jeu6Alu, GAMME.roles.jeu8Alu].filter(Boolean));
 const lignes = {};                                // id -> { item, tr, codeTd, calc }
 function groupes(items) {
@@ -195,6 +198,9 @@ function construireProfils(cote, titre) {
       if (it.calcule) {
         calc = h('span', { class: 'calc' });
         qTd.append(calc);
+        const pk = GAMME.roles.paumelles.indexOf(it.id);          // jeux de paumelles bois : ajustement manuel (+ ou −)
+        if (pk >= 0) qTd.append(lier(h('input', { class: 'manuel', type: 'text', inputmode: 'numeric', title: 'Ajustement manuel (+ ou −)', 'aria-label': 'Ajustement ' + (it.libelle || it.famille || lg), autocomplete: 'off', placeholder: '±' }),
+          () => (etat.ajust['p' + pk] || ''), v => { ajuster('p' + pk, v); }));
         if (it.id.startsWith('G')) {      // ajout manuel (point D) sur chaque longueur de couvre-joint plat
           const k = GAMME.roles.couvreJoint.indexOf(it.id);
           if (k >= 0) qTd.append(lier(h('input', { class: 'manuel', type: 'text', inputmode: 'numeric', title: 'Ajout manuel (+ ou −)', 'aria-label': 'Ajout manuel ' + lg, autocomplete: 'off', placeholder: '±' }),
@@ -269,6 +275,8 @@ function construirePanneau() {
     cellules.push(h('td', { colspan: SANS_IMAGE.has(a.id) ? 2 : 1, class: repere ? 'repere-' + repere : '', text: a.libelle, title: DESIGNATION.get(a.code) || '' }));
     const codeTd = h('td', { class: 'code-p', text: affCode(a, null, a.code) });
     const nTd = h('td', { class: 'n' }, cellule);
+    if (a.auto) nTd.append(lier(h('input', { class: 'manuel', type: 'text', inputmode: 'numeric', title: 'Ajustement manuel (+ ou −) : par exemple − le nombre d\'équerres déjà chez le client', 'aria-label': 'Ajustement ' + a.libelle, autocomplete: 'off', placeholder: '±' }),
+      () => (etat.ajust[CLE_AJUST[a.auto]] || ''), v => { ajuster(CLE_AJUST[a.auto], v); }));
     cellules.push(codeTd, h('td', { text: a.edi }), nTd, h('td', { class: 'sup' }));
     const tr = h('tr', { class: 'acc' }, cellules);
     corpsAcc.append(tr);
@@ -299,7 +307,17 @@ function rendreProduits() {
       h('td', { class: 'sup' }, copier, h('button', { type: 'button', class: 'retirer', title: 'Retirer cette ligne', 'aria-label': 'Retirer', text: '×', onclick: () => { etat.produits.splice(i, 1); rendreProduits(); maj(); } })));
     corps.append(tr); lignesProduits.push({ p, tr });
   });
-  for (let i = etat.produits.length; i < PRODUITS_VIDES_MIN; i++) corps.append(h('tr', { class: 'vide-produit' }, h('td'), h('td', { colspan: 2 }), h('td', { class: 'n' }), h('td', { class: 'sup' })));
+  // Lignes vides : on peut y écrire directement ; la première frappe crée la ligne de produit (quantité 1 si on commence par le code ou la désignation)
+  const creer = (champ, col) => ev => {
+    const p = { ref: '', designation: '', qte: champ === 'qte' ? ev.target.value : '1' }; if (champ !== 'qte') p[champ] = ev.target.value;
+    etat.produits.push(p); rendreProduits(); maj();
+    const i = lignesProduits[lignesProduits.length - 1]?.tr.querySelectorAll('input')[col]; if (i) { i.focus(); i.setSelectionRange?.(i.value.length, i.value.length); }
+  };
+  for (let i = etat.produits.length; i < PRODUITS_VIDES_MIN; i++) corps.append(h('tr', { class: 'vide-produit' },
+    h('td', {}, h('input', { type: 'text', class: 'code-p', 'aria-label': 'Code (ligne libre)', autocomplete: 'off', oninput: creer('ref', 0) })),
+    h('td', { colspan: 2 }, h('input', { type: 'text', 'aria-label': 'Désignation (ligne libre)', autocomplete: 'off', oninput: creer('designation', 1) })),
+    h('td', { class: 'n' }, h('input', { type: 'text', inputmode: 'decimal', 'aria-label': 'Quantité (ligne libre)', autocomplete: 'off', oninput: creer('qte', 2) })),
+    h('td', { class: 'sup' })));
 }
 
 // ---------- mise à jour ----------

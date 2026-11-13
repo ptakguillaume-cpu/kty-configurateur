@@ -11,6 +11,8 @@ export const FIN = ['9005 MAT', '7016 FT', 'BLANC 9016', 'ANODISÉ', 'RAL'];
 export const FINITIONS_CATALOGUE = ['', '9005 MAT', 'RAL7016FT', 'BLANC 9016', 'ANODISÉ', 'RAL À DÉFINIR', 'BRUT'];
 
 // Excel enlève les zéros de tête des nombres : « 959 » est lu comme « 000959 » quand ce code existe.
+// Références qui peuvent exister en plusieurs lignes, chacune avec sa désignation (Z-DIV : dessus de traverse, cote variable)
+const REFS_MULTIPLES = new Set(['Z-DIV']);
 export function normaliserCode(saisie, existe) {
   const s = String(saisie ?? '').trim().replace(/\s+/g, '');
   if (!s) return { code: '', corrige: false };
@@ -169,7 +171,7 @@ export function creerBibliotheque({ FICHE, CATALOGUE, h, telecharger, surChangem
       e.preventDefault();
       const ref = nRef.value.trim().replace(/\s+/g, '');
       if (!ref || !nDes.value.trim()) { annoncer('Indiquez au moins la référence et la désignation.'); rendre(); return; }
-      if (existe(ref)) { annoncer(`La référence ${ref} existe déjà : modifiez-la dans la liste.`); rendre(); return; }
+      if (existe(ref) && !REFS_MULTIPLES.has(ref.toUpperCase())) { annoncer(`La référence ${ref} existe déjà : modifiez-la dans la liste.`); rendre(); return; }
       bib.catalogue.push([ref, nDes.value.trim(), nEdi.value.trim().replace(/\s+/g, ''), nFin.value, 0]); sauver(); annoncer(`Produit ajouté : ${ref}`); rendre();
     });
     const rech = h('input', { type: 'search', placeholder: 'Chercher un produit : référence, désignation ou code EDI…', 'aria-label': 'Chercher dans le catalogue' });
