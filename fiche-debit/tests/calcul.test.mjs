@@ -126,3 +126,16 @@ if (ko) process.exit(1);
   console.assert(c(e, { legacy: true }).equerres === l.equerres, 'legacy inchangé');
   console.log('Ajustements manuels : OK');
 }
+
+// Novembre 2026 : huisseries double alu type B et jeu 4 alu viennent de la liste des produits (plus de lignes dans la grille)
+{
+  const { calculer: c } = await import('../calcul.js');
+  const e = etatInitial(); e.qte = { D34: 3 };
+  const base = c(e);
+  e.produits = [{ ref: '007266', designation: 'Huis. carré AB type B fdf 2050x1270', qte: '2' }, { ref: '000743', designation: 'Jeu 4 pau. porte alu toute hauteur', qte: '1' }];
+  const r = c(e);
+  console.assert(r.cj[0] === base.cj[0] + 4, 'huisserie type B de la liste : +2 couvre-joint 2,5 m chacune');
+  console.assert(r.J41 === base.J41 - 1, 'jeu 4 alu de la liste retiré du jeu 3 bois');
+  console.assert(c(e, { legacy: true }).cj[0] === c({ ...e, produits: [] }, { legacy: true }).cj[0], 'legacy inchangé');
+  console.log('Produits de la liste dans le calcul : OK');
+}

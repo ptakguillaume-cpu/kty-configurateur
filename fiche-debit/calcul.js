@@ -87,6 +87,11 @@ export function ajoutAuto(etat, roles, id) {
   return 0;
 }
 
+// Produits de la liste CODE / Désignation qui comptent dans le calcul (bons de commande de novembre 2026 : ces lignes ne sont plus dans la grille Classic)
+const REFS_HUIS_DV_ALU = new Set(['8122', '007566', '007266', '007267', '007268', '8123', '007567', '007269', '007270', '007271', '8124', '007568', '007272', '007273', '007274', '8125', '007561', '007275', '007276', '007277']);   // huisseries double alu carré type B
+const REFS_JEU4_ALU = new Set(['8163', '007612', '000743', '000970', '000916']);                                            // jeu 4 paumelles alu toute hauteur
+const nbRefs = (etat, refs) => (etat.produits || []).filter(p => refs.has(String(p.ref || '').trim())).reduce((s, p) => s + num(p.qte), 0);
+
 // Goulottes électriques de la liste des produits : 2 équerres chacune (goulottes de 3000 ou 5000 ; couvercles, embouts et cloisons de séparation exclus).
 // L'application fournit les références du catalogue (famille 05GOU) ; à défaut, on reconnaît la désignation (« Goul. élec. … », « Goulotte électrique … »).
 let REFS_GOULOTTE = new Set();
@@ -102,7 +107,7 @@ export function calculer(etat, { legacy = false, roles = ROLES_CLASSIC } = {}) {
   // --- Couvre-joint plat ---
   const huisSimples = somme(roles.huisSimples);
   const huisDV = somme(roles.huisDV);
-  const huisDVAlu = somme(roles.huisDVAlu || []);                 // huisseries double alu carré type B : +2 couvre-joints plats comme les type A, sans effet sur les jeux de paumelles bois
+  const huisDVAlu = somme(roles.huisDVAlu || []) + (legacy ? 0 : nbRefs(etat, REFS_HUIS_DV_ALU));                 // huisseries double alu carré type B : +2 couvre-joints plats comme les type A, sans effet sur les jeux de paumelles bois
   const omega = roles.omega.map(q);                              // lignes 2,5 / 3,05 / 5,75 uniquement (points A, B)
   const omegaOrigine = roles.omegaOrigine.map(q);                // XLS : E12 et E14 retirent J10 à tort
   const doublage = legacy ? o.doublage.slice(0, 1) : o.doublage;
@@ -147,7 +152,7 @@ export function calculer(etat, { legacy = false, roles = ROLES_CLASSIC } = {}) {
   // --- Jeux de paumelles ---
   const retraitSimple = LARGEURS_CA_SIMPLE.includes(num(o.caSimple.largeur)) ? num(o.caSimple.nb) : 0;
   const retraitDouble = LARGEURS_CA_DOUBLE.includes(num(o.caDouble.largeur)) ? num(o.caDouble.nb) : 0;
-  const jeuxAlu = somme(roles.jeuxAlu || []);                    // portes alu (jeux 3 et 4) : retirées du Jeu 3 paumelles bois
+  const jeuxAlu = somme(roles.jeuxAlu || []) + (legacy ? 0 : nbRefs(etat, REFS_JEU4_ALU));                    // portes alu (jeux 3 et 4) : retirées du Jeu 3 paumelles bois
   // Sans aucune huisserie simple dans la grille (huisseries TH ajoutées à la liste), le Jeu 3 bois ne compte rien : les jeux 4 bois TH le remplacent
   const J41 = (!legacy && huisSimples === 0 ? 0 : huisSimples - retraitSimple - jeuxAlu) + aj('p0');
   const J42 = huisDV - retraitDouble + aj('p1');

@@ -17377,5 +17377,14 @@
   "page_pdf": 0,
   "a_verifier": "code issu de l'Excel RDB1 (mai 2026), absent du PDF",
   "hors_catalogue": true
+ },
+ {
+  "ref": "007412",
+  "designation": "Couvre-joint plat lg 3700mm - RAL7016FT",
+  "edi": "60CJP",
+  "finition": "RAL7016FT",
+  "page_pdf": 0,
+  "a_verifier": "code du bon de commande de novembre 2026, absent du PDF",
+  "hors_catalogue": true
  }
 ]

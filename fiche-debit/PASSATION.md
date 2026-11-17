@@ -71,3 +71,6 @@ Les codes s'affichent **comme sur l'Excel d'origine** : sans zéros devant (959,
 
 Gamme RDB1 : `RDB1.md` ; régénérer ses données : `python3 fiche-debit/outils/generer_rdb1.py base.xlsx a7016.xlsx a9005.xlsx fiche-debit/catalogue.json fiche-debit` (Excel RDB1 convertis en .xlsx).
 Règles de calcul : `REGLES_FICHE.md`. Différences avec l'ancien XLS : `ETAPE3_A_VALIDER.md`. Catalogue lu dans le PDF : `RAPPORT_ETAPE1.md`.
+
+## Mise à jour novembre 2026 (bons de commande du directeur)
+La grille des fiches Classic et RDB1 reproduit les bons de commande de **novembre 2026** (voir REGLES_FICHE.md, dernière section). À savoir : l'ancien formulaire « huisseries double alu type B → jeux 6 / 8 automatiques » est supprimé (ces produits s'ajoutent par « + Huisseries… » / « + Porte complète… »), et le jeu 4 alu va dans la liste CODE / Désignation. Les anciennes fiches sont converties à l'ouverture sans perte de quantité. Les bons de commande RDB1 « base » (blanc, anodisé, RAL) n'étaient pas fournis : les changements RDB1 y sont appliqués à l'identique, à valider.
