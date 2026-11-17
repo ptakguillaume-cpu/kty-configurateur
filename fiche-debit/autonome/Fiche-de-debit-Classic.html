@@ -188,7 +188,7 @@ table.profils tr.pc1 > td.img { text-align: left; }
     .cercle { padding: 0 2px; }
     table.profils td.fam.large { font-size: 6.4pt; } table.profils td.fam.long { font-size: 5.6pt; letter-spacing: -0.1px; }
     table.profils tr.groupe > td, table.profils tr.groupe > th { border-top: 0.45mm solid var(--trait); }
-    .corps { grid-template-columns: 27% 27% 1fr !important; gap: 2mm; }
+    .corps { grid-template-columns: 32.5% 32.5% 1fr !important; gap: 2mm; }          /* trois colonnes presque égales, comme le bon de commande de novembre 2026 */
     .corps { align-items: stretch !important; }
     .panneau { grid-column: auto !important; display: flex; flex-direction: column; }
     .panneau > table.liste:not(.acc-table) { flex: 1 1 auto; height: 100%; }
@@ -279,9 +279,10 @@ td.chg-retrait .auto, td.chg-retrait .calc { color: transparent; }          /* l
     table.profils td.code, table.profils td.lg { font-size: 9.2pt !important; letter-spacing: -0.2px; }
     table.profils td.lg.long { font-size: 7.1pt !important; letter-spacing: -0.3px; }          /* codes internes de 6 caractères et plus (42EAD8, 42EAS4TH) */
     .q input, .q .calc { font-size: 10.4pt !important; line-height: 1 !important; }
-    table.profils .fam, table.profils .fam small, table.profils td.titre, .img-texte { font-size: 7.2pt !important; }
-    table.profils td.fam.large { font-size: 7.2pt !important; letter-spacing: -0.2px; }          /* jeux de paumelles, serrure… */
-    table.profils td.fam.long, table.profils td.fam.large.long { font-size: 6.3pt !important; letter-spacing: -0.1px; }
+    table.profils .fam, table.profils .fam small, table.profils td.titre, .img-texte { font-size: 8pt !important; }
+    table.profils td.fam.large { font-size: 9pt !important; letter-spacing: -0.2px; }          /* jeux de paumelles, serrure… */
+    table.profils td.fam.long, table.profils td.fam.large.long { font-size: 8pt !important; letter-spacing: -0.1px; }
+    .acc-table col.a1 { width: 14% !important; } .acc-table col.a2 { width: 36% !important; } .acc-table col.a3 { width: 17% !important; } .acc-table col.a4 { width: 16% !important; } .acc-table col.a5 { width: 17% !important; }
     .liste td, .liste th, .acc-table td { font-size: 8.6pt !important; }
     .acc-table td.n .auto, .acc-table td.n input { font-size: 10.4pt !important; }
 }
