@@ -25,6 +25,7 @@ const GAMMES = {
     libelleLarge: ['D41', 'D42', 'D45', 'D53', 'D54', 'D55', 'D56', 'D57', 'D58', 'D59', 'D60', 'D61', 'G45'],       // jeux de paumelles, portes bois, béquilles, vantaux SV, clip de lisse : libellé sur les 2 colonnes, sans dessin (comme le XLS)
     imgAcc: { A36: { lignes: 9, img: 'accessoires' }, A45: { lignes: 2, img: 'clip-lisse' } },
     cercle: ['G16', 'G18', 'G19', 'G21'],             // macro « cercle rouge » du XLS
+    portes: ['D34', 'D35', 'D36', 'D37', 'D38', 'D39', 'D40', 'D41', 'D42', 'D45', 'D53', 'D54', 'D55', 'D56', 'D57', 'D58', 'D59', 'D60', 'D61'],      // tout ce qui concerne les portes : écrit en gras
   },
   rdb1: {
     id: 'rdb1', nom: 'RDB1', fiche: FICHE_RDB1, cleBrouillon: 'kty_fiche_debit_brouillon_rdb1', cleBib: 'kty_fiche_bibliotheque_rdb1', calcul: true, roles: ROLES_RDB1, prefixeFichier: 'Fiche de Débit RDB1',
@@ -35,6 +36,7 @@ const GAMMES = {
       D31: 'rdb1-doublage', D33: 'rdb1-huisserie-simple', D36: 'rdb1-huisserie-double',
     },
     imageSpan: { D31: 2 }, finsApres: ['D32', 'D41'], rectangles: {}, sansImagePropre: ['D32'], libelleLarge: ['D40', 'D41'], cercle: [],
+    portes: ['D33', 'D34', 'D35', 'D36', 'D37', 'D38', 'D39', 'D40', 'D41'],
     imgAcc: { A36: { lignes: 9, img: 'accessoires' }, A45: { lignes: 2, img: 'clip-lisse' }, A48: { lignes: 1, img: 'rdb1-mousse' } },
   },
 };
@@ -42,7 +44,7 @@ let gammeId = 'classic';
 try { const h0 = (location.hash || '').replace('#', ''), s = GAMMES[h0] ? h0 : localStorage.getItem(CLE_GAMME); if (GAMMES[s]) gammeId = s; } catch { /* stockage indisponible : gamme Classic */ }
 const GAMME = GAMMES[gammeId], FICHE = GAMME.fiche;
 const CLE = GAMME.cleBrouillon, IMAGES = GAMME.images, IMAGE_SPAN = GAMME.imageSpan;
-const FINS = new Set(GAMME.finsApres), RECTANGLES = GAMME.rectangles, SANS_IMAGE_PROPRE = new Set(GAMME.sansImagePropre), LIBELLE_LARGE = new Set(GAMME.libelleLarge), AVEC_CERCLE = new Set(GAMME.cercle);
+const FINS = new Set(GAMME.finsApres), RECTANGLES = GAMME.rectangles, SANS_IMAGE_PROPRE = new Set(GAMME.sansImagePropre), LIBELLE_LARGE = new Set(GAMME.libelleLarge), AVEC_CERCLE = new Set(GAMME.cercle), PORTES = new Set(GAMME.portes);
 const NOM_FINITION = { '9005 MAT': '9005 MAT', '7016 FT': '7016 FT', 'BLANC 9016': 'BLANC 9016', 'ANODISÉ': 'ANODISÉ', RAL: 'RAL (à définir ou demandé)' };
 const FINITION_CATALOGUE = { '9005 MAT': '9005 MAT', '7016 FT': 'RAL7016FT', 'BLANC 9016': 'BLANC 9016', 'ANODISÉ': 'ANODISÉ', RAL: 'RAL À DÉFINIR' };
 let DESIGNATION = new Map();                          // référence -> désignation (reconstruit depuis la bibliothèque)
@@ -203,7 +205,7 @@ function construireProfils(cote, titre) {
     const lignesG = [];
     g.items.forEach((it, i) => {
       if (it.remplissage) return;                                       // (anciennes lignes de remplissage : les tableaux s'étirent maintenant pour remplir la page)
-      const tr = h('tr', { 'data-id': it.id, class: ((i === 0 && !FINS.has(it.id) ? 'groupe ' : '') + (RECTANGLES[it.id] || '')).trim() });
+      const tr = h('tr', { 'data-id': it.id, class: ((i === 0 && !FINS.has(it.id) ? 'groupe ' : '') + (RECTANGLES[it.id] || '') + (PORTES.has(it.id) ? ' porte' : '')).trim() });
       if (i === 0 && LIBELLE_LARGE.has(it.id)) {
         tr.append(h('td', { class: 'fam large' + (g.famille.length > 22 ? ' long' : ''), colspan: 2, rowspan: g.items.length, text: g.famille }));
       } else if (i === 0 && it.vide && it.titre) {
