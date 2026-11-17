@@ -546,6 +546,7 @@ function calculer(etat, { legacy = false, roles = ROLES_CLASSIC } = {}) {
 // ce qui tronquait « Couvre-joint » en « Couvre »), et les virgules deviennent des espaces (texte net, dimensions conservées).
 const FINITION_FIN = /\s*[-,]\s*(?:-\s*)?(?:9005\s*MAT|RAL\s*7016\s*FT|7016\s*FT|blanc(?:\s*9016)?|anodis[ée]e?|brut|laqu[ée]e?\s*RAL|RAL(?:\s*à\s*définir)?)\s*$/i;
 const ABREVIATIONS = [
+  ['sans traverse', 'ss trav'], ['avec traverse', 'av trav'],
   ['Couvercle', 'Couv.'], ['Goulotte', 'Goul.'], ['électrique', 'élec.'], ['huisserie', 'Huis.'], ['paumelles', 'pau.'],
   ['aluminium', 'alu'], ['toute hauteur', 'TH'], ['Classic', 'Clas.'], ['Traverse', 'Trav.'], ['panneau', 'Px.'],
   ['Aluminium', 'alu'], ['poussant gauche', 'PG'], ['poussant droit', 'PD'], ['traverse', 'Trav.'],
@@ -555,7 +556,7 @@ function abreger(texte) {
   let t = String(texte || '').trim();
   for (let i = 0; i < 3; i++) t = t.replace(FINITION_FIN, '');
   for (const [a, b] of ABREVIATIONS) t = t.split(a).join(b);
-  t = t.replace(/\bdim\b\.?/g, '').replace(/\bAB\b/g, '');
+  t = t.replace(/\bdim\b\.?/g, '').replace(/\bAB\b/g, '').replace(/\bfdf\s*[x×]\s*mm\b/gi, 'x mm');
   return t.replace(/\s*,\s*/g, ' ').replace(/\s+/g, ' ').trim();   // virgules remplacées par des espaces : texte net
 }
 
@@ -1130,13 +1131,13 @@ const ANCIENNES_LIGNES = {
   // bons de commande de novembre 2026 : lignes retirées de la grille Classic (les produits restent dans la liste CODE / Désignation)
   D14: { designation: 'Angle 90° lg 3050', codes: { '9005 MAT': '8002', '7016 FT': '007345', 'BLANC 9016': '000077', 'ANODISÉ': '000072', 'RAL': '000082' } },
   D16: { designation: 'Angle 90° lg 5800', codes: { '9005 MAT': '8004', '7016 FT': '007347', 'BLANC 9016': '000079', 'ANODISÉ': '000074', 'RAL': '000084' } },
-  D46: { designation: 'Jeu 4 pau. porte alu toute hauteur', codes: { '9005 MAT': '8163', '7016 FT': '007612', 'BLANC 9016': '000743', 'ANODISÉ': '000970', 'RAL': '000916' } },
+  D46: { designation: 'Jeu 4 pau. alu toute hauteur', codes: { '9005 MAT': '8163', '7016 FT': '007612', 'BLANC 9016': '000743', 'ANODISÉ': '000970', 'RAL': '000916' } },
   D47: { designation: 'Huis. carré AB type B fdf 2050x1270', codes: { '9005 MAT': '8122', '7016 FT': '007566', 'BLANC 9016': '007266', 'ANODISÉ': '007267', 'RAL': '007268' } },
   D48: { designation: 'Huis. carré AB type B fdf 2050x1470', codes: { '9005 MAT': '8123', '7016 FT': '007567', 'BLANC 9016': '007269', 'ANODISÉ': '007270', 'RAL': '007271' } },
   D49: { designation: 'Huis. carré AB type B fdf 2050x1670', codes: { '9005 MAT': '8124', '7016 FT': '007568', 'BLANC 9016': '007272', 'ANODISÉ': '007273', 'RAL': '007274' } },
   D50: { designation: 'Huis. carré AB type B fdf 2050x1870', codes: { '9005 MAT': '8125', '7016 FT': '007561', 'BLANC 9016': '007275', 'ANODISÉ': '007276', 'RAL': '007277' } },
-  D51: { designation: 'Jeu 6 pau. porte alu pour huis. fdf 2050mm', codes: { '9005 MAT': '8167', '7016 FT': '007616', 'BLANC 9016': '000790', 'ANODISÉ': '000431', 'RAL': '000791' } },
-  D52: { designation: 'Jeu 8 pau. porte alu pour huis. fdf 2050mm', codes: { '9005 MAT': '8171', '7016 FT': '007620', 'BLANC 9016': '001134', 'ANODISÉ': '001133', 'RAL': '001135' } },
+  D51: { designation: 'Jeu 6 pau. alu huis. fdf 2050mm', codes: { '9005 MAT': '8167', '7016 FT': '007616', 'BLANC 9016': '000790', 'ANODISÉ': '000431', 'RAL': '000791' } },
+  D52: { designation: 'Jeu 8 pau. alu huis. fdf 2050mm', codes: { '9005 MAT': '8171', '7016 FT': '007620', 'BLANC 9016': '001134', 'ANODISÉ': '001133', 'RAL': '001135' } },
 };
 const ANCIENNES_RDB1 = {
   D42: { designation: 'Jeu 2 paumelles clarit', codes: { '9005 MAT': '8156', '7016 FT': '007604', 'BLANC 9016': '000138', 'ANODISÉ': '000136', 'RAL': '000354' } },
@@ -1588,10 +1589,10 @@ function ouvrirCloison() {
     if (avecPortes) {                                                  // case vidée ou à 0 = on retire la valeur
       { const v = champsPortes.D45.value.replace(/[^0-9]/g, ''); if (nombre(v) > 0) etat.qte.D45 = v; else delete etat.qte.D45; }
       { const v = champsPortes.alu4.value.replace(/[^0-9]/g, ''), p4 = produitAlu4();
-        if (nombre(v) > 0) { const ref = CODES_ALU4[etat.entete.finition] || ''; if (p4) { p4.qte = v; p4.ref = ref || p4.ref; } else ajouterProduit({ ref, designation: 'Jeu 4 pau. porte alu toute hauteur', qte: v }); rendreProduits(); }
+        if (nombre(v) > 0) { const ref = CODES_ALU4[etat.entete.finition] || ''; if (p4) { p4.qte = v; p4.ref = ref || p4.ref; } else ajouterProduit({ ref, designation: 'Jeu 4 pau. alu toute hauteur', qte: v }); rendreProduits(); }
         else if (p4) { etat.produits.splice(etat.produits.indexOf(p4), 1); rendreProduits(); } }
       const v = champsPortes.boisTH.value.replace(/[^0-9]/g, ''), p = produitBoisTH();
-      if (nombre(v) > 0) { const ref = CODES_BOIS_TH[etat.entete.finition] || ''; if (p) { p.qte = v; p.ref = ref || p.ref; } else ajouterProduit({ ref, designation: 'Jeu 4 pau. porte bois toute hauteur', qte: v }); rendreProduits(); }
+      if (nombre(v) > 0) { const ref = CODES_BOIS_TH[etat.entete.finition] || ''; if (p) { p.qte = v; p.ref = ref || p.ref; } else ajouterProduit({ ref, designation: 'Jeu 4 pau. bois toute hauteur', qte: v }); rendreProduits(); }
       else if (p) { etat.produits.splice(etat.produits.indexOf(p), 1); rendreProduits(); }
     }
     fermer(); remplir(); maj();
@@ -1682,18 +1683,18 @@ function ajouterProduit(p) {
 const FIN5 = ['9005 MAT', '7016 FT', 'BLANC 9016', 'ANODISÉ', 'RAL'];
 const codes5 = c => Object.fromEntries(FIN5.map((f, i) => [f, c[i]]));
 const PAUMELLES_DOUBLES = {                                          // jeux de 6 ou 8 paumelles ajoutés avec une huisserie double
-  alu6: { des: 'Jeu 6 pau. porte alu pour huis. fdf 2050mm', codes: codes5(['8167', '007616', '000790', '000431', '000791']) },
-  aluIso: { nom: 'Alu isolant', des: 'Jeu 8 pau. porte alu pour huis. fdf 2050mm', codes: codes5(['8171', '007620', '001134', '001133', '001135']) },
-  aluTH: { nom: 'Alu toute hauteur', des: 'Jeu 8 pau. porte alu toute hauteur', codes: codes5(['8172', '007621', '000713', '000698', '000724']) },
-  boisTH: { nom: 'Bois toute hauteur', des: 'Jeu 8 pau. porte bois toute hauteur', codes: codes5(['', '007622', '000121', '000620', '000629']) },
+  alu6: { des: 'Jeu 6 pau. alu huis. fdf 2050mm', codes: codes5(['8167', '007616', '000790', '000431', '000791']) },
+  aluIso: { nom: 'Alu isolant', des: 'Jeu 8 pau. alu huis. fdf 2050mm', codes: codes5(['8171', '007620', '001134', '001133', '001135']) },
+  aluTH: { nom: 'Alu toute hauteur', des: 'Jeu 8 pau. alu toute hauteur', codes: codes5(['8172', '007621', '000713', '000698', '000724']) },
+  boisTH: { nom: 'Bois toute hauteur', des: 'Jeu 8 pau. bois toute hauteur', codes: codes5(['', '007622', '000121', '000620', '000629']) },
 };
 const HUISSERIES_RAPIDES = [
   ...[['1270', ['8122', '007566', '007266', '007267', '007268']], ['1470', ['8123', '007567', '007269', '007270', '007271']], ['1670', ['8124', '007568', '007272', '007273', '007274']], ['1870', ['8125', '007561', '007275', '007276', '007277']]]
     .map(([l, c]) => ({ paum: 'alu6', nom: `Huisserie double alu carré type B, fdf 2050 x ${l}`, des: `Huis. carré AB type B fdf 2050x${l}`, codes: Object.fromEntries(FIN5.map((f, i) => [f, c[i]])) })),
-  { nom: 'Huisserie TH carré, SV avec traverse (sur mesure)', des: 'Huis. carré AB SV avec traverse TH fdf x mm (dim. à préciser)', codes: Object.fromEntries(FIN5.map((f, i) => [f, ['8126', '007569', '005284', '007285', '007286'][i]])) },
-  { nom: 'Huisserie TH carré, SV sans traverse (sur mesure)', des: 'Huis. carré AB SV sans traverse TH fdf x mm (dim. à préciser)', codes: Object.fromEntries(FIN5.map((f, i) => [f, ['8127', '007570', '007278', '007279', '007280'][i]])) },
-  { paum: 'choix', nom: 'Huisserie double TH carré, DV avec traverse (sur mesure)', des: 'Huis. carré AB DV avec traverse TH fdf x mm (dim. à préciser)', codes: Object.fromEntries(FIN5.map((f, i) => [f, ['8128', '007571', '007287', '007288', '007289'][i]])) },
-  { paum: 'choix', nom: 'Huisserie double TH carré, DV sans traverse (sur mesure)', des: 'Huis. carré AB DV sans traverse TH fdf x mm (dim. à préciser)', codes: Object.fromEntries(FIN5.map((f, i) => [f, ['8129', '007572', '007281', '007282', '005283'][i]])) },
+  { nom: 'Huisserie TH carré, SV avec traverse (sur mesure)', des: 'Huis. carré AB SV av trav TH x mm', codes: Object.fromEntries(FIN5.map((f, i) => [f, ['8126', '007569', '005284', '007285', '007286'][i]])) },
+  { nom: 'Huisserie TH carré, SV sans traverse (sur mesure)', des: 'Huis. carré AB SV ss trav TH x mm', codes: Object.fromEntries(FIN5.map((f, i) => [f, ['8127', '007570', '007278', '007279', '007280'][i]])) },
+  { paum: 'choix', nom: 'Huisserie double TH carré, DV avec traverse (sur mesure)', des: 'Huis. carré AB DV av trav TH x mm', codes: Object.fromEntries(FIN5.map((f, i) => [f, ['8128', '007571', '007287', '007288', '007289'][i]])) },
+  { paum: 'choix', nom: 'Huisserie double TH carré, DV sans traverse (sur mesure)', des: 'Huis. carré AB DV ss trav TH x mm', codes: Object.fromEntries(FIN5.map((f, i) => [f, ['8129', '007572', '007281', '007282', '005283'][i]])) },
 ];
 function ouvrirHuisseries() {
   const info = h('p', { class: 'bib-message', text: `Cliquez sur une huisserie pour l'ajouter à la liste (finition de la fiche : ${libelleFinition(etat.entete)}).` });
@@ -1712,7 +1713,7 @@ function ouvrirHuisseries() {
   const f = h('div', { class: 'fenetre cloison hors-impression', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Huisseries', onkeydown: ev => { if (ev.key === 'Escape') fermer(); } },
     h('div', { class: 'fenetre-contenu', style: 'max-width:600px' },
       h('div', { class: 'fenetre-tete' }, h('h2', { text: 'Huisseries à ajouter' })),
-      h('p', { class: 'aide', text: 'Chaque huisserie ouvre un nouveau bloc dans la liste CODE / Désignation / Qts. Les huisseries doubles ajoutent aussi leur jeu de paumelles (6 ou 8). Pour les huisseries sur mesure, précisez la dimension dans la désignation.' }),
+      h('p', { class: 'aide', text: 'Chaque huisserie ouvre un nouveau bloc dans la liste CODE / Désignation / Qts. Les huisseries doubles ajoutent aussi leur jeu de paumelles (6 ou 8). Pour les huisseries sur mesure (« x mm »), écrivez la dimension dans la désignation.' }),
       h('label', {}, 'Portes des huisseries doubles TH ', portes),
       boutons, info,
       h('div', { class: 'actions', style: 'margin-top:14px' }, h('button', { type: 'button', class: 'bouton principal', text: 'Terminé', onclick: fermer }))));
