@@ -269,14 +269,14 @@ td.chg-retrait .auto, td.chg-retrait .calc { color: transparent; }          /* l
 @media print {
     table.profils col:nth-child(1) { width: 18.5% !important; } table.profils col:nth-child(2) { width: 19.5% !important; } table.profils col:nth-child(3) { width: 18% !important; }
     table.profils col:nth-child(4) { width: 18% !important; } table.profils col:nth-child(5) { width: 26% !important; }
-    table.profils td.code, table.profils td.lg { font-size: 8.6pt !important; letter-spacing: -0.2px; }
-    table.profils td.lg.long { font-size: 6.6pt !important; letter-spacing: -0.3px; }          /* codes internes de 6 caractères et plus (42EAD8, 42EAS4TH) */
-    .q input, .q .calc { font-size: 10pt !important; }
-    table.profils .fam, table.profils .fam small, table.profils td.titre, .img-texte { font-size: 6.8pt !important; }
+    table.profils td.code, table.profils td.lg { font-size: 9.2pt !important; letter-spacing: -0.2px; }
+    table.profils td.lg.long { font-size: 7.1pt !important; letter-spacing: -0.3px; }          /* codes internes de 6 caractères et plus (42EAD8, 42EAS4TH) */
+    .q input, .q .calc { font-size: 10.4pt !important; line-height: 1 !important; }
+    table.profils .fam, table.profils .fam small, table.profils td.titre, .img-texte { font-size: 7.2pt !important; }
     table.profils td.fam.large { font-size: 7.2pt !important; letter-spacing: -0.2px; }          /* jeux de paumelles, serrure… */
-    table.profils td.fam.long, table.profils td.fam.large.long { font-size: 6pt !important; letter-spacing: -0.1px; }
-    .liste td, .liste th, .acc-table td { font-size: 8pt !important; }
-    .acc-table td.n .auto, .acc-table td.n input { font-size: 10pt !important; }
+    table.profils td.fam.long, table.profils td.fam.large.long { font-size: 6.3pt !important; letter-spacing: -0.1px; }
+    .liste td, .liste th, .acc-table td { font-size: 8.6pt !important; }
+    .acc-table td.n .auto, .acc-table td.n input { font-size: 10.4pt !important; }
 }
 
 /* ---------- impression : la fiche remplit toute la hauteur de la page (les tableaux s'étirent), quelle que soit la police de l'ordinateur ---------- */
@@ -295,3 +295,6 @@ td.chg-retrait .auto, td.chg-retrait .calc { color: transparent; }          /* l
 @media print {
     #finTxt { font-size: 14pt !important; font-weight: 800; line-height: 1.15; }
 }
+
+/* ---------- tout ce qui concerne les portes (huisseries, paumelles, portes bois, béquilles, cylindre, vantaux) : en gras ---------- */
+table.profils tr.porte td, table.profils tr.porte td .calc, table.profils tr.porte td input { font-weight: 800; }
