@@ -48,7 +48,7 @@ const FINS = new Set(GAMME.finsApres), RECTANGLES = GAMME.rectangles, SANS_IMAGE
 const NOM_FINITION = { '9005 MAT': '9005 MAT', '7016 FT': '7016 FT', 'BLANC 9016': 'BLANC 9016', 'ANODISÉ': 'ANODISÉ', RAL: 'RAL (à définir ou demandé)' };
 const FINITION_CATALOGUE = { '9005 MAT': '9005 MAT', '7016 FT': 'RAL7016FT', 'BLANC 9016': 'BLANC 9016', 'ANODISÉ': 'ANODISÉ', RAL: 'RAL À DÉFINIR' };
 let DESIGNATION = new Map();                          // référence -> désignation (reconstruit depuis la bibliothèque)
-const PRODUITS_VIDES_MIN = gammeId === 'classic' ? 15 : 14;   // lignes vides affichées pour garder l'aspect de la feuille (RDB1 : 3 lignes d'accessoires de plus depuis novembre 2026)
+const PRODUITS_VIDES_MIN = gammeId === 'classic' ? 17 : 16;   // lignes vides affichées pour garder l'aspect de la feuille (RDB1 : 3 lignes d'accessoires de plus depuis novembre 2026)
 
 // Affichage des codes comme sur les fiches Excel d'origine (sans zéros devant quand l'Excel les affichait sans ; « aff » est ajouté aux données par outils/affichage_codes.py).
 // Les codes enregistrés restent complets ; un code modifié dans la bibliothèque s'affiche tel quel.
@@ -251,9 +251,10 @@ function construireProfils(cote, titre) {
           });
         qTd.append(saisie); if (montant) champMontant = saisie;
       }
-      tr.append(codeTd, h('td', { class: lg.length > 5 ? 'lg long' : 'lg', text: lg }), qTd);
+      const lgTd = h('td', { class: lg.length > 5 ? 'lg long' : 'lg', text: lg });
+      tr.append(codeTd, lgTd, qTd);
       tbody.append(tr);
-      lignes[it.id] = { item: it, tr, codeTd, calc, qTd, saisie: LIGNES_AUTO.has(it.id) ? champMontant : null };
+      lignes[it.id] = { item: it, tr, codeTd, lgTd, calc, qTd, saisie: LIGNES_AUTO.has(it.id) ? champMontant : null };
     });
     if (g.items.some(x => x.seulement)) groupesCond.push({ rows: lignesG, items: g.items, cells: [...lignesG[0].querySelectorAll(':scope > td.img, :scope > td.fam')] });
   }
@@ -445,6 +446,8 @@ function maj() {
     const code = L.item.codes[fin];
     L.codeTd.textContent = affCode(L.item, fin, code) ?? '—';
     L.codeTd.classList.toggle('absent', !code);
+    const rouge = code ? L.item.rouge?.[fin] : null;                       // codes nouveaux de l'édition : en rouge comme sur le bon de commande de novembre 2026
+    L.codeTd.classList.toggle('nouveau', !!rouge); L.lgTd.classList.toggle('nouveau', rouge === 'cl');
     L.codeTd.title = code ? (DESIGNATION.get(code) || '') : `Pas de code en ${nomFin} pour cette ligne`;
     const q = r.qte[id] || 0;
     if (L.saisie) {                                          // ligne Montant 2500 : info « dont N pour traverses » au survol
@@ -468,6 +471,7 @@ function maj() {
   const accVals = valeursAccessoires(r);
   for (const { a, tr, cellule, codeTd } of Object.values(lignesAcc)) {
     codeTd.textContent = affCode(a, null, a.code);
+    codeTd.classList.toggle('nouveau', !!a.rouge?.[etat.entete.finition]);
     const q = accVals[a.id];
     if (a.auto) { cellule.textContent = q ? fmt(q) : '0'; cellule.classList.toggle('zero', !q); }
     tr.classList.toggle('rempli', q > 0);

@@ -84,12 +84,12 @@ tr.tete-groupe td { background: var(--gris-clair); }
 .entete-panneau { padding: 4px 8px; display: grid; grid-template-columns: auto 1fr; gap: 3px 8px; align-items: center; border-bottom: 1px solid var(--trait); }
 .entete-panneau .gamme { grid-column: 1 / -1; display: flex; justify-content: space-between; gap: 8px; font-size: 11px; font-weight: 700; padding-bottom: 3px; border-bottom: 1px solid var(--gris); }
 .entete-panneau .gamme b { font-size: 20px; letter-spacing: 1px; }
-.entete-panneau .titre-gamme { display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.1; }
+.entete-panneau .titre-gamme { display: flex; flex-direction: row; align-items: baseline; justify-content: center; gap: 8px; flex-wrap: nowrap; white-space: nowrap; line-height: 1.1; }
 .entete-panneau .gamme-nom { font-size: 17px; font-weight: 800; letter-spacing: 0.5px; }
 .entete-panneau .gamme-nom .rouge { color: var(--rouge); }
 .entete-panneau .fax { font-size: 11px; font-weight: 700; }
 .entete-panneau label { font-weight: 700; text-decoration: underline; font-size: 12px; }
-.entete-panneau input, .entete-panneau select { width: 100%; min-height: 28px; border: 0; border-bottom: 1px solid var(--gris); background: transparent; font: inherit; font-weight: 700; text-align: center; }
+.entete-panneau input, .entete-panneau select { width: 100%; min-height: 24px; border: 0; border-bottom: 1px solid var(--gris); background: transparent; font: inherit; font-weight: 700; text-align: center; }
 .entete-panneau input:focus, .entete-panneau select:focus { outline: 2px solid var(--accent); }
 .devis { grid-column: 1 / -1; display: flex; justify-content: center; gap: 18px; font-size: 16px; font-weight: 700; padding: 3px 0; }
 .devis button { all: unset; cursor: pointer; padding: 2px 14px; border: 2px solid transparent; border-radius: 50%; }
@@ -181,7 +181,7 @@ table.profils tr.pc1 > td.img { text-align: left; }
     .cercle { padding: 0 2px; }
     table.profils td.fam.large { font-size: 6.4pt; } table.profils td.fam.long { font-size: 5.6pt; letter-spacing: -0.1px; }
     table.profils tr.groupe > td, table.profils tr.groupe > th { border-top: 0.45mm solid var(--trait); }
-    .corps { grid-template-columns: 27% 27% 1fr !important; gap: 2mm; }
+    .corps { grid-template-columns: 32.5% 32.5% 1fr !important; gap: 2mm; }          /* trois colonnes presque égales, comme le bon de commande de novembre 2026 */
     .corps { align-items: stretch !important; }
     .panneau { grid-column: auto !important; display: flex; flex-direction: column; }
     .panneau > table.liste:not(.acc-table) { flex: 1 1 auto; height: 100%; }
@@ -193,7 +193,7 @@ table.profils tr.pc1 > td.img { text-align: left; }
     table.profils .code, table.profils .lg { font-size: 7.5pt; }
     .q input, .q .calc { font-size: 8pt; }
     .q .manuel, .acc .manuel { display: none; }
-    .entete-panneau input, .entete-panneau select { font-size: 9pt; min-height: 5mm; border-bottom: 0; appearance: none; -webkit-appearance: none; }
+    .entete-panneau input, .entete-panneau select { font-size: 9pt; min-height: 4mm; line-height: 1.1; border-bottom: 0; appearance: none; -webkit-appearance: none; }
     .liste .retirer, .liste td.sup, .liste th.sup, .liste col.sup { display: none; }
     .ecran-seulement { display: none !important; }
     input::placeholder { color: transparent; }
@@ -272,9 +272,10 @@ td.chg-retrait .auto, td.chg-retrait .calc { color: transparent; }          /* l
     table.profils td.code, table.profils td.lg { font-size: 9.2pt !important; letter-spacing: -0.2px; }
     table.profils td.lg.long { font-size: 7.1pt !important; letter-spacing: -0.3px; }          /* codes internes de 6 caractères et plus (42EAD8, 42EAS4TH) */
     .q input, .q .calc { font-size: 10.4pt !important; line-height: 1 !important; }
-    table.profils .fam, table.profils .fam small, table.profils td.titre, .img-texte { font-size: 7.2pt !important; }
-    table.profils td.fam.large { font-size: 7.2pt !important; letter-spacing: -0.2px; }          /* jeux de paumelles, serrure… */
-    table.profils td.fam.long, table.profils td.fam.large.long { font-size: 6.3pt !important; letter-spacing: -0.1px; }
+    table.profils .fam, table.profils .fam small, table.profils td.titre, .img-texte { font-size: 8pt !important; }
+    table.profils td.fam.large { font-size: 9pt !important; letter-spacing: -0.2px; }          /* jeux de paumelles, serrure… */
+    table.profils td.fam.long, table.profils td.fam.large.long { font-size: 8pt !important; letter-spacing: -0.1px; }
+    .acc-table col.a1 { width: 14% !important; } .acc-table col.a2 { width: 36% !important; } .acc-table col.a3 { width: 17% !important; } .acc-table col.a4 { width: 16% !important; } .acc-table col.a5 { width: 17% !important; }
     .liste td, .liste th, .acc-table td { font-size: 8.6pt !important; }
     .acc-table td.n .auto, .acc-table td.n input { font-size: 10.4pt !important; }
 }
@@ -288,7 +289,9 @@ td.chg-retrait .auto, td.chg-retrait .calc { color: transparent; }          /* l
 /* en-tête : « GAMME CLASSIC / RDB1 » en plus gros, nom de la gamme en rouge */
 @media print {
     .entete-panneau .gamme-nom { font-size: 14pt !important; }
-    .entete-panneau .fax { font-size: 8pt !important; }
+    .entete-panneau .fax { font-size: 7.5pt !important; }
+    .entete-panneau { gap: 0.6mm 2mm !important; padding-top: 0.5mm !important; padding-bottom: 0.5mm !important; }
+    .devis { padding: 0 !important; font-size: 14pt !important; }
 }
 
 /* ---------- impression : finition / RAL en plus gros ---------- */
@@ -298,3 +301,6 @@ td.chg-retrait .auto, td.chg-retrait .calc { color: transparent; }          /* l
 
 /* ---------- tout ce qui concerne les portes (huisseries, paumelles, portes bois, béquilles, cylindre, vantaux) : en gras ---------- */
 table.profils tr.porte td, table.profils tr.porte td .calc, table.profils tr.porte td input { font-weight: 800; }
+
+/* ---------- codes nouveaux de l'édition : en rouge gras (bon de commande de novembre 2026), écran et impression ---------- */
+table.profils td.nouveau, table.profils tr.porte td.nouveau, .acc-table td.nouveau { color: #d40000 !important; font-weight: 800; }
