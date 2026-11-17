@@ -16,24 +16,26 @@ const GAMMES = {
     images: {                                         // dessins de profils de la fiche (repris du XLS), par première ligne de famille
       G4: 'lisse', G6: 'montant', G11: 'couvre-joint', G18: 'parclose-simple', G21: 'parclose-double', G22: 'meneau', G27: 'angle-carre',
       G32: 'angle-depart-multiple', G37: 'depart-multiple-cj',
-      D4: 'depart', D9: 'omega', D12: 'jonc', D14: 'angle-90', D17: 'montant-special', D22: 'capot', D29: 'angle-libre', D32: 'angle-doublage', D34: 'huisserie', D37: 'huisserie', D47: 'huisserie',
+      D4: 'depart', D9: 'omega', D12: 'jonc', D17: 'montant-special', D22: 'capot', D29: 'angle-libre', D32: 'angle-doublage', D34: 'huisserie', D37: 'huisserie',
     },
-    finsApres: ['D33', 'D42', 'D45', 'D46', 'D51', 'D52', 'G17', 'G18', 'G20', 'G21'],              // lignes qui suivent une ligne du même ensemble (Angle / Plat de doublage, jeux de paumelles) : trait fin au-dessus
+    finsApres: ['D33', 'D42', 'D54', 'D55', 'D56', 'D58', 'D59', 'D60', 'D61', 'G17', 'G18', 'G20', 'G21'],              // lignes qui suivent une ligne du même ensemble (Angle / Plat de doublage, jeux de paumelles) : trait fin au-dessus
     rectangles: { G16: 'pc1', G17: 'pc2', G18: 'pc3', G19: 'pc1', G20: 'pc2', G21: 'pc3' },   // blocs parclose : un seul rectangle (comme l'Excel d'origine)
     imageSpan: { D32: 2 },                            // un même dessin pour « Angle de doublage » et « Plat de doublage »
     sansImagePropre: ['D33'],
-    libelleLarge: ['D41', 'D42', 'D45', 'D46', 'D51', 'D52'],       // jeux de paumelles : libellé sur les 2 colonnes, sans dessin (comme le XLS)
+    libelleLarge: ['D41', 'D42', 'D45', 'D53', 'D54', 'D55', 'D56', 'D57', 'D58', 'D59', 'D60', 'D61', 'G45'],       // jeux de paumelles, portes bois, béquilles, vantaux SV, clip de lisse : libellé sur les 2 colonnes, sans dessin (comme le XLS)
+    imgAcc: { A36: { lignes: 9, img: 'accessoires' }, A45: { lignes: 2, img: 'clip-lisse' } },
     cercle: ['G16', 'G18', 'G19', 'G21'],             // macro « cercle rouge » du XLS
   },
   rdb1: {
     id: 'rdb1', nom: 'RDB1', fiche: FICHE_RDB1, cleBrouillon: 'kty_fiche_debit_brouillon_rdb1', cleBib: 'kty_fiche_bibliotheque_rdb1', calcul: true, roles: ROLES_RDB1, prefixeFichier: 'Fiche de Débit RDB1',
     images: {
       G2: 'rdb1-lisse', G5: 'rdb1-montant', G10: 'rdb1-couvre-joint', G15: 'rdb1-parclose', G18: 'rdb1-meneau', G23: 'rdb1-angle90', G27: 'rdb1-angle-multiple',
-      G31: 'depart-multiple-cj', G37: 'rdb1-capot-rdb1', G41: 'rdb1-clip-lisse',
-      D2: 'rdb1-depart', D7: 'rdb1-omega', D12: 'rdb1-jonc', D14: 'rdb1-mousse', D17: 'rdb1-montant-special', D21: 'rdb1-capot-classic', D26: 'rdb1-angle-libre',
+      G31: 'depart-multiple-cj', G37: 'rdb1-capot-rdb1', G43: 'rdb1-clip-lisse',
+      D2: 'rdb1-depart', D7: 'rdb1-omega', D12: 'rdb1-jonc', D17: 'rdb1-montant-special', D21: 'rdb1-capot-classic', D26: 'rdb1-angle-libre',
       D31: 'rdb1-doublage', D33: 'rdb1-huisserie-simple', D36: 'rdb1-huisserie-double',
     },
-    imageSpan: { D31: 2 }, finsApres: ['D32', 'D41', 'D42', 'D43'], rectangles: {}, sansImagePropre: ['D32'], libelleLarge: ['D40', 'D41', 'D42', 'D43'], cercle: [],
+    imageSpan: { D31: 2 }, finsApres: ['D32', 'D41'], rectangles: {}, sansImagePropre: ['D32'], libelleLarge: ['D40', 'D41'], cercle: [],
+    imgAcc: { A36: { lignes: 9, img: 'accessoires' }, A45: { lignes: 2, img: 'clip-lisse' }, A48: { lignes: 1, img: 'rdb1-mousse' } },
   },
 };
 let gammeId = 'classic';
@@ -44,7 +46,7 @@ const FINS = new Set(GAMME.finsApres), RECTANGLES = GAMME.rectangles, SANS_IMAGE
 const NOM_FINITION = { '9005 MAT': '9005 MAT', '7016 FT': '7016 FT', 'BLANC 9016': 'BLANC 9016', 'ANODISÉ': 'ANODISÉ', RAL: 'RAL (à définir ou demandé)' };
 const FINITION_CATALOGUE = { '9005 MAT': '9005 MAT', '7016 FT': 'RAL7016FT', 'BLANC 9016': 'BLANC 9016', 'ANODISÉ': 'ANODISÉ', RAL: 'RAL À DÉFINIR' };
 let DESIGNATION = new Map();                          // référence -> désignation (reconstruit depuis la bibliothèque)
-const PRODUITS_VIDES_MIN = gammeId === 'classic' ? 15 : 18;   // lignes vides affichées pour garder l'aspect de la feuille (3 de moins en Classic : 3 clips de lisse de plus dans les accessoires)
+const PRODUITS_VIDES_MIN = gammeId === 'classic' ? 15 : 14;   // lignes vides affichées pour garder l'aspect de la feuille (RDB1 : 3 lignes d'accessoires de plus depuis novembre 2026)
 
 // Affichage des codes comme sur les fiches Excel d'origine (sans zéros devant quand l'Excel les affichait sans ; « aff » est ajouté aux données par outils/affichage_codes.py).
 // Les codes enregistrés restent complets ; un code modifié dans la bibliothèque s'affiche tel quel.
@@ -98,17 +100,47 @@ const ANCIENNES_LIGNES = {
   D30: { designation: 'Angle libre lg 3250', codes: { 'ANODISÉ': '000695' } },
   D43: { designation: 'Jeu 2 paumelles clarit', codes: { '9005 MAT': '8156', '7016 FT': '007604', 'BLANC 9016': '000138', 'ANODISÉ': '000136', 'RAL': '000354' } },
   D44: { designation: 'Serrure clarit avec cylindre', codes: { '9005 MAT': '8282', 'BLANC 9016': '000771' } },
+  // bons de commande de novembre 2026 : lignes retirées de la grille Classic (les produits restent dans la liste CODE / Désignation)
+  D14: { designation: 'Angle 90° lg 3050', codes: { '9005 MAT': '8002', '7016 FT': '007345', 'BLANC 9016': '000077', 'ANODISÉ': '000072', 'RAL': '000082' } },
+  D16: { designation: 'Angle 90° lg 5800', codes: { '9005 MAT': '8004', '7016 FT': '007347', 'BLANC 9016': '000079', 'ANODISÉ': '000074', 'RAL': '000084' } },
+  D46: { designation: 'Jeu 4 pau. porte alu toute hauteur', codes: { '9005 MAT': '8163', '7016 FT': '007612', 'BLANC 9016': '000743', 'ANODISÉ': '000970', 'RAL': '000916' } },
+  D47: { designation: 'Huis. carré AB type B fdf 2050x1270', codes: { '9005 MAT': '8122', '7016 FT': '007566', 'BLANC 9016': '007266', 'ANODISÉ': '007267', 'RAL': '007268' } },
+  D48: { designation: 'Huis. carré AB type B fdf 2050x1470', codes: { '9005 MAT': '8123', '7016 FT': '007567', 'BLANC 9016': '007269', 'ANODISÉ': '007270', 'RAL': '007271' } },
+  D49: { designation: 'Huis. carré AB type B fdf 2050x1670', codes: { '9005 MAT': '8124', '7016 FT': '007568', 'BLANC 9016': '007272', 'ANODISÉ': '007273', 'RAL': '007274' } },
+  D50: { designation: 'Huis. carré AB type B fdf 2050x1870', codes: { '9005 MAT': '8125', '7016 FT': '007561', 'BLANC 9016': '007275', 'ANODISÉ': '007276', 'RAL': '007277' } },
+  D51: { designation: 'Jeu 6 pau. porte alu pour huis. fdf 2050mm', codes: { '9005 MAT': '8167', '7016 FT': '007616', 'BLANC 9016': '000790', 'ANODISÉ': '000431', 'RAL': '000791' } },
+  D52: { designation: 'Jeu 8 pau. porte alu pour huis. fdf 2050mm', codes: { '9005 MAT': '8171', '7016 FT': '007620', 'BLANC 9016': '001134', 'ANODISÉ': '001133', 'RAL': '001135' } },
 };
-function migrerClassic(res) {
-  for (const [g, a] of [['G42', 'A45'], ['G43', 'A46'], ['G44', 'A47']]) {
-    if (res.qte[g] !== undefined) { if (nombre(res.qte[g]) && res.accessoires[a] === undefined) res.accessoires[a] = res.qte[g]; delete res.qte[g]; }
-  }
-  for (const [id, x] of Object.entries(ANCIENNES_LIGNES)) {
+const ANCIENNES_RDB1 = {
+  D42: { designation: 'Jeu 2 paumelles clarit', codes: { '9005 MAT': '8156', '7016 FT': '007604', 'BLANC 9016': '000138', 'ANODISÉ': '000136', 'RAL': '000354' } },
+  D43: { designation: 'Serrure clarit avec cylindre', codes: { '9005 MAT': '8282', 'BLANC 9016': '000771' } },
+};
+function versProduits(res, anciennes) {
+  for (const [id, x] of Object.entries(anciennes)) {
     if (res.qte[id] !== undefined) { if (nombre(res.qte[id])) res.produits.push({ ref: x.codes[res.entete.finition] || '', designation: x.designation, qte: res.qte[id] }); delete res.qte[id]; }
   }
+}
+function migrerClassic(res) {
+  for (const [g, a] of [['G42', 'A45'], ['G43', 'A46']]) {
+    if (res.qte[g] !== undefined) { if (nombre(res.qte[g]) && res.accessoires[a] === undefined) res.accessoires[a] = res.qte[g]; delete res.qte[g]; }
+  }
+  if (res.qte.G44 !== undefined) { if (nombre(res.qte.G44) && res.qte.G45 === undefined) res.qte.G45 = res.qte.G44; delete res.qte.G44; }              // clip de lisse 2360 : de nouveau dans la colonne de gauche
+  if (res.accessoires.A47 !== undefined) { if (nombre(res.accessoires.A47) && res.qte.G45 === undefined) res.qte.G45 = res.accessoires.A47; delete res.accessoires.A47; }
+  const o = res.options;                                                // huisseries double alu type B : les jeux 6 / 8 qui se remplissaient tout seuls deviennent des lignes de la liste
+  const auto = ['D47', 'D48', 'D49', 'D50'].reduce((t, i) => t + nombre(res.qte[i]), 0);
+  if (auto && (o.paumellesAlu === 'sv' || o.paumellesAlu === 'iso')) { const x = ANCIENNES_LIGNES[o.paumellesAlu === 'sv' ? 'D51' : 'D52']; res.qte[o.paumellesAlu === 'sv' ? 'D51' : 'D52'] = String(nombre(res.qte[o.paumellesAlu === 'sv' ? 'D51' : 'D52']) + auto); }
+  o.paumellesAlu = '';
+  versProduits(res, ANCIENNES_LIGNES);
   return res;
 }
-function fusion(brut) { const r = fusionBrute(brut); return gammeId === 'classic' ? migrerClassic(r) : r; }
+function migrerRdb1(res) {                                              // novembre 2026 : clips de lisse 100 / 25 et mousse intérieure passent dans les accessoires, clarit / serrure dans la liste
+  for (const [g, a] of [['G41', 'A45'], ['G42', 'A46'], ['D15', 'A48']]) {
+    if (res.qte[g] !== undefined) { if (nombre(res.qte[g]) && res.accessoires[a] === undefined) res.accessoires[a] = res.qte[g]; delete res.qte[g]; }
+  }
+  versProduits(res, ANCIENNES_RDB1);
+  return res;
+}
+function fusion(brut) { const r = fusionBrute(brut); return gammeId === 'classic' ? migrerClassic(r) : migrerRdb1(r); }
 function fusionBrute(brut) {
   const b = etatInitial(), o = brut.options || {};
   const deux = (base, src) => [0, 1].map(i => ({ ...base[i], ...((src || [])[i] || {}) }));
@@ -242,7 +274,7 @@ function construirePanneau() {
   const bouton = mode => h('button', { type: 'button', 'aria-pressed': 'false', 'data-mode': mode, text: mode, onclick: () => { e().mode = mode; maj(); } });
   const devis = h('div', { class: 'devis' }, bouton('DEVIS'), h('span', { text: 'OU' }), bouton('COMMANDE'));
   const tete = h('div', { class: 'entete-panneau' },
-    h('div', { class: 'gamme' }, h('b', { text: 'KTY' }), h('span', { class: 'titre-gamme' }, h('span', { class: 'gamme-nom' }, 'GAMME ', h('span', { class: 'rouge', text: GAMME.nom.toUpperCase() })), h('span', { class: 'fax', text: 'FAX : 04 78 67 02 73' })), lier(h('input', { type: 'text', 'aria-label': 'Page', placeholder: 'Page', style: 'width:60px' }), () => e().page, v => { e().page = v; })),
+    h('div', { class: 'gamme' }, h('b', { text: 'KTY' }), h('span', { class: 'titre-gamme' }, h('span', { class: 'gamme-nom' }, 'GAMME ', h('span', { class: 'rouge', text: GAMME.nom.toUpperCase() })), h('span', { class: 'fax', text: 'mail :  kty.chassieu@kty.fr' })), lier(h('input', { type: 'text', 'aria-label': 'Page', placeholder: 'Page', style: 'width:60px' }), () => e().page, v => { e().page = v; })),
     champEntete('Société :', lier(h('input', { type: 'text', autocomplete: 'off' }), () => e().societe, v => { e().societe = v; })),
     champEntete('Réf chantier :', lier(h('input', { type: 'text', autocomplete: 'off' }), () => e().chantier, v => { e().chantier = v; })),
     champEntete('Niveau :', lier(h('input', { type: 'text', autocomplete: 'off', placeholder: 'ex. R+1' }), () => e().niveau, v => { e().niveau = v; })),
@@ -258,7 +290,7 @@ function construirePanneau() {
     corpsProduits, corpsFantomes);
 
   // Accessoires : dessins à gauche (clip / éclisse / équerre, joints), comme dans le XLS
-  const IMG_ACC = { A36: { lignes: 9, img: 'accessoires' }, A45: { lignes: 3, img: 'clip-lisse' } };      // éclisse, clip, équerre, joints, cale, mousse : un seul dessin comme dans le XLS
+  const IMG_ACC = GAMME.imgAcc;      // éclisse, clip, équerre, joints, cale, mousse : un seul dessin comme dans le XLS
   const SANS_IMAGE = new Set(['A34', 'A35']);
   const corpsAcc = h('tbody');
   rowLaquage = h('tr', { class: 'acc', hidden: true },
@@ -446,7 +478,7 @@ function maj() {
   {                                                                // lisses et clips de lisse doivent aller ensemble (rappel, pas bloquant)
     const somme = (src, ids) => ids.reduce((t, i) => t + nombre(src[i]), 0);
     const lisses = somme(r.qte, gammeId === 'classic' ? ['G4', 'G5'] : ['G2', 'G3', 'G4']);
-    const clips = gammeId === 'classic' ? somme(etat.accessoires, ['A45', 'A46', 'A47']) : somme(r.qte, ['G41', 'G42']);
+    const clips = somme(etat.accessoires, ['A45', 'A46']) + somme(r.qte, [gammeId === 'classic' ? 'G45' : 'G43']);
     if (lisses > 0 && clips === 0) alertes.push({ t: 'Des lisses sont saisies mais aucun clip de lisse : pensez à en ajouter.', info: true });
     if (clips > 0 && lisses === 0) alertes.push({ t: 'Des clips de lisse sont saisis mais aucune lisse : vérifiez.', info: true });
   }
@@ -492,18 +524,17 @@ function majTraverses() {
 // Portes (Classic) : nombre de jeux de paumelles tapé dans le formulaire ; ils remplissent les lignes Jeu 3 alu / Jeu 4 alu, et le Jeu 4 bois TH (absent du tableau) va dans la liste des produits
 const CODES_BOIS_TH = { '9005 MAT': '8164', '7016 FT': '007613', 'BLANC 9016': '000481', 'ANODISÉ': '000901', 'RAL': '000486' };
 const produitBoisTH = () => etat.produits.find(p => Object.values(CODES_BOIS_TH).includes(p.ref));
+const CODES_ALU4 = { '9005 MAT': '8163', '7016 FT': '007612', 'BLANC 9016': '000743', 'ANODISÉ': '000970', 'RAL': '000916' };       // Jeu 4 paumelles alu : plus de ligne dans la grille (bon de commande de novembre 2026), il va dans la liste
+const produitAlu4 = () => etat.produits.find(p => Object.values(CODES_ALU4).includes(p.ref));
 function ouvrirCloison() {
   const c0 = etat.cloison;
   const avecPortes = GAMME.id === 'classic';
   const PORTES = [
     { id: 'D45', nom: 'Portes alu SV (simple vitrage)', aide: 'Jeu 3 paumelles alu', lire: () => etat.qte.D45 },
-    { id: 'D46', nom: 'Portes alu isolant (et CA toute hauteur)', aide: 'Jeu 4 paumelles alu', lire: () => etat.qte.D46 },
+    { id: 'alu4', nom: 'Portes alu isolant (et CA toute hauteur)', aide: 'Jeu 4 paumelles alu, ajouté à la liste des produits', lire: () => produitAlu4()?.qte },
     { id: 'boisTH', nom: 'Portes bois toute hauteur', aide: 'Jeu 4 paumelles bois TH, ajouté à la liste des produits', lire: () => produitBoisTH()?.qte },
   ];
   const champsPortes = Object.fromEntries(PORTES.map(p => [p.id, h('input', { type: 'text', inputmode: 'numeric', 'aria-label': `Jeux de paumelles : ${p.nom}`, autocomplete: 'off', placeholder: '0', value: p.lire() || '' })]));
-  const alu = h('select', { 'aria-label': 'Portes alu des huisseries double alu type B' }, h('option', { value: '', text: 'Je saisis les jeux moi-même' }),
-    h('option', { value: 'sv', text: 'Portes alu SV (simple vitrage) : Jeu 6 paumelles' }), h('option', { value: 'iso', text: 'Portes alu isolant : Jeu 8 paumelles' }));
-  alu.value = etat.options.paumellesAlu || '';
   const lignesPortes = PORTES.map(p => h('label', { class: 'ligne-cloison' }, h('span', { class: 'nom', text: p.nom }), champsPortes[p.id], h('span', { class: 'aide', text: p.aide })));
   const champs = Object.fromEntries(TYPES_CLOISON.map(t => [t.id, h('input', { type: 'text', inputmode: 'numeric', 'aria-label': `Nombre de modules ${t.nom}`, autocomplete: 'off', placeholder: '0', value: c0.modules[t.id] || '' })]));
   const h2500 = h('input', { type: 'checkbox', id: 'cloison2500' }); h2500.checked = !!c0.h2500;
@@ -524,8 +555,10 @@ function ouvrirCloison() {
     if (!r.lignes.length && avant) { etat.options.traverses = ''; etat.options.montantsTraverses = ''; }      // tout remis à 0 : on retire aussi ce que le formulaire avait ajouté
     if (r.lignes.length) { etat.options.traverses = String(r.option || ''); etat.options.montantsTraverses = etat.cloison.h2500 ? '' : String(r.montants || ''); }
     if (avecPortes) {                                                  // case vidée ou à 0 = on retire la valeur
-      etat.options.paumellesAlu = alu.value;
-      for (const id of ['D45', 'D46']) { const v = champsPortes[id].value.replace(/[^0-9]/g, ''); if (nombre(v) > 0) etat.qte[id] = v; else delete etat.qte[id]; }
+      { const v = champsPortes.D45.value.replace(/[^0-9]/g, ''); if (nombre(v) > 0) etat.qte.D45 = v; else delete etat.qte.D45; }
+      { const v = champsPortes.alu4.value.replace(/[^0-9]/g, ''), p4 = produitAlu4();
+        if (nombre(v) > 0) { const ref = CODES_ALU4[etat.entete.finition] || ''; if (p4) { p4.qte = v; p4.ref = ref || p4.ref; } else ajouterProduit({ ref, designation: 'Jeu 4 pau. porte alu toute hauteur', qte: v }); rendreProduits(); }
+        else if (p4) { etat.produits.splice(etat.produits.indexOf(p4), 1); rendreProduits(); } }
       const v = champsPortes.boisTH.value.replace(/[^0-9]/g, ''), p = produitBoisTH();
       if (nombre(v) > 0) { const ref = CODES_BOIS_TH[etat.entete.finition] || ''; if (p) { p.qte = v; p.ref = ref || p.ref; } else ajouterProduit({ ref, designation: 'Jeu 4 pau. porte bois toute hauteur', qte: v }); rendreProduits(); }
       else if (p) { etat.produits.splice(etat.produits.indexOf(p), 1); rendreProduits(); }
@@ -543,9 +576,7 @@ function ouvrirCloison() {
       h('p', { class: 'aide', text: 'Sinon, les montants de 2500 des traverses sont ajoutés automatiquement à la ligne Montant 2500 : ne les saisissez plus vous-même. Si la cloison fait 2500 de haut, ils sont comptés à part : cochez la case, l\'outil ajoute alors toutes les équerres des traverses.' }),
       avecPortes ? [h('h3', { text: 'Portes : nombre de jeux de paumelles' }),
         h('p', { class: 'aide', text: 'Les jeux de paumelles alu sont retirés du Jeu 3 paumelles bois (calculé avec les huisseries). Remplace l\'option « Portes CA » : remplissez bien cette partie en début de fiche.' }), ...lignesPortes,
-        h('h3', { text: 'Huisseries double alu type B' }),
-        h('p', { class: 'aide', text: 'Quand vous saisissez la quantité de ces huisseries dans la grille, le jeu de paumelles correspondant se remplit tout seul : Jeu 6 en simple vitrage, Jeu 8 en isolant. Si vous mélangez les deux sur une fiche, choisissez « Je saisis les jeux moi-même ».' }),
-        h('label', {}, 'Portes alu ', alu)] : null,
+        h('p', { class: 'aide', text: 'Les huisseries double alu type B et leurs jeux de 6 ou 8 paumelles s\'ajoutent avec le bouton « + Huisseries… » ou « + Porte complète… ».' })] : null,
       resume,
       h('div', { class: 'actions', style: 'margin-top:14px' }, h('button', { type: 'button', class: 'bouton principal', text: 'Valider', onclick: valider }), h('button', { type: 'button', class: 'bouton', text: 'Passer', onclick: fermer }))));
   document.body.append(f); document.body.style.overflow = 'hidden'; rafraichir(); Object.values(champs)[1].focus();
