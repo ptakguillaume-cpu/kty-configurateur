@@ -182,6 +182,7 @@ export function calculer(etat, { legacy = false, roles = ROLES_CLASSIC } = {}) {
 // ce qui tronquait « Couvre-joint » en « Couvre »), et les virgules deviennent des espaces (texte net, dimensions conservées).
 const FINITION_FIN = /\s*[-,]\s*(?:-\s*)?(?:9005\s*MAT|RAL\s*7016\s*FT|7016\s*FT|blanc(?:\s*9016)?|anodis[ée]e?|brut|laqu[ée]e?\s*RAL|RAL(?:\s*à\s*définir)?)\s*$/i;
 const ABREVIATIONS = [
+  ['sans traverse', 'ss trav'], ['avec traverse', 'av trav'],
   ['Couvercle', 'Couv.'], ['Goulotte', 'Goul.'], ['électrique', 'élec.'], ['huisserie', 'Huis.'], ['paumelles', 'pau.'],
   ['aluminium', 'alu'], ['toute hauteur', 'TH'], ['Classic', 'Clas.'], ['Traverse', 'Trav.'], ['panneau', 'Px.'],
   ['Aluminium', 'alu'], ['poussant gauche', 'PG'], ['poussant droit', 'PD'], ['traverse', 'Trav.'],
@@ -191,7 +192,7 @@ export function abreger(texte) {
   let t = String(texte || '').trim();
   for (let i = 0; i < 3; i++) t = t.replace(FINITION_FIN, '');
   for (const [a, b] of ABREVIATIONS) t = t.split(a).join(b);
-  t = t.replace(/\bdim\b\.?/g, '').replace(/\bAB\b/g, '');
+  t = t.replace(/\bdim\b\.?/g, '').replace(/\bAB\b/g, '').replace(/\bfdf\s*[x×]\s*mm\b/gi, 'x mm');
   return t.replace(/\s*,\s*/g, ' ').replace(/\s+/g, ' ').trim();   // virgules remplacées par des espaces : texte net
 }
 
