@@ -205,7 +205,7 @@ function construireProfils(cote, titre) {
     const lignesG = [];
     g.items.forEach((it, i) => {
       if (it.remplissage) return;                                       // (anciennes lignes de remplissage : les tableaux s'étirent maintenant pour remplir la page)
-      const tr = h('tr', { 'data-id': it.id, class: ((i === 0 && !FINS.has(it.id) ? 'groupe ' : '') + (RECTANGLES[it.id] || '') + (PORTES.has(it.id) ? ' porte' : '')).trim() });
+      const tr = h('tr', { 'data-id': it.id, class: ((i === 0 && !FINS.has(it.id) ? 'groupe ' : '') + (RECTANGLES[it.id] || '') + (PORTES.has(it.id) ? ' porte' : '') + (/joints?$|vitrage$|pare ?close/i.test(g.famille) ? ' parclose' : '')).trim() });
       if (i === 0 && LIBELLE_LARGE.has(it.id)) {
         tr.append(h('td', { class: 'fam large' + (g.famille.length > 22 ? ' long' : ''), colspan: 2, rowspan: g.items.length, text: g.famille }));
       } else if (i === 0 && it.vide && it.titre) {

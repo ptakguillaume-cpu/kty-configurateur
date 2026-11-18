@@ -274,8 +274,8 @@ td.chg-retrait .auto, td.chg-retrait .calc { color: transparent; }          /* l
 
 /* ---------- impression : écriture plus grosse dans les cases (choix « A » validé) ---------- */
 @media print {
-    table.profils col:nth-child(1) { width: 18.5% !important; } table.profils col:nth-child(2) { width: 19.5% !important; } table.profils col:nth-child(3) { width: 18% !important; }
-    table.profils col:nth-child(4) { width: 18% !important; } table.profils col:nth-child(5) { width: 26% !important; }
+    table.profils col:nth-child(1) { width: 23% !important; } table.profils col:nth-child(2) { width: 20% !important; } table.profils col:nth-child(3) { width: 17.5% !important; }
+    table.profils col:nth-child(4) { width: 17.5% !important; } table.profils col:nth-child(5) { width: 22% !important; }          /* images plus larges, cases de quantité moins larges */
     table.profils td.code, table.profils td.lg { font-size: 9.2pt !important; letter-spacing: -0.2px; }
     table.profils td.lg.long { font-size: 7.1pt !important; letter-spacing: -0.3px; }          /* codes internes de 6 caractères et plus (42EAD8, 42EAS4TH) */
     .q input, .q .calc { font-size: 10.4pt !important; line-height: 1 !important; }
@@ -311,6 +311,9 @@ table.profils tr.porte td, table.profils tr.porte td .calc, table.profils tr.por
 
 /* ---------- codes nouveaux de l'édition : en rouge gras (bon de commande de novembre 2026), écran et impression ---------- */
 table.profils td.nouveau, table.profils tr.porte td.nouveau, .acc-table td.nouveau { color: #d40000 !important; font-weight: 800; }
+
+/* ---------- impression : parclose un peu plus gros ---------- */
+@media print { table.profils tr.parclose td.fam, table.profils tr.parclose td.titre, table.profils tr.parclose .img-texte, table.profils tr.parclose td.fam small { font-size: 9.2pt !important; } }
 
 </style>
 </head>
@@ -1231,7 +1234,7 @@ function construireProfils(cote, titre) {
     const lignesG = [];
     g.items.forEach((it, i) => {
       if (it.remplissage) return;                                       // (anciennes lignes de remplissage : les tableaux s'étirent maintenant pour remplir la page)
-      const tr = h('tr', { 'data-id': it.id, class: ((i === 0 && !FINS.has(it.id) ? 'groupe ' : '') + (RECTANGLES[it.id] || '') + (PORTES.has(it.id) ? ' porte' : '')).trim() });
+      const tr = h('tr', { 'data-id': it.id, class: ((i === 0 && !FINS.has(it.id) ? 'groupe ' : '') + (RECTANGLES[it.id] || '') + (PORTES.has(it.id) ? ' porte' : '') + (/joints?$|vitrage$|pare ?close/i.test(g.famille) ? ' parclose' : '')).trim() });
       if (i === 0 && LIBELLE_LARGE.has(it.id)) {
         tr.append(h('td', { class: 'fam large' + (g.famille.length > 22 ? ' long' : ''), colspan: 2, rowspan: g.items.length, text: g.famille }));
       } else if (i === 0 && it.vide && it.titre) {
