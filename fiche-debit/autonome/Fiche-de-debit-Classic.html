@@ -274,8 +274,8 @@ td.chg-retrait .auto, td.chg-retrait .calc { color: transparent; }          /* l
 
 /* ---------- impression : écriture plus grosse dans les cases (choix « A » validé) ---------- */
 @media print {
-    table.profils col:nth-child(1) { width: 18.5% !important; } table.profils col:nth-child(2) { width: 19.5% !important; } table.profils col:nth-child(3) { width: 18% !important; }
-    table.profils col:nth-child(4) { width: 18% !important; } table.profils col:nth-child(5) { width: 26% !important; }
+    table.profils col:nth-child(1) { width: 23% !important; } table.profils col:nth-child(2) { width: 20% !important; } table.profils col:nth-child(3) { width: 17.5% !important; }
+    table.profils col:nth-child(4) { width: 17.5% !important; } table.profils col:nth-child(5) { width: 22% !important; }          /* images plus larges, cases de quantité moins larges */
     table.profils td.code, table.profils td.lg { font-size: 9.2pt !important; letter-spacing: -0.2px; }
     table.profils td.lg.long { font-size: 7.1pt !important; letter-spacing: -0.3px; }          /* codes internes de 6 caractères et plus (42EAD8, 42EAS4TH) */
     .q input, .q .calc { font-size: 10.4pt !important; line-height: 1 !important; }
@@ -311,6 +311,13 @@ table.profils tr.porte td, table.profils tr.porte td .calc, table.profils tr.por
 
 /* ---------- codes nouveaux de l'édition : en rouge gras (bon de commande de novembre 2026), écran et impression ---------- */
 table.profils td.nouveau, table.profils tr.porte td.nouveau, .acc-table td.nouveau { color: #d40000 !important; font-weight: 800; }
+
+/* ---------- impression : parclose un peu plus gros ---------- */
+@media print { table.profils tr.parclose td.fam, table.profils tr.parclose td.titre, table.profils tr.parclose .img-texte, table.profils tr.parclose td.fam small { font-size: 9.2pt !important; } }
+
+/* ---------- impression : Société, Réf chantier, Niveau écrits plus gros ---------- */
+@media print { .entete-panneau input[type=text] { font-size: 12.5pt !important; font-weight: 800 !important; line-height: 1 !important; min-height: 4.6mm !important; } }
+@media print { .entete-panneau input.txt-long1 { font-size: 10.5pt !important; } .entete-panneau input.txt-long2 { font-size: 9pt !important; } .entete-panneau input.txt-long3 { font-size: 8pt !important; } }
 
 </style>
 </head>
@@ -1231,7 +1238,7 @@ function construireProfils(cote, titre) {
     const lignesG = [];
     g.items.forEach((it, i) => {
       if (it.remplissage) return;                                       // (anciennes lignes de remplissage : les tableaux s'étirent maintenant pour remplir la page)
-      const tr = h('tr', { 'data-id': it.id, class: ((i === 0 && !FINS.has(it.id) ? 'groupe ' : '') + (RECTANGLES[it.id] || '') + (PORTES.has(it.id) ? ' porte' : '')).trim() });
+      const tr = h('tr', { 'data-id': it.id, class: ((i === 0 && !FINS.has(it.id) ? 'groupe ' : '') + (RECTANGLES[it.id] || '') + (PORTES.has(it.id) ? ' porte' : '') + (/joints?$|vitrage$|pare ?close/i.test(g.famille) ? ' parclose' : '')).trim() });
       if (i === 0 && LIBELLE_LARGE.has(it.id)) {
         tr.append(h('td', { class: 'fam large' + (g.famille.length > 22 ? ' long' : ''), colspan: 2, rowspan: g.items.length, text: g.famille }));
       } else if (i === 0 && it.vide && it.titre) {
@@ -1503,6 +1510,9 @@ function maj() {
     tr.classList.toggle('rempli', q > 0);
   }
   for (const { p, tr } of lignesProduits) tr.classList.toggle('rempli', nombre(p.qte) !== 0);
+  document.querySelectorAll('.entete-panneau input[type=text]').forEach(i => {      // à l'impression, un texte long (société, chantier) rétrécit pour tenir dans la case
+    const n = i.value.length; i.classList.toggle('txt-long1', n > 27 && n <= 33); i.classList.toggle('txt-long2', n > 33 && n <= 40); i.classList.toggle('txt-long3', n > 40);
+  });
   majRevision(r); majTraverses();
   // Lignes vides de la liste : la ligne « Forfait laquage » (RAL, 2 lignes) et les produits retirés affichés par le suivi (1 ligne chacun, plus 1 pour le bandeau de modification) prennent leur place, pour que la fiche reste sur une page
   const vides = [...document.querySelectorAll('tr.vide-produit')], pris = (fin === 'RAL' ? 2 : 0) + $('fantomes').children.length + (document.body.classList.contains('avec-suivi') ? 1 : 0);

@@ -267,8 +267,8 @@ td.chg-retrait .auto, td.chg-retrait .calc { color: transparent; }          /* l
 
 /* ---------- impression : écriture plus grosse dans les cases (choix « A » validé) ---------- */
 @media print {
-    table.profils col:nth-child(1) { width: 18.5% !important; } table.profils col:nth-child(2) { width: 19.5% !important; } table.profils col:nth-child(3) { width: 18% !important; }
-    table.profils col:nth-child(4) { width: 18% !important; } table.profils col:nth-child(5) { width: 26% !important; }
+    table.profils col:nth-child(1) { width: 23% !important; } table.profils col:nth-child(2) { width: 20% !important; } table.profils col:nth-child(3) { width: 17.5% !important; }
+    table.profils col:nth-child(4) { width: 17.5% !important; } table.profils col:nth-child(5) { width: 22% !important; }          /* images plus larges, cases de quantité moins larges */
     table.profils td.code, table.profils td.lg { font-size: 9.2pt !important; letter-spacing: -0.2px; }
     table.profils td.lg.long { font-size: 7.1pt !important; letter-spacing: -0.3px; }          /* codes internes de 6 caractères et plus (42EAD8, 42EAS4TH) */
     .q input, .q .calc { font-size: 10.4pt !important; line-height: 1 !important; }
@@ -304,3 +304,10 @@ table.profils tr.porte td, table.profils tr.porte td .calc, table.profils tr.por
 
 /* ---------- codes nouveaux de l'édition : en rouge gras (bon de commande de novembre 2026), écran et impression ---------- */
 table.profils td.nouveau, table.profils tr.porte td.nouveau, .acc-table td.nouveau { color: #d40000 !important; font-weight: 800; }
+
+/* ---------- impression : parclose un peu plus gros ---------- */
+@media print { table.profils tr.parclose td.fam, table.profils tr.parclose td.titre, table.profils tr.parclose .img-texte, table.profils tr.parclose td.fam small { font-size: 9.2pt !important; } }
+
+/* ---------- impression : Société, Réf chantier, Niveau écrits plus gros ---------- */
+@media print { .entete-panneau input[type=text] { font-size: 12.5pt !important; font-weight: 800 !important; line-height: 1 !important; min-height: 4.6mm !important; } }
+@media print { .entete-panneau input.txt-long1 { font-size: 10.5pt !important; } .entete-panneau input.txt-long2 { font-size: 9pt !important; } .entete-panneau input.txt-long3 { font-size: 8pt !important; } }

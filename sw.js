@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kty-app-v86'; // Augmentez le chiffre à chaque mise à jour pour forcer le refresh
+const CACHE_NAME = 'kty-app-v88'; // Augmentez le chiffre à chaque mise à jour pour forcer le refresh
 const urlsToCache = [
   './index.html',
   './style.css',

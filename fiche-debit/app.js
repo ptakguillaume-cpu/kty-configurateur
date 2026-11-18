@@ -205,7 +205,7 @@ function construireProfils(cote, titre) {
     const lignesG = [];
     g.items.forEach((it, i) => {
       if (it.remplissage) return;                                       // (anciennes lignes de remplissage : les tableaux s'étirent maintenant pour remplir la page)
-      const tr = h('tr', { 'data-id': it.id, class: ((i === 0 && !FINS.has(it.id) ? 'groupe ' : '') + (RECTANGLES[it.id] || '') + (PORTES.has(it.id) ? ' porte' : '')).trim() });
+      const tr = h('tr', { 'data-id': it.id, class: ((i === 0 && !FINS.has(it.id) ? 'groupe ' : '') + (RECTANGLES[it.id] || '') + (PORTES.has(it.id) ? ' porte' : '') + (/joints?$|vitrage$|pare ?close/i.test(g.famille) ? ' parclose' : '')).trim() });
       if (i === 0 && LIBELLE_LARGE.has(it.id)) {
         tr.append(h('td', { class: 'fam large' + (g.famille.length > 22 ? ' long' : ''), colspan: 2, rowspan: g.items.length, text: g.famille }));
       } else if (i === 0 && it.vide && it.titre) {
@@ -477,6 +477,9 @@ function maj() {
     tr.classList.toggle('rempli', q > 0);
   }
   for (const { p, tr } of lignesProduits) tr.classList.toggle('rempli', nombre(p.qte) !== 0);
+  document.querySelectorAll('.entete-panneau input[type=text]').forEach(i => {      // à l'impression, un texte long (société, chantier) rétrécit pour tenir dans la case
+    const n = i.value.length; i.classList.toggle('txt-long1', n > 27 && n <= 33); i.classList.toggle('txt-long2', n > 33 && n <= 40); i.classList.toggle('txt-long3', n > 40);
+  });
   majRevision(r); majTraverses();
   // Lignes vides de la liste : la ligne « Forfait laquage » (RAL, 2 lignes) et les produits retirés affichés par le suivi (1 ligne chacun, plus 1 pour le bandeau de modification) prennent leur place, pour que la fiche reste sur une page
   const vides = [...document.querySelectorAll('tr.vide-produit')], pris = (fin === 'RAL' ? 2 : 0) + $('fantomes').children.length + (document.body.classList.contains('avec-suivi') ? 1 : 0);
