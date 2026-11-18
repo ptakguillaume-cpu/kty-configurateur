@@ -307,3 +307,7 @@ table.profils td.nouveau, table.profils tr.porte td.nouveau, .acc-table td.nouve
 
 /* ---------- impression : parclose un peu plus gros ---------- */
 @media print { table.profils tr.parclose td.fam, table.profils tr.parclose td.titre, table.profils tr.parclose .img-texte, table.profils tr.parclose td.fam small { font-size: 9.2pt !important; } }
+
+/* ---------- impression : Société, Réf chantier, Niveau écrits plus gros ---------- */
+@media print { .entete-panneau input[type=text] { font-size: 12.5pt !important; font-weight: 800 !important; line-height: 1 !important; min-height: 4.6mm !important; } }
+@media print { .entete-panneau input.txt-long1 { font-size: 10.5pt !important; } .entete-panneau input.txt-long2 { font-size: 9pt !important; } .entete-panneau input.txt-long3 { font-size: 8pt !important; } }

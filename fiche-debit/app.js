@@ -477,6 +477,9 @@ function maj() {
     tr.classList.toggle('rempli', q > 0);
   }
   for (const { p, tr } of lignesProduits) tr.classList.toggle('rempli', nombre(p.qte) !== 0);
+  document.querySelectorAll('.entete-panneau input[type=text]').forEach(i => {      // à l'impression, un texte long (société, chantier) rétrécit pour tenir dans la case
+    const n = i.value.length; i.classList.toggle('txt-long1', n > 27 && n <= 33); i.classList.toggle('txt-long2', n > 33 && n <= 40); i.classList.toggle('txt-long3', n > 40);
+  });
   majRevision(r); majTraverses();
   // Lignes vides de la liste : la ligne « Forfait laquage » (RAL, 2 lignes) et les produits retirés affichés par le suivi (1 ligne chacun, plus 1 pour le bandeau de modification) prennent leur place, pour que la fiche reste sur une page
   const vides = [...document.querySelectorAll('tr.vide-produit')], pris = (fin === 'RAL' ? 2 : 0) + $('fantomes').children.length + (document.body.classList.contains('avec-suivi') ? 1 : 0);

@@ -315,6 +315,10 @@ table.profils td.nouveau, table.profils tr.porte td.nouveau, .acc-table td.nouve
 /* ---------- impression : parclose un peu plus gros ---------- */
 @media print { table.profils tr.parclose td.fam, table.profils tr.parclose td.titre, table.profils tr.parclose .img-texte, table.profils tr.parclose td.fam small { font-size: 9.2pt !important; } }
 
+/* ---------- impression : Société, Réf chantier, Niveau écrits plus gros ---------- */
+@media print { .entete-panneau input[type=text] { font-size: 12.5pt !important; font-weight: 800 !important; line-height: 1 !important; min-height: 4.6mm !important; } }
+@media print { .entete-panneau input.txt-long1 { font-size: 10.5pt !important; } .entete-panneau input.txt-long2 { font-size: 9pt !important; } .entete-panneau input.txt-long3 { font-size: 8pt !important; } }
+
 </style>
 </head>
 <body>
@@ -1506,6 +1510,9 @@ function maj() {
     tr.classList.toggle('rempli', q > 0);
   }
   for (const { p, tr } of lignesProduits) tr.classList.toggle('rempli', nombre(p.qte) !== 0);
+  document.querySelectorAll('.entete-panneau input[type=text]').forEach(i => {      // à l'impression, un texte long (société, chantier) rétrécit pour tenir dans la case
+    const n = i.value.length; i.classList.toggle('txt-long1', n > 27 && n <= 33); i.classList.toggle('txt-long2', n > 33 && n <= 40); i.classList.toggle('txt-long3', n > 40);
+  });
   majRevision(r); majTraverses();
   // Lignes vides de la liste : la ligne « Forfait laquage » (RAL, 2 lignes) et les produits retirés affichés par le suivi (1 ligne chacun, plus 1 pour le bandeau de modification) prennent leur place, pour que la fiche reste sur une page
   const vides = [...document.querySelectorAll('tr.vide-produit')], pris = (fin === 'RAL' ? 2 : 0) + $('fantomes').children.length + (document.body.classList.contains('avec-suivi') ? 1 : 0);
