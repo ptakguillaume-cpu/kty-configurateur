@@ -1699,7 +1699,7 @@ function ajouterProduit(p) {
 // Changement de finition : les codes des lignes de la liste CODE / Désignation suivent (même produit, nouvelle finition d'après le catalogue).
 // Une ligne sans équivalent garde son code et passe en orange ; une ligne dont le code n'est pas au catalogue (écrite à la main) n'est jamais touchée.
 const SANS_EQUIVALENT = new WeakSet();
-const cleProduit = (des, edi) => sansAccent(des).replace(/p0ussant/g, 'poussant').replace(/(\d)m(\d\d)\b/g, (m, a, b) => a + b + '0').replace(/(\d)\s*mm\b/g, '$1').replace(/\blg\b\.?|\bmm\b/g, '').replace(/\s*[-,]?\s*(9005\s*mat|ral\s*7016\s*ft|7016\s*ft|blanc(\s*9016)?|anodis\w*|brut|ral(\s*a\s*definir)?)\s*$/, '').replace(/\bdim\b\.?/g, '').replace(/[^a-z0-9]+/g, '') + '|' + edi;
+const cleProduit = (des, edi) => sansAccent(des).replace(/×/g, 'x').replace(/carree/g, 'carre').replace(/longueur/g, 'lg').replace(/p0ussant/g, 'poussant').replace(/(\d)m(\d\d)\b/g, (m, a, b) => a + b + '0').replace(/(\d)\s*mm\b/g, '$1').replace(/\blg\b\.?|\bmm\b/g, '').replace(/\s*[-,]?\s*(9005\s*mat|ral\s*7016\s*ft|7016\s*ft|blanc(\s*9016)?|anodis\w*|brut|ral(\s*a\s*definir)?)\s*$/, '').replace(/\bdim\b\.?/g, '').replace(/[^a-z0-9]+/g, '') + '|' + String(edi).toUpperCase().replace(/O/g, '0');
 function changerCodesProduits(nouvelle) {
   const cible = FINITION_CATALOGUE[nouvelle], fins = new Set(Object.values(FINITION_CATALOGUE));
   if (!GROUPES_FIN) {
